@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dbmodeling_test
+    username: ${DB_USERNAME:dbmodeling}
+    password: ${DB_PASSWORD:dbmodeling}
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    
+  # H2 자동 설정 비활성화. 비활성화
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
+    
+logging:
+  level:
+    com.dbmodeling: DEBUG
+    org.hibernate.SQL: DEBUG
