@@ -1,0 +1,25 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Monitors all source files in the repository (Java, TypeScript, configuration files) and triggers documentation updates in README.md or docs folder when changes are detected",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "backend/src/**/*.java",
+      "frontend/src/**/*.ts",
+      "frontend/src/**/*.tsx",
+      "backend/pom.xml",
+      "frontend/package.json",
+      "frontend/tsconfig.json",
+      "frontend/vite.config.ts",
+      "frontend/tailwind.config.js",
+      "frontend/eslint.config.js",
+      "frontend/postcss.config.js"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source code files have been modified in this full-stack database modeling tool project. Please review the changes and update the documentation accordingly. Focus on:\n\n1. Update README.md with any new features, API changes, or setup instructions\n2. If there's a /docs folder, update relevant documentation there\n3. Ensure the documentation reflects the current state of the codebase\n4. Update any architectural diagrams or technical specifications if needed\n5. Keep documentation consistent with the project's clean architecture and MSSQL focus\n\nThe project uses:\n- Backend: Java 17 + Spring Boot (Clean Architecture)\n- Frontend: React 19 + TypeScript + Tailwind CSS\n- Database: PostgreSQL backend, MSSQL target\n- Key features: Visual database schema design, MSSQL-specific validation, SQL generation\n\nPlease analyze the changed files and provide updated documentation that accurately reflects the current implementation."
+  }
+}
