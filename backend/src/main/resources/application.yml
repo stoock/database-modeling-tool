@@ -50,6 +50,24 @@ management:
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
+    enabled: true
     operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+    filter: true
+  show-actuator: false
+  group-configs:
+    - group: 'public-api'
+      paths-to-match: '/api/**'
+      packages-to-scan: 'com.dbmodeling.presentation.controller'
+
+app:
+  cors:
+    allowed-origins: 
+      - http://localhost:3000
+      - http://localhost:5173
+      - http://127.0.0.1:3000
+      - http://127.0.0.1:5173
