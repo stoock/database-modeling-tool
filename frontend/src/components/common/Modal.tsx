@@ -5,23 +5,26 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
+  title: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  showCloseButton?: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({
+const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
   children,
   size = 'md',
+  showCloseButton = true,
 }) => {
   const sizeClasses = {
     sm: 'max-w-md',
     md: 'max-w-lg',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
+    '2xl': 'max-w-6xl',
   };
 
   return (
@@ -50,28 +53,29 @@ export const Modal: React.FC<ModalProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel
-                className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all`}
-              >
-                {title && (
-                  <div className="flex items-center justify-between mb-4">
-                    <Dialog.Title
-                      as="h3"
-                      className="text-lg font-medium leading-6 text-gray-900"
-                    >
-                      {title}
-                    </Dialog.Title>
+              <Dialog.Panel className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all`}>
+                <div className="flex items-center justify-between mb-4">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    {title}
+                  </Dialog.Title>
+                  {showCloseButton && (
                     <button
                       type="button"
-                      className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       onClick={onClose}
                     >
                       <span className="sr-only">닫기</span>
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
-                  </div>
-                )}
-                {children}
+                  )}
+                </div>
+                
+                <div className="mt-2">
+                  {children}
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>
