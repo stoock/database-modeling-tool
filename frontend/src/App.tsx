@@ -1,18 +1,42 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { useProjectStore } from './stores/projectStore';
 import { useTableStore } from './stores/tableStore';
 import { useValidationStore } from './stores/validationStore';
+import { TableCanvas } from './components/TableDesigner';
+import { ChangeIndicator, UnsavedChangesDialog, AutoSaveSettings, SaveFeedback } from './components/ChangeTracker';
+import { useChangeTracker } from './utils/changeTracker';
+import { useAutoSave } from './utils/autoSave';
 import './App.css';
 
 function App() {
-  const { projects, currentProject, loadProjects, isLoading, error } = useProjectStore();
-  const { tables, loadTables } = useTableStore();
+  const { projectId } = useParams<{ projectId: string }>();
+  const { projects, currentProject, loadProjects, loadProject, updateProject, setCurrentProject, isLoading, error } = useProjectStore();
+  const { tables, loadTables, updateTable } = useTableStore();
   const { clearValidations } = useValidationStore();
+  const changeTracker = useChangeTracker();
+  const [saveFeedbackStatus, setSaveFeedbackStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  
+  // 자동 저장 설정
+  const autoSave = useAutoSave({
+    onBeforeSave: () => {
+      setSaveFeedbackStatus('saving');
+      return true;
+    },
+    onAfterSave: () => {
+      setSaveFeedbackStatus('success');
+    }
+  });
 
   useEffect(() => {
     // 앱 시작 시 프로젝트 목록 로드
     loadProjects();
-  }, [loadProjects]);
+    
+    // URL에 projectId가 있으면 해당 프로젝트 로드
+    if (projectId) {
+      loadProject(projectId);
+    }
+  }, [loadProjects, loadProject, projectId]);
 
   useEffect(() => {
     // 현재 프로젝트가 변경되면 테이블 목록 로드
@@ -21,6 +45,40 @@ function App() {
       clearValidations();
     }
   }, [currentProject, loadTables, clearValidations]);
+  
+  // 모든 변경사항 저장
+  const saveAllChanges = async () => {
+    if (!currentProject) return;
+    
+    const state = changeTracker.getState();
+    
+    try {
+      setSaveFeedbackStatus('saving');
+      
+      // 테이블 변경사항 저장
+      for (const tableId of state.pendingChanges.tables) {
+        const table = tables.find(t => t.id === tableId);
+        if (table) {
+          await updateTable(tableId, {
+            name: table.name,
+            description: table.description,
+            positionX: table.positionX,
+            positionY: table.positionY
+          });
+        }
+      }
+      
+      // 모든 변경사항 저장 완료 표시
+      changeTracker.markAsSaved();
+      setSaveFeedbackStatus('success');
+      
+      return true;
+    } catch (error) {
+      console.error('변경사항 저장 중 오류 발생:', error);
+      setSaveFeedbackStatus('error');
+      return false;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -66,6 +124,15 @@ function App() {
                   프로젝트: {currentProject.name}
                 </span>
               )}
+              {currentProject && (
+                <div className="flex items-center space-x-4">
+                  <ChangeIndicator 
+                    onSave={saveAllChanges}
+                    autoSaveInterval={autoSave.state.isEnabled ? autoSave.state.interval : 0}
+                  />
+                  <AutoSaveSettings />
+                </div>
+              )}
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm text-gray-600">연결됨</span>
@@ -74,6 +141,15 @@ function App() {
           </div>
         </div>
       </header>
+      
+      {/* 저장되지 않은 변경사항 경고 다이얼로그 */}
+      <UnsavedChangesDialog />
+      
+      {/* 저장 상태 피드백 */}
+      <SaveFeedback 
+        status={saveFeedbackStatus} 
+        onDismiss={() => setSaveFeedbackStatus('idle')}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!currentProject ? (
@@ -120,10 +196,21 @@ function App() {
           </div>
         ) : (
           <div className="space-y-6">
+            {/* 프로젝트 개요 */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                프로젝트 개요
-              </h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-medium text-gray-900">
+                  프로젝트 개요
+                </h2>
+                <div className="flex space-x-3">
+                  <Link
+                    to={`/projects/${currentProject.id}/export`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    스키마 내보내기
+                  </Link>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
@@ -146,52 +233,19 @@ function App() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
+            {/* 테이블 설계 캔버스 */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="p-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">
-                  테이블 목록
+                  테이블 설계 캔버스
                 </h2>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                  새 테이블 추가
-                </button>
+                <p className="text-sm text-gray-600 mt-1">
+                  드래그 앤 드롭으로 테이블을 배치하고 관계를 설정하세요.
+                </p>
               </div>
-              
-              {tables.length > 0 ? (
-                <div className="grid gap-4">
-                  {tables.map((table) => (
-                    <div
-                      key={table.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-medium text-gray-900">{table.name}</h3>
-                          {table.description && (
-                            <p className="text-sm text-gray-600 mt-1">{table.description}</p>
-                          )}
-                          <div className="flex space-x-4 mt-2 text-xs text-gray-500">
-                            <span>컬럼 {table.columns.length}개</span>
-                            <span>인덱스 {table.indexes.length}개</span>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <button className="text-blue-600 hover:text-blue-800 text-sm">
-                            편집
-                          </button>
-                          <button className="text-red-600 hover:text-red-800 text-sm">
-                            삭제
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <p>아직 생성된 테이블이 없습니다.</p>
-                  <p className="text-sm mt-1">새 테이블을 추가하여 시작하세요.</p>
-                </div>
-              )}
+              <div className="h-[600px]">
+                <TableCanvas />
+              </div>
             </div>
           </div>
         )}
