@@ -142,8 +142,41 @@ class ApiClient {
 
   // 스키마 내보내기 API
   async exportSchema(projectId: string, request: ExportRequest): Promise<ExportResult> {
-    const response = await this.client.post<ApiResponse<ExportResult>>(`/projects/${projectId}/export`, request);
-    return response.data.data;
+    try {
+      const response = await this.client.post<ApiResponse<ExportResult>>(`/projects/${projectId}/export`, request);
+      return response.data.data;
+    } catch (error) {
+      // 백엔드 API가 아직 구현되지 않은 경우 프론트엔드에서 생성
+      console.warn('백엔드 내보내기 API 호출 실패, 프론트엔드에서 생성합니다.', error);
+      
+      // 프로젝트 정보 가져오기
+      const project = await this.getProject(projectId);
+      
+      // SqlGenerator를 사용하여 스키마 생성
+      const { SqlGenerator } = await import('./sqlGenerator');
+      const result = SqlGenerator.exportSchema(
+        project.tables,
+        request.format,
+        request.includeComments,
+        request.includeIndexes,
+        request.includeConstraints
+      );
+      
+      // 파일명 생성
+      let extension = '.sql';
+      switch (request.format) {
+        case 'JSON': extension = '.json'; break;
+        case 'MARKDOWN': extension = '.md'; break;
+        case 'HTML': extension = '.html'; break;
+        case 'CSV': extension = '.csv'; break;
+      }
+      
+      return {
+        content: result.content,
+        filename: `${project.name}_schema${extension}`,
+        mimeType: result.mimeType
+      };
+    }
   }
 }
 
