@@ -1,29 +1,6 @@
 {
   "mcpServers": {
     
-    "Context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
-      ],
-      "env": {},
-      "disabled": false,
-      "autoApprove": []
-    },
-    "googleSearch": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "g-search-mcp"
-      ]
-    },
-    "playwright-stealth": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@executeautomation/playwright-mcp-server"
-      ]
-    }
+    
   }
 }

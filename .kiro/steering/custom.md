@@ -73,3 +73,31 @@ inclusion: always
 - **통합 테스트**: API 엔드포인트 (@SpringBootTest)
 - **E2E 테스트**: 주요 사용자 플로우 (Playwright)
 - **테스트 데이터**: @Sql 스크립트로 일관된 테스트 환경 구성
+
+## E2E 테스트
+너는 MCP를 사용할수 있어
+
+Playwright 사용 예시
+페이지 열기
+{ "tool":"playwright-stealth","parameters":{"action":"playwright_navigate","url":"https://example.com"}} ,
+로그인 버튼 클릭
+{ "tool":"playwright-stealth","parameters":{"action":"playwright_click","selector":"#login-button"}} ,
+검색어 입력 후 엔터
+{ "tool":"playwright-stealth","parameters":{"action":"playwright_fill","selector":"input[name='q']","text":"MCP Server"}} ,
+{ "tool":"playwright-stealth","parameters":{"action":"press","selector":"input[name='q']","key":"Enter"}} ,
+페이지 스크린샷 저장
+{ "tool":"playwright-stealth","parameters":{"action":"playwright_screenshot","path":"search-results.png"}} ,
+콘솔 에러 로그 수집
+{ "tool":"playwright-stealth","parameters":{"action":"playwright_console_logs"}} ,
+네트워크 요청 내역 수집
+{ "tool":"playwright-stealth","parameters":{"action":"getNetworkRequests"}} ,
+JS 평가(페이지 타이틀 가져오기)
+{ "tool":"playwright-stealth","parameters":{"action":"evaluate","expression":"document.title"}} ,
+접근성 스냅샷(구조화된 DOM)
+{ "tool":"playwright-stealth","parameters":{"action":"accessibilitySnapshot"}}
+라이브러리 버전 조회
+{ "tool": "context7", "parameters": {"query": "axios 최신 버전 알려줘"}}
+패키지 목록 검색
+{ "tool": "context7", "parameters": {"query": "lodash 사용법 예시"}}
+
+1. playwright로 접속해 사이트 조사할 때에는 DOM 구조를 먼저 확인한 후, 그에 맞게 클릭, 내용 보기를 진행해줘. 그리고 특정 웹페이지가 나오면 먼저 텍스트 박스와 버튼이나 링크가 있는지 살펴보고 필요하면 이것저것 눌러서 진행해봐.
