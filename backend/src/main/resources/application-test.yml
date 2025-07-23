@@ -1,24 +1,71 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/dbmodeling_test
-    username: ${DB_USERNAME:dbmodeling}
-    password: ${DB_PASSWORD:dbmodeling}
+    username: ${DB_USERNAME:dbmodeling_test}
+    password: ${DB_PASSWORD:dbmodeling_test}
     driver-class-name: org.postgresql.Driver
-    
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 300000
+      connection-timeout: 10000
+      validation-timeout: 3000
+      
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: create-drop # 테스트 시마다 스키마 재생성
+    show-sql: false # 테스트 로그 간소화
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    
-  # H2 자동 설정 비활성화. 비활성화
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
-    
+        format_sql: false
+        use_sql_comments: false
+        jdbc:
+          time_zone: UTC
+          batch_size: 10
+    open-in-view: false
+
+  sql:
+    init:
+      mode: never
+
+  test:
+    database:
+      replace: none # 실제 데이터베이스 사용
+
 logging:
   level:
-    com.dbmodeling: DEBUG
-    org.hibernate.SQL: DEBUG
+    com.dbmodeling: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.transaction: WARN
+    org.springframework.orm.jpa: WARN
+    org.springframework.test: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+app:
+  cors:
+    allowed-origins: 
+      - http://localhost:3000
+  validation:
+    enabled: true
+    strict-mode: true # 테스트에서는 엄격한 검증
+  export:
+    max-file-size: 1MB
+    temp-directory: ${java.io.tmpdir}/dbmodeling-test-exports
