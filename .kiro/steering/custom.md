@@ -2,89 +2,65 @@
 inclusion: always
 ---
 
----
-inclusion: always
----
-
 # MSSQL 데이터베이스 모델링 도구 - 개발 가이드
 
-## 언어 및 설치 정책
-- 모든 응답은 한글로 제공
-- 프로그램 설치 전 기존 설치 상태 및 버전 호환성 확인 필수
+## 프로젝트 규칙
+- 모든 응답과 코멘트는 한글로 작성
+- 설치 전 기존 버전 호환성 확인 필수
+- 코드 작성 시 즉시 실행 가능한 형태로 제공
 
-## 데이터베이스 설계 표준
+## 명명 규칙 (엄격히 준수)
 
-### 명명 규칙
-- **테이블명**: 단수형 PascalCase (`User`, `OrderItem`)
-- **컬럼명**: snake_case (`user_id`, `created_at`)
+### 데이터베이스
+- **테이블**: 단수형 PascalCase (`User`, `OrderItem`)
+- **컬럼**: snake_case (`user_id`, `created_at`)
 - **기본키**: 항상 `id` (BIGINT IDENTITY)
 - **외래키**: `{참조테이블명}_id` 형식
-- **감사 컬럼**: 모든 테이블에 `created_at`, `updated_at` 필수
+- **인덱스**: `IX_{테이블명}_{컬럼명}`
+- **제약조건**: `{타입}_{테이블명}_{컬럼명}`
 
-### MSSQL 특화 규칙
-- **데이터 타입**: `NVARCHAR`, `BIGINT`, `DATETIME2`, `DECIMAL(18,2)` 우선 사용
-- **인덱스**: `IX_{테이블명}_{컬럼명}` (`IX_User_Email`)
-- **제약조건**: `{타입}_{테이블명}_{컬럼명}` (`FK_Order_UserId`, `CK_User_Status`)
-- **클러스터드 인덱스**: 기본키에 자동 적용
+### 코드
+- **Java 클래스**: PascalCase
+- **Java 메서드/변수**: camelCase
+- **TypeScript 컴포넌트**: PascalCase
+- **TypeScript 함수/변수**: camelCase
+- **파일명**: kebab-case (컴포넌트 제외)
 
-## 아키텍처 패턴
+## MSSQL 특화 요구사항
+- 데이터 타입: `NVARCHAR`, `BIGINT`, `DATETIME2`, `DECIMAL(18,2)` 우선
+- 모든 테이블에 `created_at`, `updated_at` 감사 컬럼 필수
+- 클러스터드 인덱스는 기본키에 자동 적용
 
-### 클린 아키텍처 계층
-- **Domain**: 비즈니스 로직, 외부 의존성 없음
-- **Application**: 유스케이스, 도메인 조율
-- **Infrastructure**: 데이터 접근, 외부 통합
-- **Presentation**: API 컨트롤러, DTO
+## 아키텍처 패턴 (Clean Architecture)
+- **Domain**: 순수 비즈니스 로직, 외부 의존성 없음
+- **Application**: 유스케이스 구현, 트랜잭션 관리
+- **Infrastructure**: 데이터 접근, 외부 시스템 연동
+- **Presentation**: REST API, DTO 변환
 
 ### 코드 구성 원칙
 - 기능별 패키지 구조 (계층별보다 우선)
 - 포트-어댑터 패턴으로 의존성 역전
-- 도메인 모델은 순수 Java 객체
-- 애플리케이션 서비스에서 트랜잭션 관리
+- DTO와 도메인 모델 명확히 분리
 
-## API 및 에러 처리
-
-### RESTful API 설계
-- HTTP 상태 코드: 200(성공), 201(생성), 400(잘못된 요청), 404(없음), 500(서버 오류)
-- 에러 응답 형식: `{"error": "message", "code": "ERROR_CODE"}`
-- 요청/응답 DTO와 도메인 모델 분리
-
-### 검증 전략
-- 클라이언트/서버 양쪽 검증 (Bean Validation)
-- 도메인 규칙 위반 시 명확한 비즈니스 예외
+## API 설계 표준
+- HTTP 상태 코드: 200/201/400/404/500 적절히 사용
+- 에러 응답: `{"error": "message", "code": "ERROR_CODE"}`
+- Bean Validation으로 클라이언트/서버 양쪽 검증
 - 글로벌 예외 핸들러로 일관된 응답
 
 ## UI/UX 가이드라인
-- **실시간 피드백**: 빨간색(오류), 노란색(경고), 초록색(성공)
-- **React Flow**: 테이블 노드와 관계선 시각화
-- **즉시 검증**: 입력 시 실시간 명명 규칙 검증
-- **반응형**: Tailwind CSS 활용
+- 실시간 피드백: 빨간색(오류), 노란색(경고), 초록색(성공)
+- React Flow로 테이블 관계 시각화
+- 입력 시 즉시 명명 규칙 검증
+- Tailwind CSS 활용한 반응형 디자인
 
-## 성능 및 보안
-
-### 성능 최적화
+## 성능 및 품질 기준
 - API 응답 시간 500ms 이하 목표
-- JPA N+1 문제 방지 (fetch join, @EntityGraph)
-- 프론트엔드 코드 스플리팅, 지연 로딩
-- 대용량 데이터 페이지네이션
+- JPA N+1 문제 방지 (fetch join, @EntityGraph 활용)
+- 프론트엔드 코드 스플리팅 적용
+- 단위/통합/E2E 테스트 필수
 
-### 보안 요구사항
-- 모든 API 엔드포인트 인증/인가
-- 파라미터화된 쿼리로 SQL 인젝션 방지
-- 민감 정보 로깅 금지
-- CORS 정책 설정
-
-## 테스팅 전략
-- **단위 테스트**: 도메인/서비스 계층 (JUnit 5 + Mockito)
-- **통합 테스트**: API 엔드포인트 (@SpringBootTest)
-- **E2E 테스트**: 주요 사용자 플로우 (Playwright)
-- **테스트 데이터**: @Sql 스크립트 활용
-
-## MCP 도구 활용
-
-### Playwright 웹 테스팅
-- DOM 구조 먼저 확인 후 상호작용
-- 텍스트 박스, 버튼, 링크 우선 탐색
-- 스크린샷, 콘솔 로그, 네트워크 요청 수집 활용
-
-### Context7 라이브러리 조회
-- 최신 버전 확인 및 사용법 예시 제공
+## 개발 도구 활용
+- **테스팅**: JUnit 5 + Mockito (백엔드), Jest + RTL (프론트엔드)
+- **E2E**: Playwright로 주요 플로우 검증
+- **API 문서**: OpenAPI/Swagger 자동 생성
