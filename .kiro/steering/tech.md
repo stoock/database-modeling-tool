@@ -19,7 +19,7 @@
 - **테스팅**: JUnit 5 + Mockito + Spring Boot Test
 
 ## 개발 도구
-- **패키지 매니저**: npm (프론트엔드), Gradle (백엔드)
+- **패키지 매니저**: Yarn (프론트엔드), Gradle (백엔드)
 - **빌드 도구**: Vite (프론트엔드), Spring Boot Gradle Plugin (백엔드)
 - **코드 품질**: ESLint + Prettier (프론트엔드), SpotBugs + Checkstyle (백엔드)
 
@@ -28,19 +28,19 @@
 ### 프론트엔드 개발
 ```bash
 # 의존성 설치
-npm install
+yarn install
 
 # 개발 서버 시작
-npm run dev
+yarn dev
 
 # 테스트 실행
-npm test
+yarn test
 
 # 프로덕션 빌드
-npm run build
+yarn build
 
 # E2E 테스트 실행
-npm run test:e2e
+yarn test:e2e
 ```
 
 ### 백엔드 개발

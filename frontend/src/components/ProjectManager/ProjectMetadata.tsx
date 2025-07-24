@@ -7,9 +7,9 @@ import {
   ClockIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
-import { useProjectStore } from '@/stores/projectStore';
-import { Button } from '@/components/common';
-import type { Project } from '@/types';
+import { useProjectStore } from '../../stores/projectStore';
+import { Button } from '../common';
+import type { Project } from '../../types';
 
 interface ProjectMetadataProps {
   project: Project;

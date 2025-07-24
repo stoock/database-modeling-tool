@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Modal, Button, Input, ErrorMessage } from '@/components/common';
-import { useProjectStore } from '@/stores/projectStore';
-import type { CreateProjectRequest, UpdateProjectRequest, Project, NamingRules } from '@/types';
+import { Modal, Button, Input, ErrorMessage } from '../common';
+import { useProjectStore } from '../../stores/projectStore';
+import type { CreateProjectRequest, UpdateProjectRequest, Project, NamingRules } from '../../types';
 
 interface ProjectCreateModalProps {
   isOpen: boolean;

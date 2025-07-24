@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon, PlusIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
-import { useProjectStore } from '@/stores/projectStore';
+import { useProjectStore } from '../../stores/projectStore';
 import { ProjectCreateModal } from './ProjectCreateModal';
-import type { Project } from '@/types';
+import type { Project } from '../../types';
 
 interface ProjectSelectorProps {
   onProjectSelect?: (project: Project) => void;
