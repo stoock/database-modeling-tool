@@ -1,32 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import Modal from '../common/Modal';
+import { Button, ErrorMessage } from '../common';
 import { useTableStore } from '../../stores/tableStore';
 import { useProjectStore } from '../../stores/projectStore';
 import { useValidationStore } from '../../stores/validationStore';
-import type { Table, UpdateTableRequest } from '../../types';
+import type { Table, UpdateTableRequest, CreateTableRequest } from '../../types';
 
 interface TableEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   table: Table | null;
+  onSuccess?: (table: Table) => void;
+  initialPosition?: { x: number; y: number };
 }
 
 interface TableFormData {
   name: string;
   description: string;
+  positionX: number;
+  positionY: number;
 }
 
 const TableEditModal: React.FC<TableEditModalProps> = ({
   isOpen,
   onClose,
   table,
+  onSuccess,
+  initialPosition = { x: 300, y: 200 },
 }) => {
-  const { updateTable, createTable, isLoading } = useTableStore();
+  const { updateTable, createTable, deleteTable, isLoading } = useTableStore();
   const { currentProject } = useProjectStore();
   const { validateTableName } = useValidationStore();
   
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     register,
@@ -38,6 +48,8 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
     defaultValues: {
       name: '',
       description: '',
+      positionX: initialPosition.x,
+      positionY: initialPosition.y,
     },
   });
 
@@ -49,14 +61,18 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
       reset({
         name: table.name,
         description: table.description || '',
+        positionX: table.positionX,
+        positionY: table.positionY,
       });
     } else {
       reset({
         name: '',
         description: '',
+        positionX: initialPosition.x,
+        positionY: initialPosition.y,
       });
     }
-  }, [table, reset]);
+  }, [table, reset, initialPosition]);
 
   // 실시간 네이밍 규칙 검증
   useEffect(() => {
@@ -71,30 +87,61 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
   const onSubmit = async (data: TableFormData) => {
     if (!currentProject) return;
 
-    const request: UpdateTableRequest = {
-      name: data.name.trim(),
-      description: data.description.trim() || undefined,
-    };
+    setSubmitError(null);
 
-    let success = false;
-
-    if (table) {
-      // 기존 테이블 업데이트
-      const result = await updateTable(table.id, request);
-      success = result !== null;
-    } else {
-      // 새 테이블 생성
-      const result = await createTable(currentProject.id, {
-        ...request,
-        positionX: 300,
-        positionY: 200,
-      });
-      success = result !== null;
+    // 네이밍 규칙 검증
+    if (validationErrors.length > 0) {
+      setSubmitError('네이밍 규칙을 준수해야 합니다.');
+      return;
     }
 
-    if (success) {
-      onClose();
-      reset();
+    try {
+      let result: Table | null = null;
+
+      if (table) {
+        // 기존 테이블 업데이트
+        const request: UpdateTableRequest = {
+          name: data.name.trim(),
+          description: data.description.trim() || undefined,
+          positionX: data.positionX,
+          positionY: data.positionY,
+        };
+        result = await updateTable(table.id, request);
+      } else {
+        // 새 테이블 생성
+        const request: CreateTableRequest = {
+          name: data.name.trim(),
+          description: data.description.trim() || undefined,
+          positionX: data.positionX,
+          positionY: data.positionY,
+        };
+        result = await createTable(currentProject.id, request);
+      }
+
+      if (result) {
+        onSuccess?.(result);
+        handleClose();
+      }
+    } catch (error) {
+      setSubmitError(
+        table 
+          ? '테이블 수정 중 오류가 발생했습니다.' 
+          : '테이블 생성 중 오류가 발생했습니다.'
+      );
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!table) return;
+
+    try {
+      const success = await deleteTable(table.id);
+      if (success) {
+        setShowDeleteConfirm(false);
+        handleClose();
+      }
+    } catch (error) {
+      setSubmitError('테이블 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -102,6 +149,8 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
     onClose();
     reset();
     setValidationErrors([]);
+    setSubmitError(null);
+    setShowDeleteConfirm(false);
   };
 
   const isEdit = !!table;
@@ -173,24 +222,199 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
           )}
         </div>
 
+        {/* 위치 정보 */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="positionX" className="block text-sm font-medium text-gray-700">
+              X 좌표
+            </label>
+            <input
+              type="number"
+              id="positionX"
+              {...register('positionX', {
+                required: 'X 좌표는 필수입니다.',
+                min: {
+                  value: 0,
+                  message: 'X 좌표는 0 이상이어야 합니다.',
+                },
+                max: {
+                  value: 5000,
+                  message: 'X 좌표는 5000 이하여야 합니다.',
+                },
+              })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              placeholder="0"
+            />
+            {errors.positionX && (
+              <p className="mt-1 text-sm text-red-600">{errors.positionX.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="positionY" className="block text-sm font-medium text-gray-700">
+              Y 좌표
+            </label>
+            <input
+              type="number"
+              id="positionY"
+              {...register('positionY', {
+                required: 'Y 좌표는 필수입니다.',
+                min: {
+                  value: 0,
+                  message: 'Y 좌표는 0 이상이어야 합니다.',
+                },
+                max: {
+                  value: 5000,
+                  message: 'Y 좌표는 5000 이하여야 합니다.',
+                },
+              })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              placeholder="0"
+            />
+            {errors.positionY && (
+              <p className="mt-1 text-sm text-red-600">{errors.positionY.message}</p>
+            )}
+          </div>
+        </div>
+
+        {/* 테이블 정보 (편집 모드일 때만) */}
+        {isEdit && table && (
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <h4 className="text-sm font-medium text-gray-900">테이블 정보</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">컬럼 수:</span>
+                <span className="ml-2 font-medium">{table.columns?.length || 0}개</span>
+              </div>
+              <div>
+                <span className="text-gray-500">인덱스 수:</span>
+                <span className="ml-2 font-medium">{table.indexes?.length || 0}개</span>
+              </div>
+              <div>
+                <span className="text-gray-500">생성일:</span>
+                <span className="ml-2 font-medium">
+                  {new Date(table.createdAt).toLocaleDateString('ko-KR')}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">수정일:</span>
+                <span className="ml-2 font-medium">
+                  {new Date(table.updatedAt).toLocaleDateString('ko-KR')}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 에러 메시지 */}
+        {submitError && (
+          <ErrorMessage message={submitError} />
+        )}
+
+        {/* 검증 상태 표시 */}
+        {watchedName && (
+          <div className="flex items-center space-x-2 text-sm">
+            {validationErrors.length === 0 ? (
+              <>
+                <CheckCircleIcon className="w-4 h-4 text-green-500" />
+                <span className="text-green-600">네이밍 규칙을 준수합니다</span>
+              </>
+            ) : (
+              <>
+                <ExclamationTriangleIcon className="w-4 h-4 text-red-500" />
+                <span className="text-red-600">네이밍 규칙 위반</span>
+              </>
+            )}
+          </div>
+        )}
+
         {/* 버튼 */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            취소
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading || validationErrors.length > 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? '저장 중...' : isEdit ? '수정' : '생성'}
-          </button>
+        <div className="flex justify-between pt-4 border-t border-gray-200">
+          <div>
+            {isEdit && (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isLoading}
+              >
+                테이블 삭제
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex space-x-3">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              취소
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading || validationErrors.length > 0}
+            >
+              {isLoading ? '저장 중...' : isEdit ? '수정' : '생성'}
+            </Button>
+          </div>
         </div>
       </form>
+
+      {/* 삭제 확인 다이얼로그 */}
+      {showDeleteConfirm && (
+        <Modal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          title="테이블 삭제 확인"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start space-x-3">
+              <ExclamationTriangleIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-gray-900">
+                  테이블 <strong>"{table?.name}"</strong>을(를) 정말 삭제하시겠습니까?
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  이 작업은 되돌릴 수 없으며, 테이블의 모든 컬럼과 인덱스가 함께 삭제됩니다.
+                </p>
+                {table?.columns && table.columns.length > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 rounded-md">
+                    <p className="text-sm text-yellow-800">
+                      <strong>삭제될 데이터:</strong>
+                    </p>
+                    <ul className="text-sm text-yellow-700 mt-1 list-disc list-inside">
+                      <li>컬럼 {table.columns.length}개</li>
+                      <li>인덱스 {table.indexes?.length || 0}개</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isLoading}
+              >
+                취소
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={handleDelete}
+                disabled={isLoading}
+              >
+                {isLoading ? '삭제 중...' : '삭제'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </Modal>
   );
 };

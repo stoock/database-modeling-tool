@@ -119,6 +119,12 @@ class ApiClient {
     await this.client.delete(`/columns/${id}`);
   }
 
+  // 컬럼 순서 일괄 업데이트
+  async updateColumnOrder(tableId: string, updates: { columnId: string; orderIndex: number }[]): Promise<Column[]> {
+    const response = await this.client.put<ApiResponse<Column[]>>(`/tables/${tableId}/columns/reorder`, { updates });
+    return response.data.data;
+  }
+
   // 인덱스 관련 API
   async createIndex(tableId: string, request: CreateIndexRequest): Promise<Index> {
     const response = await this.client.post<ApiResponse<Index>>(`/tables/${tableId}/indexes`, request);

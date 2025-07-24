@@ -314,28 +314,52 @@ export const useTableStore = create<TableState>()(
       // 컬럼 순서 변경
       reorderColumns: async (tableId: string, columnIds: string[]) => {
         try {
-          // 각 컬럼의 orderIndex를 업데이트
-          const promises = columnIds.map((columnId, index) => 
-            apiClient.updateColumn(columnId, { orderIndex: index })
-          );
-          
-          const updatedColumns = await Promise.all(promises);
-          
-          set((state) => {
-            const tableIndex = state.tables.findIndex(t => t.id === tableId);
-            if (tableIndex !== -1) {
-              state.tables[tableIndex].columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
-            }
+          // 배치 업데이트 API 사용 (백엔드에서 지원하는 경우)
+          try {
+            const updates = columnIds.map((columnId, index) => ({
+              columnId,
+              orderIndex: index
+            }));
             
-            if (state.selectedTable?.id === tableId) {
-              state.selectedTable.columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
-            }
-          });
+            const updatedColumns = await apiClient.updateColumnOrder(tableId, updates);
+            
+            set((state) => {
+              const tableIndex = state.tables.findIndex(t => t.id === tableId);
+              if (tableIndex !== -1) {
+                state.tables[tableIndex].columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
+              }
+              
+              if (state.selectedTable?.id === tableId) {
+                state.selectedTable.columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
+              }
+            });
+          } catch (batchError) {
+            // 배치 API가 지원되지 않는 경우 개별 업데이트로 폴백
+            console.warn('배치 업데이트 API 미지원, 개별 업데이트로 처리합니다.');
+            
+            const promises = columnIds.map((columnId, index) => 
+              apiClient.updateColumn(columnId, { orderIndex: index })
+            );
+            
+            const updatedColumns = await Promise.all(promises);
+            
+            set((state) => {
+              const tableIndex = state.tables.findIndex(t => t.id === tableId);
+              if (tableIndex !== -1) {
+                state.tables[tableIndex].columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
+              }
+              
+              if (state.selectedTable?.id === tableId) {
+                state.selectedTable.columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
+              }
+            });
+          }
         } catch (error) {
           const apiError = handleApiError(error);
           set((state) => {
             state.error = apiError.error;
           });
+          throw error; // 에러를 다시 던져서 컴포넌트에서 처리할 수 있도록 함
         }
       },
 

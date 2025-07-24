@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProjectStore } from '@/stores/projectStore';
 import { Button } from '@/components/common';
+import { ProjectCreateModal } from './ProjectCreateModal';
 import { formatDate } from '@/utils';
 import type { Project } from '@/types';
 
 interface ProjectListProps {
-  onCreateProject: () => void;
+  onProjectSelect?: (project: Project) => void;
 }
 
-export const ProjectList: React.FC<ProjectListProps> = ({ onCreateProject }) => {
+export const ProjectList: React.FC<ProjectListProps> = ({ onProjectSelect }) => {
   const { projects, setCurrentProject, deleteProject, isLoading } = useProjectStore();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleSelectProject = (project: Project) => {
     setCurrentProject(project);
+    onProjectSelect?.(project);
+  };
+
+  const handleCreateProject = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleProjectCreated = (project: Project) => {
+    setCurrentProject(project);
+    onProjectSelect?.(project);
   };
 
   const handleDeleteProject = async (project: Project, e: React.MouseEvent) => {
@@ -33,7 +45,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onCreateProject }) => 
           <p className="text-gray-600 mb-8">
             데이터베이스 모델링을 시작하려면 프로젝트가 필요합니다.
           </p>
-          <Button onClick={onCreateProject} size="lg">
+          <Button onClick={handleCreateProject} size="lg">
             새 프로젝트 생성
           </Button>
         </div>
@@ -45,7 +57,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onCreateProject }) => 
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">프로젝트 목록</h2>
-        <Button onClick={onCreateProject}>
+        <Button onClick={handleCreateProject}>
           새 프로젝트 생성
         </Button>
       </div>
@@ -109,6 +121,13 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onCreateProject }) => 
           </div>
         ))}
       </div>
+
+      {/* 프로젝트 생성 모달 */}
+      <ProjectCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={handleProjectCreated}
+      />
     </div>
   );
 };

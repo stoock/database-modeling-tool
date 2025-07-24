@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from '../common/Modal';
+import Button from '../common/Button';
 import { useTableStore } from '../../stores/tableStore';
 import { useProjectStore } from '../../stores/projectStore';
 import { useValidationStore } from '../../stores/validationStore';
-import type { CreateColumnRequest, MSSQLDataType } from '../../types';
+import type { CreateColumnRequest, MSSQLDataType, Column } from '../../types';
 
 interface ColumnAddModalProps {
   isOpen: boolean;
   onClose: () => void;
   tableId: string | null;
+  copyFromColumn?: Column | null; // 복사할 컬럼 정보
 }
 
 interface ColumnFormData {
@@ -40,6 +42,7 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
   isOpen,
   onClose,
   tableId,
+  copyFromColumn,
 }) => {
   const { createColumn, isLoading, getTableById } = useTableStore();
   const { currentProject } = useProjectStore();
@@ -47,15 +50,26 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
   
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<ColumnFormData>({
-    defaultValues: {
+  const getDefaultValues = (): ColumnFormData => {
+    if (copyFromColumn) {
+      // 복사할 컬럼이 있는 경우 해당 컬럼의 값을 기본값으로 사용
+      return {
+        name: `${copyFromColumn.name}_copy`,
+        description: copyFromColumn.description || '',
+        dataType: copyFromColumn.dataType,
+        maxLength: copyFromColumn.maxLength || null,
+        precision: copyFromColumn.precision || null,
+        scale: copyFromColumn.scale || null,
+        isNullable: copyFromColumn.isNullable,
+        isPrimaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
+        isIdentity: false, // 복사된 컬럼은 자동증가가 될 수 없음
+        identitySeed: copyFromColumn.identitySeed || 1,
+        identityIncrement: copyFromColumn.identityIncrement || 1,
+        defaultValue: copyFromColumn.defaultValue || '',
+      };
+    }
+    
+    return {
       name: '',
       description: '',
       dataType: 'VARCHAR',
@@ -68,7 +82,18 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
       identitySeed: 1,
       identityIncrement: 1,
       defaultValue: '',
-    },
+    };
+  };
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<ColumnFormData>({
+    defaultValues: getDefaultValues(),
   });
 
   const watchedName = watch('name');
@@ -134,9 +159,18 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
     }
   };
 
+  // 모달이 열릴 때 폼 초기화
+  React.useEffect(() => {
+    if (isOpen) {
+      const defaultValues = getDefaultValues();
+      reset(defaultValues);
+      setValidationErrors([]);
+    }
+  }, [isOpen, copyFromColumn, reset]);
+
   const handleClose = () => {
     onClose();
-    reset();
+    reset(getDefaultValues());
     setValidationErrors([]);
   };
 
@@ -396,20 +430,20 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
 
         {/* 버튼 */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={isLoading}
           >
             취소
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isLoading || validationErrors.length > 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? '추가 중...' : '컬럼 추가'}
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>
