@@ -8,7 +8,7 @@ import {
 import { useValidationStore } from '../../stores/validationStore';
 import { useTableStore } from '../../stores/tableStore';
 import ValidationResults from './ValidationResults';
-import NamingRulesPanel from './NamingRules';
+import NamingRulesPanel from './NamingRulesPanel';
 import ValidationGuide from './ValidationGuide';
 
 interface ValidationDashboardProps {

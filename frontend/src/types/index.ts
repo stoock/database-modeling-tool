@@ -130,12 +130,23 @@ export interface UpdateIndexRequest {
 
 // 네이밍 규칙 타입
 export interface NamingRules {
-  tablePrefix?: string;
-  tableSuffix?: string;
-  tablePattern?: string;
-  columnPattern?: string;
-  indexPattern?: string;
-  enforceCase?: CaseType;
+  tableNamePattern?: string;
+  tableNameCase?: CaseType;
+  tableNamePrefix?: string;
+  tableNameSuffix?: string;
+  columnNamePattern?: string;
+  columnNameCase?: CaseType;
+  columnNamePrefix?: string;
+  columnNameSuffix?: string;
+  indexNamePattern?: string;
+  indexNameCase?: CaseType;
+  indexNamePrefix?: string;
+  indexNameSuffix?: string;
+  primaryKeyPattern?: string;
+  foreignKeyPattern?: string;
+  uniqueConstraintPattern?: string;
+  checkConstraintPattern?: string;
+  reservedWords?: string[];
 }
 
 // 검증 관련 타입
@@ -221,7 +232,7 @@ export type IndexType = 'CLUSTERED' | 'NONCLUSTERED';
 
 export type SortOrder = 'ASC' | 'DESC';
 
-export type CaseType = 'UPPER' | 'LOWER' | 'PASCAL' | 'SNAKE';
+export type CaseType = 'PASCAL_CASE' | 'CAMEL_CASE' | 'SNAKE_CASE' | 'KEBAB_CASE' | 'UPPER_CASE' | 'LOWER_CASE';
 
 export type ExportFormat = 'SQL' | 'MARKDOWN' | 'HTML' | 'JSON' | 'CSV';
 
