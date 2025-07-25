@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   ChartBarIcon, 
   AdjustmentsHorizontalIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import { useValidationStore } from '../../stores/validationStore';
 import { useTableStore } from '../../stores/tableStore';
 import ValidationResults from './ValidationResults';
 import NamingRulesPanel from './NamingRules';
+import ValidationGuide from './ValidationGuide';
 
 interface ValidationDashboardProps {
   projectId: string;
@@ -19,7 +21,7 @@ const ValidationDashboard: React.FC<ValidationDashboardProps> = ({
   const { validateProject, validationResult, isValidating } = useValidationStore();
   const { tables } = useTableStore();
   
-  const [activeTab, setActiveTab] = useState<'results' | 'rules'>('results');
+  const [activeTab, setActiveTab] = useState<'results' | 'rules' | 'guide'>('results');
   const [autoRefresh, setAutoRefresh] = useState(false);
   
   // 초기 검증 실행
@@ -28,7 +30,7 @@ const ValidationDashboard: React.FC<ValidationDashboardProps> = ({
   }, [projectId, validateProject]);
   
   // 탭 전환 처리
-  const handleTabChange = (tab: 'results' | 'rules') => {
+  const handleTabChange = (tab: 'results' | 'rules' | 'guide') => {
     setActiveTab(tab);
   };
   
@@ -96,14 +98,27 @@ const ValidationDashboard: React.FC<ValidationDashboardProps> = ({
               <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
               네이밍 규칙 설정
             </button>
+            <button
+              onClick={() => handleTabChange('guide')}
+              className={`flex items-center px-6 py-3 text-sm font-medium border-b-2 ${
+                activeTab === 'guide'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <QuestionMarkCircleIcon className="h-5 w-5 mr-2" />
+              해결 가이드
+            </button>
           </div>
         </div>
         
         <div className="p-6">
           {activeTab === 'results' ? (
             <ValidationResults projectId={projectId} autoRefresh={autoRefresh} />
-          ) : (
+          ) : activeTab === 'rules' ? (
             <NamingRulesPanel projectId={projectId} />
+          ) : (
+            <ValidationGuide />
           )}
         </div>
       </div>

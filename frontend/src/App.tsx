@@ -14,7 +14,7 @@ import './App.css';
 
 function App() {
   const { projectId } = useParams<{ projectId: string }>();
-  const { projects, currentProject, loadProjects, loadProject, updateProject, deleteProject, setCurrentProject, isLoading, error, clearError } = useProjectStore();
+  const { projects, currentProject, loadProjects, loadProject, deleteProject, setCurrentProject, isLoading, error, clearError } = useProjectStore();
   const { tables, loadTables, updateTable } = useTableStore();
   const { clearValidations } = useValidationStore();
   const changeTracker = useChangeTracker();
@@ -93,7 +93,7 @@ function App() {
   };
 
   // 모든 변경사항 저장
-  const saveAllChanges = async () => {
+  const saveAllChanges = async (): Promise<void> => {
     if (!currentProject) return;
     
     const state = changeTracker.getState();
@@ -117,12 +117,9 @@ function App() {
       // 모든 변경사항 저장 완료 표시
       changeTracker.markAsSaved();
       setSaveFeedbackStatus('success');
-      
-      return true;
     } catch (error) {
       console.error('변경사항 저장 중 오류 발생:', error);
       setSaveFeedbackStatus('error');
-      return false;
     }
   };
 
