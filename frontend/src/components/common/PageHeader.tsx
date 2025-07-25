@@ -14,32 +14,40 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   description,
   backLink,
-  backText = '돌아가기',
+  backText = '뒤로',
   actions
 }) => {
   return (
-    <div className="border-b border-gray-200 pb-5">
-      {backLink && (
-        <Link
-          to={backLink}
-          className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 mb-4"
-        >
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          {backText}
-        </Link>
-      )}
-      
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-          {description && (
-            <p className="mt-2 text-sm text-gray-500">{description}</p>
+    <div className="bg-white shadow">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="py-6">
+          {backLink && (
+            <div className="mb-4">
+              <Link
+                to={backLink}
+                className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeftIcon className="w-4 h-4 mr-1" />
+                {backText}
+              </Link>
+            </div>
           )}
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              {description && (
+                <p className="mt-1 text-sm text-gray-600">{description}</p>
+              )}
+            </div>
+            
+            {actions && (
+              <div className="flex items-center space-x-3">
+                {actions}
+              </div>
+            )}
+          </div>
         </div>
-        
-        {actions && (
-          <div className="flex space-x-3">{actions}</div>
-        )}
       </div>
     </div>
   );
