@@ -1,6 +1,17 @@
-# Database Modeling Tool - 개발 환경 시작 스크립트 (PowerShell)
+# Database Modeling Tool - 개발 환경 시작 스크립트 (PowerShell for Windows 11 + Podman)
 
 Write-Host "🚀 Database Modeling Tool 개발 환경을 시작합니다..." -ForegroundColor Green
+Write-Host "💻 Windows 11 + Podman 환경" -ForegroundColor Cyan
+
+# Podman 설치 확인
+try {
+    $podmanVersion = podman --version
+    Write-Host "✅ Podman 확인: $podmanVersion" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Podman이 설치되지 않았습니다. 다음 명령어로 설치하세요:" -ForegroundColor Red
+    Write-Host "   winget install RedHat.Podman" -ForegroundColor Yellow
+    exit 1
+}
 
 # 환경 변수 로드
 if (Test-Path ".env.dev") {
@@ -14,46 +25,140 @@ if (Test-Path ".env.dev") {
     Write-Host "⚠️  .env.dev 파일이 없습니다. 기본 설정을 사용합니다." -ForegroundColor Yellow
 }
 
-# Docker 컨테이너 시작
-Write-Host "🐳 Docker 컨테이너를 시작합니다..." -ForegroundColor Cyan
-docker-compose up -d postgres-dev pgadmin
+# Podman 네트워크 생성 (존재하지 않는 경우)
+Write-Host "🌐 Podman 네트워크를 확인합니다..." -ForegroundColor Cyan
+$networkExists = podman network ls --format "{{.Name}}" | Select-String -Pattern "dbmodeling-network" -Quiet
+if (-not $networkExists) {
+    Write-Host "   네트워크 생성 중..." -ForegroundColor Gray
+    podman network create dbmodeling-network
+    Write-Host "✅ 네트워크 'dbmodeling-network' 생성 완료" -ForegroundColor Green
+} else {
+    Write-Host "✅ 네트워크 'dbmodeling-network' 이미 존재" -ForegroundColor Green
+}
+
+# PostgreSQL 컨테이너 시작
+Write-Host "🐘 PostgreSQL 컨테이너를 시작합니다..." -ForegroundColor Cyan
+$postgresRunning = podman ps --format "{{.Names}}" | Select-String -Pattern "dbmodeling-postgres-dev" -Quiet
+if (-not $postgresRunning) {
+    podman run -d `
+        --name dbmodeling-postgres-dev `
+        --network dbmodeling-network `
+        -p 5432:5432 `
+        -e POSTGRES_DB=dbmodeling_dev `
+        -e POSTGRES_USER=postgres `
+        -e POSTGRES_PASSWORD=postgres `
+        -e POSTGRES_INITDB_ARGS="--encoding=UTF-8 --locale=C" `
+        -v dbmodeling-postgres-data:/var/lib/postgresql/data `
+        postgres:15-alpine
+    
+    Write-Host "✅ PostgreSQL 컨테이너 시작 완료" -ForegroundColor Green
+} else {
+    Write-Host "✅ PostgreSQL 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
+}
+
+# pgAdmin 컨테이너 시작
+Write-Host "🔧 pgAdmin 컨테이너를 시작합니다..." -ForegroundColor Cyan
+$pgadminRunning = podman ps --format "{{.Names}}" | Select-String -Pattern "dbmodeling-pgadmin-dev" -Quiet
+if (-not $pgadminRunning) {
+    podman run -d `
+        --name dbmodeling-pgadmin-dev `
+        --network dbmodeling-network `
+        -p 5050:80 `
+        -e PGADMIN_DEFAULT_EMAIL=admin@dbmodeling.com `
+        -e PGADMIN_DEFAULT_PASSWORD=admin123 `
+        -e PGADMIN_CONFIG_SERVER_MODE=False `
+        -v dbmodeling-pgadmin-data:/var/lib/pgadmin `
+        dpage/pgadmin4:latest
+    
+    Write-Host "✅ pgAdmin 컨테이너 시작 완료" -ForegroundColor Green
+} else {
+    Write-Host "✅ pgAdmin 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
+}
 
 # 데이터베이스 연결 대기
 Write-Host "⏳ 데이터베이스 연결을 기다립니다..." -ForegroundColor Yellow
-$timeout = 30
+$timeout = 60
 $counter = 0
 
 do {
     if ($counter -ge $timeout) {
         Write-Host "❌ 데이터베이스 연결 시간 초과" -ForegroundColor Red
+        Write-Host "   컨테이너 로그를 확인하세요: podman logs dbmodeling-postgres-dev" -ForegroundColor Yellow
         exit 1
     }
     
     Write-Host "   데이터베이스 연결 대기 중... ($counter/$timeout)" -ForegroundColor Gray
-    Start-Sleep -Seconds 1
-    $counter++
+    Start-Sleep -Seconds 2
+    $counter += 2
     
-    $result = docker exec dbmodeling-postgres-dev pg_isready -U postgres -d dbmodeling_dev 2>$null
-} while ($LASTEXITCODE -ne 0)
+    try {
+        $result = podman exec dbmodeling-postgres-dev pg_isready -U postgres -d dbmodeling_dev 2>$null
+        $isReady = $LASTEXITCODE -eq 0
+    } catch {
+        $isReady = $false
+    }
+} while (-not $isReady)
 
 Write-Host "✅ 데이터베이스가 준비되었습니다!" -ForegroundColor Green
 
+# 테스트 데이터베이스도 생성
+Write-Host "🧪 테스트 데이터베이스를 생성합니다..." -ForegroundColor Cyan
+try {
+    podman exec dbmodeling-postgres-dev psql -U postgres -c "CREATE DATABASE dbmodeling_test;" 2>$null
+    Write-Host "✅ 테스트 데이터베이스 생성 완료" -ForegroundColor Green
+} catch {
+    Write-Host "ℹ️  테스트 데이터베이스가 이미 존재합니다" -ForegroundColor Yellow
+}
+
+# 백엔드 디렉토리로 이동
+if (-not (Test-Path "backend")) {
+    Write-Host "❌ backend 디렉토리를 찾을 수 없습니다. 프로젝트 루트에서 실행하세요." -ForegroundColor Red
+    exit 1
+}
+
+Set-Location backend
+
+# Maven Wrapper 실행 권한 확인 (Windows에서는 자동으로 실행 가능)
+if (-not (Test-Path "mvnw.cmd")) {
+    Write-Host "❌ Maven Wrapper를 찾을 수 없습니다." -ForegroundColor Red
+    exit 1
+}
+
 # Flyway 마이그레이션 실행
 Write-Host "🔄 데이터베이스 마이그레이션을 실행합니다..." -ForegroundColor Cyan
-Set-Location backend
-& .\mvnw.cmd flyway:migrate `
-    "-Dflyway.url=jdbc:postgresql://localhost:5432/dbmodeling_dev" `
-    "-Dflyway.user=postgres" `
-    "-Dflyway.password=postgres"
+try {
+    & .\mvnw.cmd flyway:migrate `
+        "-Dflyway.url=jdbc:postgresql://localhost:5432/dbmodeling_dev" `
+        "-Dflyway.user=postgres" `
+        "-Dflyway.password=postgres" `
+        "-Dflyway.locations=classpath:db/migration"
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ 데이터베이스 마이그레이션 완료" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️  마이그레이션에서 경고가 발생했지만 계속 진행합니다" -ForegroundColor Yellow
+    }
+} catch {
+    Write-Host "❌ 마이그레이션 실행 중 오류 발생: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "   수동으로 마이그레이션을 실행하세요." -ForegroundColor Yellow
+}
 
-# Spring Boot 애플리케이션 시작
-Write-Host "🌱 Spring Boot 애플리케이션을 시작합니다..." -ForegroundColor Green
-& .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"
-
-Write-Host "🎉 개발 환경이 성공적으로 시작되었습니다!" -ForegroundColor Green
+Write-Host ""
+Write-Host "🎉 개발 환경 설정이 완료되었습니다!" -ForegroundColor Green
 Write-Host ""
 Write-Host "📍 접속 정보:" -ForegroundColor White
-Write-Host "   - 백엔드 API: http://localhost:8080/api" -ForegroundColor Cyan
-Write-Host "   - Swagger UI: http://localhost:8080/api/swagger-ui.html" -ForegroundColor Cyan
+Write-Host "   - PostgreSQL: localhost:5432 (postgres/postgres)" -ForegroundColor Cyan
 Write-Host "   - pgAdmin: http://localhost:5050 (admin@dbmodeling.com / admin123)" -ForegroundColor Cyan
+Write-Host "   - 개발 DB: dbmodeling_dev" -ForegroundColor Cyan
+Write-Host "   - 테스트 DB: dbmodeling_test" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "🚀 다음 단계:" -ForegroundColor White
+Write-Host "   1. 백엔드 시작: .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev" -ForegroundColor Yellow
+Write-Host "   2. 프론트엔드 시작: cd ..\frontend && yarn dev" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "🛠️  유용한 명령어:" -ForegroundColor White
+Write-Host "   - 컨테이너 상태 확인: podman ps" -ForegroundColor Gray
+Write-Host "   - 컨테이너 로그 확인: podman logs dbmodeling-postgres-dev" -ForegroundColor Gray
+Write-Host "   - 컨테이너 중지: podman stop dbmodeling-postgres-dev dbmodeling-pgadmin-dev" -ForegroundColor Gray
+Write-Host "   - 컨테이너 제거: podman rm dbmodeling-postgres-dev dbmodeling-pgadmin-dev" -ForegroundColor Gray
 Write-Host ""
