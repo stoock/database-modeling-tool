@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -41,7 +41,7 @@ interface TableCanvasProps {
   className?: string;
 }
 
-const TableCanvas: React.FC<TableCanvasProps> = ({ className = '' }) => {
+const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
   const { 
     tables, 
     selectedTable, 
@@ -79,8 +79,8 @@ const TableCanvas: React.FC<TableCanvasProps> = ({ className = '' }) => {
     tableId: string | null;
   }>({ isOpen: false, tableId: null });
 
-  // 테이블 데이터를 React Flow 노드로 변환
-  const convertTablesToNodes = useCallback((tables: Table[]): Node<TableNodeData>[] => {
+  // 테이블 데이터를 React Flow 노드로 변환 (메모이제이션)
+  const convertTablesToNodes = useMemo((): Node<TableNodeData>[] => {
     return tables.map((table) => ({
       id: table.id,
       type: 'tableNode',
@@ -92,10 +92,10 @@ const TableCanvas: React.FC<TableCanvasProps> = ({ className = '' }) => {
       draggable: true,
       selectable: true,
     }));
-  }, [selectedTable]);
+  }, [tables, selectedTable?.id]);
 
-  // 테이블 관계를 React Flow 엣지로 변환
-  const convertRelationshipsToEdges = useCallback((tables: Table[]): Edge[] => {
+  // 테이블 관계를 React Flow 엣지로 변환 (메모이제이션)
+  const convertRelationshipsToEdges = useMemo((): Edge[] => {
     const edges: Edge[] = [];
     
     // 현재는 예시 관계만 표시 (실제로는 외래키 관계를 기반으로 구현)
@@ -124,16 +124,13 @@ const TableCanvas: React.FC<TableCanvasProps> = ({ className = '' }) => {
     }
     
     return edges;
-  }, []);
+  }, [tables]);
 
   // 테이블 데이터가 변경될 때 노드 업데이트
   useEffect(() => {
-    const newNodes = convertTablesToNodes(tables);
-    const newEdges = convertRelationshipsToEdges(tables);
-    
-    setNodes(newNodes);
-    setEdges(newEdges);
-  }, [tables, convertTablesToNodes, convertRelationshipsToEdges, setNodes, setEdges]);
+    setNodes(convertTablesToNodes);
+    setEdges(convertRelationshipsToEdges);
+  }, [convertTablesToNodes, convertRelationshipsToEdges, setNodes, setEdges]);
 
   // 프로젝트가 변경될 때 테이블 로드
   useEffect(() => {
@@ -390,6 +387,8 @@ const TableCanvas: React.FC<TableCanvasProps> = ({ className = '' }) => {
       />
     </div>
   );
-};
+});
+
+TableCanvas.displayName = 'TableCanvas';
 
 export default TableCanvas;

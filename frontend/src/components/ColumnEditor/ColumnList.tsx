@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import type { Column } from '../../types';
 import { 
   PencilIcon, 
@@ -28,6 +28,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import VirtualList from '../common/VirtualList';
 
 interface ColumnListProps {
   columns: Column[];
@@ -56,7 +57,7 @@ interface SortableColumnItemProps {
   canMoveDown: boolean;
 }
 
-const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
+const SortableColumnItem: React.FC<SortableColumnItemProps> = memo(({
   column,
   isSelected,
   onSelect,
@@ -83,7 +84,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const getDataTypeDisplay = (column: Column): string => {
+  const dataTypeDisplay = useMemo(() => {
     const { dataType, maxLength, precision, scale } = column;
     
     switch (dataType) {
@@ -100,9 +101,9 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
       default:
         return dataType;
     }
-  };
+  }, [column.dataType, column.maxLength, column.precision, column.scale]);
 
-  const getColumnBadges = (column: Column) => {
+  const columnBadges = useMemo(() => {
     const badges = [];
     
     if (column.isPrimaryKey) {
@@ -130,7 +131,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
     }
     
     return badges;
-  };
+  }, [column.isPrimaryKey, column.isIdentity, column.isNullable]);
 
   return (
     <div
@@ -161,10 +162,10 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
                 {column.name}
               </h4>
               <span className="text-sm text-gray-500">
-                {getDataTypeDisplay(column)}
+                {dataTypeDisplay}
               </span>
               <div className="flex space-x-1">
-                {getColumnBadges(column)}
+                {columnBadges}
               </div>
             </div>
             
@@ -254,9 +255,11 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
       </div>
     </div>
   );
-};
+});
 
-const ColumnList: React.FC<ColumnListProps> = ({
+SortableColumnItem.displayName = 'SortableColumnItem';
+
+const ColumnList: React.FC<ColumnListProps> = memo(({
   columns,
   selectedColumnId,
   onSelectColumn,
@@ -274,9 +277,12 @@ const ColumnList: React.FC<ColumnListProps> = ({
     })
   );
 
-  const sortedColumns = [...columns].sort((a, b) => a.orderIndex - b.orderIndex);
+  const sortedColumns = useMemo(() => 
+    [...columns].sort((a, b) => a.orderIndex - b.orderIndex),
+    [columns]
+  );
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id && over?.id) {
@@ -293,7 +299,7 @@ const ColumnList: React.FC<ColumnListProps> = ({
         onReorderColumns(updatedColumns);
       }
     }
-  };
+  }, [sortedColumns, onReorderColumns]);
 
   return (
     <div className="bg-white shadow rounded-lg">
@@ -325,30 +331,59 @@ const ColumnList: React.FC<ColumnListProps> = ({
             onDragEnd={handleDragEnd}
           >
             <SortableContext items={sortedColumns.map(col => col.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2">
-                {sortedColumns.map((column, index) => (
-                  <SortableColumnItem
-                    key={column.id}
-                    column={column}
-                    index={index}
-                    isSelected={selectedColumnId === column.id}
-                    onSelect={onSelectColumn}
-                    onEdit={onEditColumn}
-                    onDelete={onDeleteColumn}
-                    onDuplicate={onDuplicateColumn}
-                    onMoveUp={() => onMoveColumn(column.id, 'up')}
-                    onMoveDown={() => onMoveColumn(column.id, 'down')}
-                    canMoveUp={index > 0}
-                    canMoveDown={index < sortedColumns.length - 1}
-                  />
-                ))}
-              </div>
+              {sortedColumns.length > 50 ? (
+                // 대량 데이터의 경우 가상 스크롤링 사용
+                <VirtualList
+                  items={sortedColumns}
+                  itemHeight={120}
+                  containerHeight={600}
+                  renderItem={(column, index) => (
+                    <SortableColumnItem
+                      key={column.id}
+                      column={column}
+                      index={index}
+                      isSelected={selectedColumnId === column.id}
+                      onSelect={onSelectColumn}
+                      onEdit={onEditColumn}
+                      onDelete={onDeleteColumn}
+                      onDuplicate={onDuplicateColumn}
+                      onMoveUp={() => onMoveColumn(column.id, 'up')}
+                      onMoveDown={() => onMoveColumn(column.id, 'down')}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < sortedColumns.length - 1}
+                    />
+                  )}
+                  className="space-y-2"
+                />
+              ) : (
+                // 일반적인 경우 기존 렌더링 방식 사용
+                <div className="space-y-2">
+                  {sortedColumns.map((column, index) => (
+                    <SortableColumnItem
+                      key={column.id}
+                      column={column}
+                      index={index}
+                      isSelected={selectedColumnId === column.id}
+                      onSelect={onSelectColumn}
+                      onEdit={onEditColumn}
+                      onDelete={onDeleteColumn}
+                      onDuplicate={onDuplicateColumn}
+                      onMoveUp={() => onMoveColumn(column.id, 'up')}
+                      onMoveDown={() => onMoveColumn(column.id, 'down')}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < sortedColumns.length - 1}
+                    />
+                  ))}
+                </div>
+              )}
             </SortableContext>
           </DndContext>
         )}
       </div>
     </div>
   );
-};
+});
+
+ColumnList.displayName = 'ColumnList';
 
 export default ColumnList;

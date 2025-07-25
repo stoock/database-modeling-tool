@@ -46,4 +46,29 @@ public interface ColumnJpaRepository extends JpaRepository<ColumnEntity, UUID> {
      */
     @Query("SELECT COALESCE(MAX(c.orderIndex), 0) FROM ColumnEntity c WHERE c.table.id = :tableId")
     Integer findMaxOrderIndexByTableId(@Param("tableId") UUID tableId);
+    
+    /**
+     * 테이블 ID 목록으로 모든 컬럼 조회 (배치 처리용)
+     * N+1 문제 방지를 위한 fetch join 사용
+     */
+    @Query("SELECT c FROM ColumnEntity c JOIN FETCH c.table WHERE c.table.id IN :tableIds ORDER BY c.table.id, c.orderIndex")
+    List<ColumnEntity> findByTableIdsWithTable(@Param("tableIds") List<UUID> tableIds);
+    
+    /**
+     * 프로젝트의 모든 컬럼 조회 (통계용)
+     */
+    @Query("SELECT c FROM ColumnEntity c JOIN FETCH c.table t WHERE t.project.id = :projectId ORDER BY t.name, c.orderIndex")
+    List<ColumnEntity> findByProjectIdWithTable(@Param("projectId") UUID projectId);
+    
+    /**
+     * 특정 데이터 타입의 컬럼 개수 조회
+     */
+    @Query("SELECT COUNT(c) FROM ColumnEntity c WHERE c.table.id = :tableId AND c.dataType = :dataType")
+    Long countByTableIdAndDataType(@Param("tableId") UUID tableId, @Param("dataType") String dataType);
+    
+    /**
+     * 테이블별 컬럼 개수 조회 (배치)
+     */
+    @Query("SELECT c.table.id, COUNT(c) FROM ColumnEntity c WHERE c.table.id IN :tableIds GROUP BY c.table.id")
+    List<Object[]> countColumnsByTableIds(@Param("tableIds") List<UUID> tableIds);
 }

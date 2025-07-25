@@ -12,7 +12,8 @@ import type {
   CreateIndexRequest,
   UpdateIndexRequest
 } from '../types';
-import { apiClient, handleApiError } from '../services/api';
+import { cachedApiClient } from '../services/cachedApi';
+import { handleApiError } from '../services/api';
 
 interface TableState {
   // 상태
@@ -67,7 +68,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const tables = await apiClient.getTables(projectId);
+          const tables = await cachedApiClient.getTables(projectId);
           set((state) => {
             state.tables = tables;
             state.isLoading = false;
@@ -89,7 +90,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const newTable = await apiClient.createTable(projectId, request);
+          const newTable = await cachedApiClient.createTable(projectId, request);
           set((state) => {
             state.tables.push(newTable);
             state.selectedTable = newTable;
@@ -114,7 +115,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const updatedTable = await apiClient.updateTable(id, request);
+          const updatedTable = await cachedApiClient.updateTable(id, request);
           set((state) => {
             const index = state.tables.findIndex(t => t.id === id);
             if (index !== -1) {
@@ -144,7 +145,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          await apiClient.deleteTable(id);
+          await cachedApiClient.deleteTable(id);
           set((state) => {
             state.tables = state.tables.filter(t => t.id !== id);
             if (state.selectedTable?.id === id) {
@@ -174,7 +175,7 @@ export const useTableStore = create<TableState>()(
       // 테이블 위치 업데이트
       updateTablePosition: async (id: string, x: number, y: number) => {
         try {
-          const updatedTable = await apiClient.updateTable(id, { positionX: x, positionY: y });
+          const updatedTable = await cachedApiClient.updateTable(id, { positionX: x, positionY: y });
           set((state) => {
             const index = state.tables.findIndex(t => t.id === id);
             if (index !== -1) {
@@ -200,7 +201,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const newColumn = await apiClient.createColumn(tableId, request);
+          const newColumn = await cachedApiClient.createColumn(tableId, request);
           set((state) => {
             const tableIndex = state.tables.findIndex(t => t.id === tableId);
             if (tableIndex !== -1) {
@@ -234,7 +235,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const updatedColumn = await apiClient.updateColumn(id, request);
+          const updatedColumn = await cachedApiClient.updateColumn(id, request);
           set((state) => {
             // 모든 테이블에서 해당 컬럼 찾아서 업데이트
             state.tables.forEach(table => {
@@ -277,7 +278,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          await apiClient.deleteColumn(id);
+          await cachedApiClient.deleteColumn(id);
           set((state) => {
             // 모든 테이블에서 해당 컬럼 제거
             state.tables.forEach(table => {
@@ -321,7 +322,7 @@ export const useTableStore = create<TableState>()(
               orderIndex: index
             }));
             
-            const updatedColumns = await apiClient.updateColumnOrder(tableId, updates);
+            const updatedColumns = await cachedApiClient.updateColumnOrder(tableId, updates);
             
             set((state) => {
               const tableIndex = state.tables.findIndex(t => t.id === tableId);
@@ -338,7 +339,7 @@ export const useTableStore = create<TableState>()(
             console.warn('배치 업데이트 API 미지원, 개별 업데이트로 처리합니다.');
             
             const promises = columnIds.map((columnId, index) => 
-              apiClient.updateColumn(columnId, { orderIndex: index })
+              cachedApiClient.updateColumn(columnId, { orderIndex: index })
             );
             
             const updatedColumns = await Promise.all(promises);
@@ -371,7 +372,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const newIndex = await apiClient.createIndex(tableId, request);
+          const newIndex = await cachedApiClient.createIndex(tableId, request);
           set((state) => {
             const tableIndex = state.tables.findIndex(t => t.id === tableId);
             if (tableIndex !== -1) {
@@ -401,7 +402,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          const updatedIndex = await apiClient.updateIndex(id, request);
+          const updatedIndex = await cachedApiClient.updateIndex(id, request);
           set((state) => {
             // 모든 테이블에서 해당 인덱스 찾아서 업데이트
             state.tables.forEach(table => {
@@ -438,7 +439,7 @@ export const useTableStore = create<TableState>()(
         });
 
         try {
-          await apiClient.deleteIndex(id);
+          await cachedApiClient.deleteIndex(id);
           set((state) => {
             // 모든 테이블에서 해당 인덱스 제거
             state.tables.forEach(table => {

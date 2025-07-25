@@ -1,13 +1,17 @@
 package com.dbmodeling.presentation.controller;
 
+import com.dbmodeling.application.service.BatchProcessingService;
 import com.dbmodeling.application.service.TableService;
+import com.dbmodeling.domain.model.Column;
 import com.dbmodeling.domain.model.Table;
 import com.dbmodeling.presentation.dto.request.CreateTableRequest;
 import com.dbmodeling.presentation.dto.request.UpdateTableRequest;
 import com.dbmodeling.presentation.dto.response.ApiResponse;
+import com.dbmodeling.presentation.dto.response.ColumnResponse;
 import com.dbmodeling.presentation.dto.response.TableResponse;
 import com.dbmodeling.presentation.dto.response.TableSummaryResponse;
 import com.dbmodeling.presentation.exception.ResourceNotFoundException;
+import com.dbmodeling.presentation.mapper.ColumnMapper;
 import com.dbmodeling.presentation.mapper.TableMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,11 +35,19 @@ import java.util.stream.Collectors;
 public class TableController extends BaseController {
 
     private final TableService tableService;
+    private final BatchProcessingService batchProcessingService;
     private final TableMapper tableMapper;
+    private final ColumnMapper columnMapper;
 
-    public TableController(TableService tableService, TableMapper tableMapper) {
+    public TableController(
+            TableService tableService, 
+            BatchProcessingService batchProcessingService,
+            TableMapper tableMapper,
+            ColumnMapper columnMapper) {
         this.tableService = tableService;
+        this.batchProcessingService = batchProcessingService;
         this.tableMapper = tableMapper;
+        this.columnMapper = columnMapper;
     }
 
     @Operation(
@@ -191,6 +203,63 @@ public class TableController extends BaseController {
                 throw new ResourceNotFoundException("테이블", id);
             }
             throw new ResourceNotFoundException("유효하지 않은 테이블 ID입니다: " + id);
+        }
+    }
+
+    /**
+     * 컬럼 순서 일괄 업데이트 (배치 처리)
+     */
+    @Operation(
+        summary = "컬럼 순서 일괄 업데이트",
+        description = "테이블의 컬럼 순서를 일괄적으로 업데이트합니다. 성능 최적화를 위해 배치 처리됩니다."
+    )
+    @PutMapping(ApiConstants.TABLES_PATH + "/{tableId}/columns/reorder")
+    public ResponseEntity<ApiResponse<List<ColumnResponse>>> updateColumnOrder(
+        @Parameter(description = "테이블 ID", required = true)
+        @PathVariable String tableId,
+        @Parameter(description = "컬럼 순서 업데이트 요청", required = true)
+        @Valid @RequestBody ColumnOrderUpdateRequest request
+    ) {
+        try {
+            UUID tableUuid = UUID.fromString(tableId);
+            
+            List<BatchProcessingService.ColumnOrderUpdate> updates = request.getUpdates().stream()
+                .map(update -> new BatchProcessingService.ColumnOrderUpdate(
+                    update.getColumnId(), 
+                    update.getOrderIndex()
+                ))
+                .collect(Collectors.toList());
+            
+            List<Column> updatedColumns = batchProcessingService.updateColumnOrderBatch(
+                tableId, updates);
+            
+            List<ColumnResponse> responses = updatedColumns.stream()
+                .map(columnMapper::toResponse)
+                .collect(Collectors.toList());
+            
+            return success(responses, "컬럼 순서가 성공적으로 업데이트되었습니다.");
+        } catch (IllegalArgumentException e) {
+            throw new ResourceNotFoundException("유효하지 않은 테이블 ID입니다: " + tableId);
+        }
+    }
+
+    /**
+     * 컬럼 순서 업데이트 요청 DTO
+     */
+    public static class ColumnOrderUpdateRequest {
+        private List<ColumnOrderUpdate> updates;
+
+        public List<ColumnOrderUpdate> getUpdates() { return updates; }
+        public void setUpdates(List<ColumnOrderUpdate> updates) { this.updates = updates; }
+
+        public static class ColumnOrderUpdate {
+            private String columnId;
+            private Integer orderIndex;
+
+            public String getColumnId() { return columnId; }
+            public void setColumnId(String columnId) { this.columnId = columnId; }
+            public Integer getOrderIndex() { return orderIndex; }
+            public void setOrderIndex(Integer orderIndex) { this.orderIndex = orderIndex; }
         }
     }
 }
