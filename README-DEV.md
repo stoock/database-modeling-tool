@@ -201,11 +201,35 @@ podman exec -it dbmodeling-postgres-dev psql -U postgres -d dbmodeling_dev
 
 ## 🐛 문제 해결
 
+### 진단 도구
+```powershell
+# 개발 환경 전체 진단
+.\scripts\diagnose-dev.ps1
+
+# 간단한 개발 환경 시작 (문제가 있을 때)
+.\scripts\start-dev-simple.ps1
+```
+
 ### 일반적인 문제
+
+#### PowerShell 실행 정책 오류
+```powershell
+# 현재 사용자에 대해 실행 정책 변경 (관리자 권한 불필요)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# 또는 일시적으로 우회
+PowerShell -ExecutionPolicy Bypass -File .\scripts\start-dev.ps1
+```
 
 #### Podman 연결 오류
 ```powershell
-# Podman 서비스 재시작
+# Podman 버전 확인
+podman --version
+
+# Podman 시스템 정보 확인
+podman system info
+
+# Podman 서비스 재시작 (필요한 경우)
 podman machine stop
 podman machine start
 ```

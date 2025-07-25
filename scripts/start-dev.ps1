@@ -5,11 +5,18 @@ Write-Host "💻 Windows 11 + Podman 환경" -ForegroundColor Cyan
 
 # Podman 설치 확인
 try {
-    $podmanVersion = podman --version
-    Write-Host "✅ Podman 확인: $podmanVersion" -ForegroundColor Green
+    $podmanVersion = & podman --version 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Podman 확인: $podmanVersion" -ForegroundColor Green
+    } else {
+        throw "Podman 명령어 실행 실패"
+    }
 } catch {
-    Write-Host "❌ Podman이 설치되지 않았습니다. 다음 명령어로 설치하세요:" -ForegroundColor Red
-    Write-Host "   winget install RedHat.Podman" -ForegroundColor Yellow
+    Write-Host "❌ Podman이 설치되지 않았거나 PATH에 없습니다." -ForegroundColor Red
+    Write-Host "   다음 중 하나를 시도하세요:" -ForegroundColor Yellow
+    Write-Host "   1. winget install RedHat.Podman" -ForegroundColor Yellow
+    Write-Host "   2. Podman Desktop 설치: https://podman-desktop.io/" -ForegroundColor Yellow
+    Write-Host "   3. PATH 환경변수에 Podman 경로 추가" -ForegroundColor Yellow
     exit 1
 }
 
@@ -27,52 +34,88 @@ if (Test-Path ".env.dev") {
 
 # Podman 네트워크 생성 (존재하지 않는 경우)
 Write-Host "🌐 Podman 네트워크를 확인합니다..." -ForegroundColor Cyan
-$networkExists = podman network ls --format "{{.Name}}" | Select-String -Pattern "dbmodeling-network" -Quiet
-if (-not $networkExists) {
-    Write-Host "   네트워크 생성 중..." -ForegroundColor Gray
-    podman network create dbmodeling-network
-    Write-Host "✅ 네트워크 'dbmodeling-network' 생성 완료" -ForegroundColor Green
-} else {
-    Write-Host "✅ 네트워크 'dbmodeling-network' 이미 존재" -ForegroundColor Green
+try {
+    $networkList = & podman network ls --format "{{.Name}}" 2>$null
+    $networkExists = $networkList | Select-String -Pattern "dbmodeling-network" -Quiet
+    
+    if (-not $networkExists) {
+        Write-Host "   네트워크 생성 중..." -ForegroundColor Gray
+        & podman network create dbmodeling-network 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ 네트워크 'dbmodeling-network' 생성 완료" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️  네트워크 생성 실패, 기본 네트워크 사용" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "✅ 네트워크 'dbmodeling-network' 이미 존재" -ForegroundColor Green
+    }
+} catch {
+    Write-Host "⚠️  네트워크 확인 실패, 기본 네트워크 사용" -ForegroundColor Yellow
 }
 
 # PostgreSQL 컨테이너 시작
 Write-Host "🐘 PostgreSQL 컨테이너를 시작합니다..." -ForegroundColor Cyan
-$postgresRunning = podman ps --format "{{.Names}}" | Select-String -Pattern "dbmodeling-postgres-dev" -Quiet
-if (-not $postgresRunning) {
-    podman run -d `
-        --name dbmodeling-postgres-dev `
-        --network dbmodeling-network `
-        -p 5432:5432 `
-        -e POSTGRES_DB=dbmodeling_dev `
-        -e POSTGRES_USER=postgres `
-        -e POSTGRES_PASSWORD=postgres `
-        -e POSTGRES_INITDB_ARGS="--encoding=UTF-8 --locale=C" `
-        -v dbmodeling-postgres-data:/var/lib/postgresql/data `
-        postgres:15-alpine
+try {
+    $runningContainers = & podman ps --format "{{.Names}}" 2>$null
+    $postgresRunning = $runningContainers | Select-String -Pattern "dbmodeling-postgres-dev" -Quiet
     
-    Write-Host "✅ PostgreSQL 컨테이너 시작 완료" -ForegroundColor Green
-} else {
-    Write-Host "✅ PostgreSQL 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
+    if (-not $postgresRunning) {
+        Write-Host "   PostgreSQL 이미지를 다운로드하고 컨테이너를 시작합니다..." -ForegroundColor Gray
+        
+        # 네트워크 옵션을 조건부로 추가
+        $networkOption = ""
+        if ($networkExists) {
+            $networkOption = "--network dbmodeling-network"
+        }
+        
+        $podmanCmd = "podman run -d --name dbmodeling-postgres-dev $networkOption -p 5432:5432 -e POSTGRES_DB=dbmodeling_dev -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_INITDB_ARGS=`"--encoding=UTF-8 --locale=C`" -v dbmodeling-postgres-data:/var/lib/postgresql/data postgres:15-alpine"
+        
+        Invoke-Expression $podmanCmd 2>$null
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ PostgreSQL 컨테이너 시작 완료" -ForegroundColor Green
+        } else {
+            Write-Host "❌ PostgreSQL 컨테이너 시작 실패" -ForegroundColor Red
+            Write-Host "   수동으로 확인하세요: podman logs dbmodeling-postgres-dev" -ForegroundColor Yellow
+            exit 1
+        }
+    } else {
+        Write-Host "✅ PostgreSQL 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
+    }
+} catch {
+    Write-Host "❌ PostgreSQL 컨테이너 시작 중 오류 발생: $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
 }
 
 # pgAdmin 컨테이너 시작
 Write-Host "🔧 pgAdmin 컨테이너를 시작합니다..." -ForegroundColor Cyan
-$pgadminRunning = podman ps --format "{{.Names}}" | Select-String -Pattern "dbmodeling-pgadmin-dev" -Quiet
-if (-not $pgadminRunning) {
-    podman run -d `
-        --name dbmodeling-pgadmin-dev `
-        --network dbmodeling-network `
-        -p 5050:80 `
-        -e PGADMIN_DEFAULT_EMAIL=admin@dbmodeling.com `
-        -e PGADMIN_DEFAULT_PASSWORD=admin123 `
-        -e PGADMIN_CONFIG_SERVER_MODE=False `
-        -v dbmodeling-pgadmin-data:/var/lib/pgadmin `
-        dpage/pgadmin4:latest
+try {
+    $runningContainers = & podman ps --format "{{.Names}}" 2>$null
+    $pgadminRunning = $runningContainers | Select-String -Pattern "dbmodeling-pgadmin-dev" -Quiet
     
-    Write-Host "✅ pgAdmin 컨테이너 시작 완료" -ForegroundColor Green
-} else {
-    Write-Host "✅ pgAdmin 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
+    if (-not $pgadminRunning) {
+        Write-Host "   pgAdmin 이미지를 다운로드하고 컨테이너를 시작합니다..." -ForegroundColor Gray
+        
+        # 네트워크 옵션을 조건부로 추가
+        $networkOption = ""
+        if ($networkExists) {
+            $networkOption = "--network dbmodeling-network"
+        }
+        
+        $podmanCmd = "podman run -d --name dbmodeling-pgadmin-dev $networkOption -p 5050:80 -e PGADMIN_DEFAULT_EMAIL=admin@dbmodeling.com -e PGADMIN_DEFAULT_PASSWORD=admin123 -e PGADMIN_CONFIG_SERVER_MODE=False -v dbmodeling-pgadmin-data:/var/lib/pgadmin dpage/pgadmin4:latest"
+        
+        Invoke-Expression $podmanCmd 2>$null
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ pgAdmin 컨테이너 시작 완료" -ForegroundColor Green
+        } else {
+            Write-Host "⚠️  pgAdmin 컨테이너 시작 실패 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "✅ pgAdmin 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
+    }
+} catch {
+    Write-Host "⚠️  pgAdmin 컨테이너 시작 중 오류 발생 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
 }
 
 # 데이터베이스 연결 대기
@@ -92,7 +135,7 @@ do {
     $counter += 2
     
     try {
-        $result = podman exec dbmodeling-postgres-dev pg_isready -U postgres -d dbmodeling_dev 2>$null
+        $null = & podman exec dbmodeling-postgres-dev pg_isready -U postgres -d dbmodeling_dev 2>$null
         $isReady = $LASTEXITCODE -eq 0
     } catch {
         $isReady = $false
@@ -104,10 +147,14 @@ Write-Host "✅ 데이터베이스가 준비되었습니다!" -ForegroundColor G
 # 테스트 데이터베이스도 생성
 Write-Host "🧪 테스트 데이터베이스를 생성합니다..." -ForegroundColor Cyan
 try {
-    podman exec dbmodeling-postgres-dev psql -U postgres -c "CREATE DATABASE dbmodeling_test;" 2>$null
-    Write-Host "✅ 테스트 데이터베이스 생성 완료" -ForegroundColor Green
+    $null = & podman exec dbmodeling-postgres-dev psql -U postgres -c "CREATE DATABASE dbmodeling_test;" 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ 테스트 데이터베이스 생성 완료" -ForegroundColor Green
+    } else {
+        Write-Host "ℹ️  테스트 데이터베이스가 이미 존재합니다" -ForegroundColor Yellow
+    }
 } catch {
-    Write-Host "ℹ️  테스트 데이터베이스가 이미 존재합니다" -ForegroundColor Yellow
+    Write-Host "ℹ️  테스트 데이터베이스 생성 중 오류 (이미 존재할 수 있음)" -ForegroundColor Yellow
 }
 
 # 백엔드 디렉토리로 이동
