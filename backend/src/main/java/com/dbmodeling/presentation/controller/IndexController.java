@@ -2,7 +2,7 @@ package com.dbmodeling.presentation.controller;
 
 import com.dbmodeling.application.service.IndexService;
 import com.dbmodeling.domain.model.Index;
-import com.dbmodeling.domain.model.IndexColumn;
+import com.dbmodeling.domain.model.Index.IndexColumn;
 import com.dbmodeling.presentation.dto.request.CreateIndexRequest;
 import com.dbmodeling.presentation.dto.request.UpdateIndexRequest;
 import com.dbmodeling.presentation.dto.response.ApiResponse;
@@ -236,7 +236,7 @@ public class IndexController extends BaseController {
             .map(columnRequest -> {
                 IndexColumn indexColumn = new IndexColumn();
                 indexColumn.setColumnId(UUID.fromString(columnRequest.getColumnId()));
-                indexColumn.setOrder(IndexColumn.SortOrder.valueOf(columnRequest.getOrder()));
+                indexColumn.setOrder(Index.SortOrder.valueOf(columnRequest.getOrder()));
                 return indexColumn;
             })
             .collect(Collectors.toList());
@@ -260,7 +260,7 @@ public class IndexController extends BaseController {
                 .map(columnRequest -> {
                     IndexColumn indexColumn = new IndexColumn();
                     indexColumn.setColumnId(UUID.fromString(columnRequest.getColumnId()));
-                    indexColumn.setOrder(IndexColumn.SortOrder.valueOf(columnRequest.getOrder()));
+                    indexColumn.setOrder(Index.SortOrder.valueOf(columnRequest.getOrder()));
                     return indexColumn;
                 })
                 .collect(Collectors.toList());

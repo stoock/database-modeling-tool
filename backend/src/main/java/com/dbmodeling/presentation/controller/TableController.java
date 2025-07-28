@@ -225,13 +225,13 @@ public class TableController extends BaseController {
             
             List<BatchProcessingService.ColumnOrderUpdate> updates = request.getUpdates().stream()
                 .map(update -> new BatchProcessingService.ColumnOrderUpdate(
-                    update.getColumnId(), 
+                    UUID.fromString(update.getColumnId()), 
                     update.getOrderIndex()
                 ))
                 .collect(Collectors.toList());
             
             List<Column> updatedColumns = batchProcessingService.updateColumnOrderBatch(
-                tableId, updates);
+                tableUuid, updates);
             
             List<ColumnResponse> responses = updatedColumns.stream()
                 .map(columnMapper::toResponse)

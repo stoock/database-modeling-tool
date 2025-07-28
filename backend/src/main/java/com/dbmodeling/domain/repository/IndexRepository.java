@@ -60,4 +60,14 @@ public interface IndexRepository {
      * 테이블에 클러스터드 인덱스 존재 여부 확인
      */
     boolean existsByTableIdAndType(UUID tableId, Index.IndexType type);
+    
+    /**
+     * 여러 인덱스 일괄 저장
+     */
+    List<Index> saveAll(List<Index> indexes);
+    
+    /**
+     * 여러 인덱스 일괄 삭제
+     */
+    void deleteAllById(List<UUID> ids);
 }

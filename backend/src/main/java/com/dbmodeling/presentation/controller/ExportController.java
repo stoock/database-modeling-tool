@@ -163,30 +163,35 @@ public class ExportController extends BaseController {
         String content;
         String fileName;
         String contentType;
+        UUID projectId = project.getId();
         
         switch (request.getFormat().toUpperCase()) {
             case "SQL":
-                content = exportService.generateSqlScript(project, request);
+                if (request.isIncludeValidation()) {
+                    content = exportService.generateSqlScriptWithValidation(projectId);
+                } else {
+                    content = exportService.generateSqlScript(projectId);
+                }
                 fileName = project.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_schema.sql";
                 contentType = ApiConstants.CONTENT_TYPE_SQL;
                 break;
             case "MARKDOWN":
-                content = exportService.generateMarkdownDoc(project, request);
+                content = exportService.generateDocumentation(projectId);
                 fileName = project.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_schema.md";
                 contentType = "text/markdown";
                 break;
             case "HTML":
-                content = exportService.generateHtmlDoc(project, request);
+                content = exportService.generateHtmlDocumentation(projectId);
                 fileName = project.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_schema.html";
                 contentType = "text/html";
                 break;
             case "JSON":
-                content = exportService.generateJsonSchema(project, request);
+                content = exportService.generateJsonSchema(projectId);
                 fileName = project.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_schema.json";
                 contentType = ApiConstants.CONTENT_TYPE_JSON;
                 break;
             case "CSV":
-                content = exportService.generateCsvDoc(project, request);
+                content = exportService.generateCsvTableList(projectId);
                 fileName = project.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_schema.csv";
                 contentType = ApiConstants.CONTENT_TYPE_CSV;
                 break;

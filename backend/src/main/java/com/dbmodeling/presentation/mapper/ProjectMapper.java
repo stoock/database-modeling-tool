@@ -1,7 +1,7 @@
 package com.dbmodeling.presentation.mapper;
 
-import com.dbmodeling.application.port.in.CreateProjectCommand;
-import com.dbmodeling.application.port.in.UpdateProjectCommand;
+import com.dbmodeling.application.port.in.CreateProjectUseCase;
+import com.dbmodeling.application.port.in.UpdateProjectUseCase;
 import com.dbmodeling.domain.model.NamingRules;
 import com.dbmodeling.domain.model.Project;
 import com.dbmodeling.domain.model.Table;
@@ -25,8 +25,8 @@ public class ProjectMapper {
     /**
      * CreateProjectRequest를 CreateProjectCommand로 변환
      */
-    public CreateProjectCommand toCommand(CreateProjectRequest request) {
-        return new CreateProjectCommand(
+    public CreateProjectUseCase.CreateProjectCommand toCommand(CreateProjectRequest request) {
+        return new CreateProjectUseCase.CreateProjectCommand(
             request.getName(),
             request.getDescription()
         );
@@ -35,8 +35,8 @@ public class ProjectMapper {
     /**
      * UpdateProjectRequest를 UpdateProjectCommand로 변환
      */
-    public UpdateProjectCommand toCommand(UUID id, UpdateProjectRequest request) {
-        return new UpdateProjectCommand(
+    public UpdateProjectUseCase.UpdateProjectCommand toCommand(UUID id, UpdateProjectRequest request) {
+        return new UpdateProjectUseCase.UpdateProjectCommand(
             id,
             request.getName(),
             request.getDescription()
@@ -116,7 +116,7 @@ public class ProjectMapper {
         
         if (request.getEnforceCase() != null) {
             try {
-                namingRules.setEnforceCase(NamingRules.CaseRule.valueOf(request.getEnforceCase()));
+                namingRules.setEnforceCase(NamingRules.CaseRule.valueOf(request.getEnforceCase()).toCaseType());
             } catch (IllegalArgumentException e) {
                 // 잘못된 케이스 규칙은 무시
             }

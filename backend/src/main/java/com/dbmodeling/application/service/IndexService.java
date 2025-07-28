@@ -124,4 +124,13 @@ public class IndexService implements ManageIndexUseCase {
     public List<Index> getIndexesByTableId(UUID tableId) {
         return indexRepository.findByTableId(tableId);
     }
+    
+    /**
+     * 인덱스 ID로 인덱스 조회
+     */
+    @Transactional(readOnly = true)
+    public Index getIndexById(UUID indexId) {
+        return indexRepository.findById(indexId)
+            .orElseThrow(() -> new IllegalArgumentException("인덱스를 찾을 수 없습니다: " + indexId));
+    }
 }

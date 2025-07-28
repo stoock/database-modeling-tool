@@ -141,4 +141,22 @@ public class ColumnRepositoryImpl implements ColumnRepository {
         Integer maxIndex = jpaRepository.findMaxOrderIndexByTableId(tableId);
         return maxIndex != null ? maxIndex : 0;
     }
+    
+    @Override
+    public List<Column> saveAll(List<Column> columns) {
+        List<ColumnEntity> entities = columns.stream()
+                .map(mapper::toEntity)
+                .collect(Collectors.toList());
+        
+        List<ColumnEntity> savedEntities = jpaRepository.saveAll(entities);
+        
+        return savedEntities.stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public void deleteAllById(List<UUID> ids) {
+        jpaRepository.deleteAllById(ids);
+    }
 }

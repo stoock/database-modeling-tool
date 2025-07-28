@@ -172,6 +172,7 @@ public class Index {
      */
     public static class IndexColumn {
         private UUID columnId;
+        private String columnName; // 컬럼명 추가
         private SortOrder order;
 
         public IndexColumn() {
@@ -183,12 +184,26 @@ public class Index {
             this.order = order != null ? order : SortOrder.ASC;
         }
 
+        public IndexColumn(UUID columnId, String columnName, SortOrder order) {
+            this.columnId = columnId;
+            this.columnName = columnName;
+            this.order = order != null ? order : SortOrder.ASC;
+        }
+
         public UUID getColumnId() {
             return columnId;
         }
 
         public void setColumnId(UUID columnId) {
             this.columnId = columnId;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public void setColumnName(String columnName) {
+            this.columnName = columnName;
         }
 
         public SortOrder getOrder() {

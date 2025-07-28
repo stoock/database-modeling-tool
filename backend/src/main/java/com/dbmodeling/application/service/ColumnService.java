@@ -247,4 +247,34 @@ public class ColumnService implements ManageColumnUseCase {
     public Column getColumnByName(UUID tableId, String columnName) {
         return columnRepository.findByTableIdAndName(tableId, columnName).orElse(null);
     }
+    
+    /**
+     * 컬럼 ID로 컬럼 조회
+     */
+    @Transactional(readOnly = true)
+    public Column getColumnById(UUID columnId) {
+        return columnRepository.findById(columnId)
+            .orElseThrow(() -> new IllegalArgumentException("컬럼을 찾을 수 없습니다: " + columnId));
+    }
+    
+    /**
+     * 컬럼 생성 (Entity 기반)
+     */
+    public Column createColumn(Column column) {
+        return addColumn(new AddColumnCommand(
+            column.getTableId(),
+            column.getName(),
+            column.getDescription(),
+            column.getDataType(),
+            column.getMaxLength(),
+            column.getPrecision(),
+            column.getScale(),
+            column.getIsNullable(),
+            column.getIsPrimaryKey(),
+            column.getIsIdentity(),
+            column.getIdentitySeed(),
+            column.getIdentityIncrement(),
+            column.getDefaultValue()
+        ));
+    }
 }

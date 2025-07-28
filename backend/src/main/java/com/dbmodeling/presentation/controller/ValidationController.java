@@ -86,17 +86,17 @@ public class ValidationController extends BaseController {
     ) {
         try {
             UUID projectUuid = UUID.fromString(projectId);
-            List<ValidationResponse> validationResults = validationService.validateProject(projectUuid);
+            ValidationService.ValidationResult validationResult = validationService.validateProject(projectUuid);
             
-            long errorCount = validationResults.stream()
-                .mapToLong(result -> result.isValid() ? 0 : 1)
-                .sum();
+            List<ValidationResponse> validationResponses = convertToValidationResponses(validationResult);
+            
+            long errorCount = validationResult.getErrors().size();
             
             String message = errorCount == 0 
                 ? "모든 네이밍 규칙 검증이 성공했습니다."
                 : String.format("총 %d개의 네이밍 규칙 위반이 발견되었습니다.", errorCount);
             
-            return success(validationResults, message);
+            return success(validationResponses, message);
         } catch (IllegalArgumentException e) {
             throw new ResourceNotFoundException("유효하지 않은 프로젝트 ID입니다: " + projectId);
         }
@@ -198,11 +198,11 @@ public class ValidationController extends BaseController {
         validateCaseRule(name, rules.getEnforceCase(), "INDEX", errors);
     }
 
-    private void validateCaseRule(String name, NamingRules.CaseRule caseRule, String type, 
+    private void validateCaseRule(String name, NamingRules.CaseType caseType, String type, 
                                  List<ValidationResponse.ValidationError> errors) {
-        if (caseRule == null) return;
+        if (caseType == null) return;
         
-        switch (caseRule) {
+        switch (caseType) {
             case UPPER:
                 if (!name.equals(name.toUpperCase())) {
                     errors.add(new ValidationResponse.ValidationError(
@@ -269,10 +269,10 @@ public class ValidationController extends BaseController {
         return applyCaseRule(name, rules.getEnforceCase());
     }
 
-    private String applyCaseRule(String name, NamingRules.CaseRule caseRule) {
-        if (caseRule == null) return name;
+    private String applyCaseRule(String name, NamingRules.CaseType caseType) {
+        if (caseType == null) return name;
         
-        switch (caseRule) {
+        switch (caseType) {
             case UPPER:
                 return name.toUpperCase();
             case LOWER:
@@ -294,5 +294,52 @@ public class ValidationController extends BaseController {
     private String toSnakeCase(String name) {
         if (name == null || name.isEmpty()) return name;
         return name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+    }
+    
+    /**
+     * ValidationResult를 ValidationResponse 리스트로 변환
+     */
+    private List<ValidationResponse> convertToValidationResponses(ValidationService.ValidationResult result) {
+        List<ValidationResponse> responses = new ArrayList<>();
+        
+        // 오류들을 ValidationResponse로 변환
+        for (ValidationService.ValidationError error : result.getErrors()) {
+            List<ValidationResponse.ValidationError> errors = new ArrayList<>();
+            errors.add(new ValidationResponse.ValidationError(
+                error.getErrorType().name(),
+                error.getMessage(),
+                error.getSuggestion()
+            ));
+            
+            ValidationResponse response = new ValidationResponse(
+                false, // 오류가 있으므로 valid = false
+                error.getObjectName(),
+                error.getObjectType(),
+                errors,
+                error.getSuggestion()
+            );
+            responses.add(response);
+        }
+        
+        // 경고들을 ValidationResponse로 변환
+        for (ValidationService.ValidationError warning : result.getWarnings()) {
+            List<ValidationResponse.ValidationError> warnings = new ArrayList<>();
+            warnings.add(new ValidationResponse.ValidationError(
+                warning.getErrorType().name(),
+                warning.getMessage(),
+                warning.getSuggestion()
+            ));
+            
+            ValidationResponse response = new ValidationResponse(
+                true, // 경고는 valid = true로 처리
+                warning.getObjectName(),
+                warning.getObjectType(),
+                warnings,
+                warning.getSuggestion()
+            );
+            responses.add(response);
+        }
+        
+        return responses;
     }
 }

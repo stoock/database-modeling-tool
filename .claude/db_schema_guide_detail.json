@@ -1,0 +1,164 @@
+{
+  "table_basic_rules": [
+    "모든 객체명(테이블/컬럼/인덱스/제약조건) 대문자 사용",
+    "의미 있는 영문 컬럼명, 한글 Description 필수",
+    "VARCHAR/NVARCHAR 등 문자열 컬럼은 length(길이) 반드시 지정",
+    "INT/DECIMAL 등 데이터에 맞는 타입 명확히",
+    "NULL/NOT NULL, DEFAULT 등 제약조건을 명확히 지정",
+    "PK/UK/인덱스 등은 명명 규칙에 따라 작성"
+  ],
+  "system_columns": [
+    {
+      "name": "REG_ID",
+      "type": "VARCHAR(25)",
+      "nullable": false,
+      "default": null,
+      "desc": "등록자"
+    },
+    {
+      "name": "REG_DT",
+      "type": "DATETIME",
+      "nullable": false,
+      "default": "GETDATE()",
+      "desc": "등록일시"
+    },
+    {
+      "name": "CHG_ID",
+      "type": "VARCHAR(25)",
+      "nullable": true,
+      "default": null,
+      "desc": "수정자"
+    },
+    {
+      "name": "CHG_DT",
+      "type": "DATETIME",
+      "nullable": true,
+      "default": null,
+      "desc": "수정일시"
+    }
+  ],
+  "system_columns_rule": {
+    "REG_ID": "NOT NULL",
+    "REG_DT": "NOT NULL, DEFAULT GETDATE()",
+    "CHG_ID": "NULL 허용",
+    "CHG_DT": "NULL 허용",
+    "예외": "CDC/최적성 테이블은 CHG_ID, CHG_DT 미포함 가능"
+  },
+  "data_type_rule": {
+    "VARCHAR": "영문/숫자만 저장시 사용. n바이트(영문 n자 저장)",
+    "NVARCHAR": "한글/일본어 등 다국어 저장시 필수. n*2바이트(모든 문자 n자 저장)",
+    "예시": [
+      {
+        "type": "VARCHAR(100)",
+        "desc": "영문 100자, Hello → 5바이트"
+      },
+      {
+        "type": "NVARCHAR(100)",
+        "desc": "한글 100자, 안녕하세요 → 10바이트"
+      }
+    ]
+  },
+  "naming_rule": {
+    "PK_constraint": "PK__{테이블명}__{컬럼1}__{컬럼2}",
+    "Cluster_index": "CIDX__{테이블명}__{컬럼1} (PK가 Cluster 아니면)",
+    "Index": "IDX__{테이블명}__{컬럼1}__{컬럼2}",
+    "Default": "DF__{테이블명}__{컬럼명}",
+    "PK_column": [
+      "반드시 테이블명+컬럼명 조합 (CLAIM_REQUEST_MAIL_NO, AFFLT_LOGIN_HIST_HIST_NO)",
+      "ID, SEQ_NO, HIST_NO 등 단독 금지",
+      "테이블명이 길면 일관된 약어 사용",
+      "종속(하위) 테이블은 상위 PK명 그대로 계승(GD_NO 등)"
+    ],
+    "abbreviation": {
+      "CUSTOMER": "CUST",
+      "GRADE": "GRD",
+      "HISTORY": "HIST",
+      "REQUEST": "REQ",
+      "RESPONSE": "RESP",
+      "DETAIL": "DTL",
+      "SEQUENCE": "SEQ",
+      "IDENTIFIER": "ID",
+      "PRODUCT": "PRD",
+      "PAYMENT": "PAY",
+      "REFUND": "RFND",
+      "AMOUNT": "AMT",
+      "CHANGE": "CHG",
+      "BENEFIT": "BEN",
+      "USER": "USR",
+      "ORDER": "ORD",
+      "STATUS": "STAT",
+      "CONFIRM": "CONF"
+    }
+  },
+  "description_guide": {
+    "table": {
+      "rule": "상세 설명을 한글로 명확하게 입력. 빈 값/테이블명 그대로 복사 금지.",
+      "example": [
+        {
+          "table": "EJOP_ORDER_COMPLETE_LOG",
+          "desc": "주문 체결 고도화 주문 데이터 완료 처리 결과"
+        },
+        {
+          "table": "STTL_BUYER_TAX_RECEIPT_QOO10_TICKET_SERVICE_FEE",
+          "desc": "티켓 Qoo10 서비스 수수료 영수증"
+        }
+      ]
+    },
+    "column": {
+      "rule": "컬럼 한글명 + 상세 설명(필요시), '||'(shift+\\)로 구분. 컬럼명을 그대로 쓰거나, 설명 없이 입력 금지.",
+      "example": [
+        {
+          "column": "PACK_NO",
+          "desc": "장바구니번호"
+        },
+        {
+          "column": "GD_SELL_PRICE",
+          "desc": "상품판매가격 || 실제로 판매되는 가격(등급 관련 정보)"
+        },
+        {
+          "column": "RESULT_CODE",
+          "desc": "처리결과코드 || 0:성공, -100:실패(사유1), -200:실패(사유2)"
+        },
+        {
+          "column": "ORDER_PROCESS_TYPE",
+          "desc": "주문처리타입 || K:재고선점, Z:재배송전 프로세스"
+        }
+      ]
+    },
+    "sql_example": [
+      "-- 테이블 설명",
+      "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'주문 체결 고도화 주문 데이터 완료 처리 결과', @level0type=N'SCHEMA', @level0name=N'dbo', @level1type=N'TABLE', @level1name=N'ejop_order_complete_log';",
+      "-- 컬럼 설명",
+      "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'장바구니번호', @level0type=N'SCHEMA', @level0name=N'dbo', @level1type=N'TABLE', @level1name=N'ejop_order_complete_log', @level2type=N'COLUMN', @level2name=N'pack_no';",
+      "-- 컬럼 상세 설명",
+      "EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'처리결과코드 || 0:성공, -100:실패(사유1), -200:실패(사유2)', @level0type=N'SCHEMA', @level0name=N'dbo', @level1type=N'TABLE', @level1name=N'example_table', @level2type=N'COLUMN', @level2name=N'result_code';"
+    ]
+  },
+  "index_and_misc": [
+    "WHERE/JOIN/ORDER BY에 자주 쓰는 컬럼 위주로 인덱스 설계",
+    "인덱스 컬럼에 함수/가공(ISNULL, CONVERT 등) 금지",
+    "LIKE 검색, 임시테이블, 테이블 변수 사용 최소화",
+    "컬럼 타입과 WHERE조건 타입 반드시 일치(형변환 금지)",
+    "생성 스크립트, 컬럼 comment, ERD 파일 등은 반드시 요청에 첨부"
+  ],
+  "create_table_example": [
+    "CREATE TABLE CUST_GRD_CHG_BEN_HIST (",
+    "    CUST_GRD_CHG_BEN_HIST_NO   INT           NOT NULL  COMMENT '등급변경혜택이력PK',",
+    "    USER_ID                    VARCHAR(20)   NOT NULL  COMMENT '회원ID',",
+    "    APPLY_DT                   DATETIME      NOT NULL  COMMENT '적용일시',",
+    "    REG_ID                     VARCHAR(25)   NOT NULL  COMMENT '등록자',",
+    "    REG_DT                     DATETIME      NOT NULL  COMMENT '등록일시',",
+    "    CHG_ID                     VARCHAR(25)   NULL      COMMENT '수정자',",
+    "    CHG_DT                     DATETIME      NULL      COMMENT '수정일시',",
+    "    CONSTRAINT PK__CUST_GRD_CHG_BEN_HIST__CUST_GRD_CHG_BEN_HIST_NO PRIMARY KEY (CUST_GRD_CHG_BEN_HIST_NO),",
+    "    CONSTRAINT DF__CUST_GRD_CHG_BEN_HIST__REG_DT DEFAULT GETDATE() FOR REG_DT",
+    ");"
+  ],
+  "checklist": [
+    "컬럼명/제약조건/인덱스/Description 모두 가이드 준수",
+    "CDC 테이블 여부, 반영 환경(DEV/STG/REAL) 명확히 구분",
+    "ERD 포함, 관련 SP(스토어드프로시저) 검수 요청 필요시 첨부",
+    "Description/Comment 누락 또는 미흡시 반드시 보완"
+  ],
+  "note": "이 가이드는 자동화 툴, AI, 실무자 모두 활용 가능하도록 설계됨. 팀 내 합의/기준 변경시 지속적으로 업데이트 요망."
+}

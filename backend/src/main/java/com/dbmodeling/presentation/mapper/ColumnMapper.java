@@ -1,11 +1,14 @@
 package com.dbmodeling.presentation.mapper;
 
+import com.dbmodeling.application.port.in.ManageColumnUseCase;
 import com.dbmodeling.domain.model.Column;
 import com.dbmodeling.domain.model.MSSQLDataType;
 import com.dbmodeling.presentation.dto.request.CreateColumnRequest;
 import com.dbmodeling.presentation.dto.request.UpdateColumnRequest;
 import com.dbmodeling.presentation.dto.response.ColumnResponse;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 /**
  * 컬럼 DTO 매퍼
@@ -115,5 +118,47 @@ public class ColumnMapper {
         if (request.getOrderIndex() != null) {
             column.setOrderIndex(request.getOrderIndex());
         }
+    }
+    
+    /**
+     * CreateColumnRequest를 AddColumnCommand로 변환
+     */
+    public ManageColumnUseCase.AddColumnCommand toAddCommand(UUID tableId, CreateColumnRequest request) {
+        return new ManageColumnUseCase.AddColumnCommand(
+            tableId,
+            request.getName(),
+            request.getDescription(),
+            MSSQLDataType.valueOf(request.getDataType()),
+            request.getMaxLength(),
+            request.getPrecision(),
+            request.getScale(),
+            request.getIsNullable(),
+            request.getIsPrimaryKey(),
+            request.getIsIdentity(),
+            request.getIdentitySeed(),
+            request.getIdentityIncrement(),
+            request.getDefaultValue()
+        );
+    }
+    
+    /**
+     * UpdateColumnRequest를 UpdateColumnCommand로 변환
+     */
+    public ManageColumnUseCase.UpdateColumnCommand toUpdateCommand(UUID columnId, UpdateColumnRequest request) {
+        return new ManageColumnUseCase.UpdateColumnCommand(
+            columnId,
+            request.getName(),
+            request.getDescription(),
+            MSSQLDataType.valueOf(request.getDataType()),
+            request.getMaxLength(),
+            request.getPrecision(),
+            request.getScale(),
+            request.getIsNullable(),
+            request.getIsPrimaryKey(),
+            request.getIsIdentity(),
+            request.getIdentitySeed(),
+            request.getIdentityIncrement(),
+            request.getDefaultValue()
+        );
     }
 }

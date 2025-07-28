@@ -236,4 +236,28 @@ public class NamingRules {
             return name;
         }
     }
+
+    /**
+     * 케이스 규칙 열거형 (CaseRule 별칭)
+     */
+    public enum CaseRule {
+        UPPER("UPPER"),
+        LOWER("LOWER"),
+        PASCAL("PASCAL"),
+        SNAKE("SNAKE");
+
+        private final String name;
+
+        CaseRule(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public CaseType toCaseType() {
+            return CaseType.valueOf(this.name());
+        }
+    }
 }

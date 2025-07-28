@@ -109,10 +109,8 @@ public class ColumnController extends BaseController {
     ) {
         try {
             UUID tableUuid = UUID.fromString(tableId);
-            Column column = columnMapper.toEntity(request);
-            column.setTableId(tableUuid);
-            
-            Column createdColumn = columnService.createColumn(column);
+            var command = columnMapper.toAddCommand(tableUuid, request);
+            Column createdColumn = columnService.addColumn(command);
             ColumnResponse response = columnMapper.toResponse(createdColumn);
             return created(response, "컬럼이 성공적으로 생성되었습니다.");
         } catch (IllegalArgumentException e) {
@@ -145,10 +143,8 @@ public class ColumnController extends BaseController {
     ) {
         try {
             UUID columnId = UUID.fromString(id);
-            Column existingColumn = columnService.getColumnById(columnId);
-            
-            columnMapper.updateEntity(existingColumn, request);
-            Column updatedColumn = columnService.updateColumn(existingColumn);
+            var command = columnMapper.toUpdateCommand(columnId, request);
+            Column updatedColumn = columnService.updateColumn(command);
             
             ColumnResponse response = columnMapper.toResponse(updatedColumn);
             return success(response, "컬럼이 성공적으로 수정되었습니다.");
