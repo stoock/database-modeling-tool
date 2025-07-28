@@ -1,4 +1,9 @@
-# Database Modeling Tool - 개발 환경 초기화 스크립트 (PowerShell for Windows 11 + Podman)
+﻿# Database Modeling Tool - 개발 환경 초기화 스크립트 (PowerShell for Windows 11 + Podman)
+
+# Set console encoding to UTF-8 for proper Korean display
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "🔄 Database Modeling Tool 개발 환경을 초기화합니다..." -ForegroundColor Yellow
 Write-Host "⚠️  이 작업은 모든 개발 데이터를 삭제합니다!" -ForegroundColor Red

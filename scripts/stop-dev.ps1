@@ -1,4 +1,9 @@
-# Database Modeling Tool - 개발 환경 중지 스크립트 (PowerShell for Windows 11 + Podman)
+﻿# Database Modeling Tool - 개발 환경 중지 스크립트 (PowerShell for Windows 11 + Podman)
+
+# Set console encoding to UTF-8 for proper Korean display
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "🛑 Database Modeling Tool 개발 환경을 중지합니다..." -ForegroundColor Yellow
 

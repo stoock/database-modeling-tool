@@ -1,4 +1,9 @@
-# Database Modeling Tool - 개발 환경 시작 스크립트 (PowerShell for Windows 11 + Podman)
+﻿# Database Modeling Tool - 개발 환경 시작 스크립트 (PowerShell for Windows 11 + Podman)
+
+# Set console encoding to UTF-8 for proper Korean display
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "🚀 Database Modeling Tool 개발 환경을 시작합니다..." -ForegroundColor Green
 Write-Host "💻 Windows 11 + Podman 환경" -ForegroundColor Cyan
@@ -29,7 +34,7 @@ if (Test-Path ".env.dev") {
         }
     }
 } else {
-    Write-Host "⚠️  .env.dev 파일이 없습니다. 기본 설정을 사용합니다." -ForegroundColor Yellow
+    Write-Host "⚠️ .env.dev 파일이 없습니다. 기본 설정을 사용합니다." -ForegroundColor Yellow
 }
 
 # Podman 네트워크 생성 (존재하지 않는 경우)
@@ -44,13 +49,13 @@ try {
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ 네트워크 'dbmodeling-network' 생성 완료" -ForegroundColor Green
         } else {
-            Write-Host "⚠️  네트워크 생성 실패, 기본 네트워크 사용" -ForegroundColor Yellow
+            Write-Host "⚠️ 네트워크 생성 실패, 기본 네트워크 사용" -ForegroundColor Yellow
         }
     } else {
         Write-Host "✅ 네트워크 'dbmodeling-network' 이미 존재" -ForegroundColor Green
     }
 } catch {
-    Write-Host "⚠️  네트워크 확인 실패, 기본 네트워크 사용" -ForegroundColor Yellow
+    Write-Host "⚠️ 네트워크 확인 실패, 기본 네트워크 사용" -ForegroundColor Yellow
 }
 
 # PostgreSQL 컨테이너 시작
@@ -109,13 +114,13 @@ try {
         if ($LASTEXITCODE -eq 0) {
             Write-Host "✅ pgAdmin 컨테이너 시작 완료" -ForegroundColor Green
         } else {
-            Write-Host "⚠️  pgAdmin 컨테이너 시작 실패 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
+            Write-Host "⚠️ pgAdmin 컨테이너 시작 실패 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
         }
     } else {
         Write-Host "✅ pgAdmin 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
     }
 } catch {
-    Write-Host "⚠️  pgAdmin 컨테이너 시작 중 오류 발생 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
+    Write-Host "⚠️ pgAdmin 컨테이너 시작 중 오류 발생 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
 }
 
 # 데이터베이스 연결 대기
@@ -151,10 +156,10 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ 테스트 데이터베이스 생성 완료" -ForegroundColor Green
     } else {
-        Write-Host "ℹ️  테스트 데이터베이스가 이미 존재합니다" -ForegroundColor Yellow
+        Write-Host "ℹ️ 테스트 데이터베이스가 이미 존재합니다" -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "ℹ️  테스트 데이터베이스 생성 중 오류 (이미 존재할 수 있음)" -ForegroundColor Yellow
+    Write-Host "ℹ️ 테스트 데이터베이스 생성 중 오류 (이미 존재할 수 있음)" -ForegroundColor Yellow
 }
 
 # 백엔드 디렉토리로 이동
@@ -165,10 +170,42 @@ if (-not (Test-Path "backend")) {
 
 Set-Location backend
 
-# Maven Wrapper 실행 권한 확인 (Windows에서는 자동으로 실행 가능)
+# Maven Wrapper 확인 및 생성
 if (-not (Test-Path "mvnw.cmd")) {
-    Write-Host "❌ Maven Wrapper를 찾을 수 없습니다." -ForegroundColor Red
+    Write-Host "⚠️ Maven Wrapper가 없습니다. 생성을 시도합니다..." -ForegroundColor Yellow
+    
+    # Maven Wrapper가 없는 경우 다운로드 시도
+    try {
+        Write-Host "   Maven Wrapper JAR 다운로드 중..." -ForegroundColor Gray
+        $wrapperDir = ".mvn\wrapper"
+        $wrapperJar = "$wrapperDir\maven-wrapper.jar"
+        
+        if (-not (Test-Path $wrapperDir)) {
+            New-Item -ItemType Directory -Path $wrapperDir -Force | Out-Null
+        }
+        
+        if (-not (Test-Path $wrapperJar)) {
+            $wrapperUrl = "https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
+            Invoke-WebRequest -Uri $wrapperUrl -OutFile $wrapperJar -UseBasicParsing
+            Write-Host "✅ Maven Wrapper JAR 다운로드 완료" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "❌ Maven Wrapper 설정 실패. Maven이 설치되지 않았을 수 있습니다." -ForegroundColor Red
+        Write-Host "   다음을 확인하세요:" -ForegroundColor Yellow
+        Write-Host "   1. JAVA_HOME 환경변수 설정" -ForegroundColor Yellow
+        Write-Host "   2. Java 21+ 설치 확인" -ForegroundColor Yellow
+        exit 1
+    }
+}
+
+# JAVA_HOME 확인
+if (-not $env:JAVA_HOME -or -not (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
+    Write-Host "❌ JAVA_HOME이 설정되지 않았거나 올바르지 않습니다." -ForegroundColor Red
+    Write-Host "   Java 21+을 설치하고 JAVA_HOME을 설정하세요." -ForegroundColor Yellow
     exit 1
+} else {
+    $javaVersion = & "$env:JAVA_HOME\bin\java.exe" -version 2>&1 | Select-String "version" | ForEach-Object { $_.ToString() }
+    Write-Host "✅ Java 확인: $javaVersion" -ForegroundColor Green
 }
 
 # Flyway 마이그레이션 실행
@@ -183,7 +220,7 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ 데이터베이스 마이그레이션 완료" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  마이그레이션에서 경고가 발생했지만 계속 진행합니다" -ForegroundColor Yellow
+        Write-Host "⚠️ 마이그레이션에서 경고가 발생했지만 계속 진행합니다" -ForegroundColor Yellow
     }
 } catch {
     Write-Host "❌ 마이그레이션 실행 중 오류 발생: $($_.Exception.Message)" -ForegroundColor Red
@@ -201,9 +238,9 @@ Write-Host "   - 테스트 DB: dbmodeling_test" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "🚀 다음 단계:" -ForegroundColor White
 Write-Host "   1. 백엔드 시작: .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev" -ForegroundColor Yellow
-Write-Host "   2. 프론트엔드 시작: cd ..\frontend && yarn dev" -ForegroundColor Yellow
+Write-Host "   2. 프론트엔드 시작: cd ..\frontend && npm run dev" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "🛠️  유용한 명령어:" -ForegroundColor White
+Write-Host "🛠️ 유용한 명령어:" -ForegroundColor White
 Write-Host "   - 컨테이너 상태 확인: podman ps" -ForegroundColor Gray
 Write-Host "   - 컨테이너 로그 확인: podman logs dbmodeling-postgres-dev" -ForegroundColor Gray
 Write-Host "   - 컨테이너 중지: podman stop dbmodeling-postgres-dev dbmodeling-pgadmin-dev" -ForegroundColor Gray

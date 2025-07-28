@@ -31,9 +31,13 @@
   ```powershell
   winget install RedHat.Podman
   ```
-- **Java 17+** (OpenJDK 권장)
+- **Java 21+** (Amazon Corretto 권장)
   ```powershell
-  winget install Microsoft.OpenJDK.17
+  winget install Amazon.Corretto.21
+  ```
+- **Maven 3.9+** (선택사항 - IDE 내장 빌드 도구 사용 가능)
+  ```powershell
+  choco install maven
   ```
 - **Node.js 18+** 
   ```powershell
@@ -101,31 +105,37 @@ podman run -d \
 ### 개발 서버 시작
 ```powershell
 cd backend
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
+
+# Maven이 설치된 경우
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+
+# 또는 IDE에서 실행 (IntelliJ IDEA, VS Code + Java Extension Pack)
 ```
 
 ### 테스트 실행
 ```powershell
 # 단위 테스트
-.\mvnw.cmd test
+mvn test
 
 # 통합 테스트
-.\mvnw.cmd verify
+mvn verify
 
 # 특정 테스트 클래스
-.\mvnw.cmd test -Dtest=ProjectControllerTest
+mvn test -Dtest=ProjectControllerTest
+
+# 또는 IDE 테스트 러너 사용 (권장)
 ```
 
 ### 데이터베이스 마이그레이션
 ```powershell
 # 마이그레이션 실행
-.\mvnw.cmd flyway:migrate
+mvn flyway:migrate
 
 # 마이그레이션 정보 확인
-.\mvnw.cmd flyway:info
+mvn flyway:info
 
 # 마이그레이션 롤백 (주의!)
-.\mvnw.cmd flyway:clean
+mvn flyway:clean
 ```
 
 ### API 문서
@@ -201,13 +211,22 @@ podman exec -it dbmodeling-postgres-dev psql -U postgres -d dbmodeling_dev
 
 ## 🐛 문제 해결
 
+### 사용 가능한 스크립트
+
+| 스크립트 | 설명 | 용도 |
+|---------|------|------|
+| `start-dev.ps1` | 전체 개발 환경 시작 | Podman 컨테이너 + 데이터베이스 설정 |
+| `start-backend.ps1` | 백엔드 애플리케이션 시작 | Spring Boot 애플리케이션 실행 |
+| `start-frontend.ps1` | 프론트엔드 개발 서버 시작 | React 개발 서버 실행 |
+| `stop-dev.ps1` | 개발 환경 중지 | 모든 컨테이너 및 서비스 중지 |
+| `reset-dev.ps1` | 개발 환경 초기화 | 데이터베이스 및 컨테이너 완전 삭제 |
+| `test-backend.ps1` | 백엔드 테스트 실행 | 단위/통합 테스트 실행 |
+| `diagnose-env.ps1` | 환경 진단 | 개발 환경 요구사항 확인 |
+
 ### 진단 도구
 ```powershell
 # 개발 환경 전체 진단
-.\scripts\diagnose-dev.ps1
-
-# 간단한 개발 환경 시작 (문제가 있을 때)
-.\scripts\start-dev-simple.ps1
+.\scripts\diagnose-env.ps1
 ```
 
 ### 일반적인 문제
@@ -257,10 +276,10 @@ podman exec -it dbmodeling-postgres-dev pg_isready -U postgres
 #### Maven 빌드 오류
 ```powershell
 # Maven 캐시 정리
-.\mvnw.cmd clean
+mvn clean
 
 # 의존성 다시 다운로드
-.\mvnw.cmd dependency:purge-local-repository
+mvn dependency:purge-local-repository
 ```
 
 #### Node.js/Yarn 오류

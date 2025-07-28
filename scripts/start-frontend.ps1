@@ -1,4 +1,9 @@
-# Database Modeling Tool - 프론트엔드 시작 스크립트 (PowerShell for Windows 11)
+﻿# Database Modeling Tool - 프론트엔드 시작 스크립트 (PowerShell for Windows 11)
+
+# Set console encoding to UTF-8 for proper Korean display
+$PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host "⚛️  React 프론트엔드를 시작합니다..." -ForegroundColor Green
 
@@ -17,22 +22,34 @@ if (-not (Test-Path "frontend")) {
     Set-Location frontend
 }
 
-# Node.js 및 Yarn 확인
+# Node.js 및 NPM 확인
 try {
-    $nodeVersion = node --version
-    Write-Host "✅ Node.js 확인: $nodeVersion" -ForegroundColor Green
+    $nodeVersionOutput = node --version
+    Write-Host "✅ Node.js 확인: $nodeVersionOutput" -ForegroundColor Green
+    
+    # Node.js 18+ 확인
+    if ($nodeVersionOutput -match "v(\d+)\.") {
+        $majorVersion = [int]$matches[1]
+        if ($majorVersion -lt 18) {
+            Write-Host "❌ Node.js 18 이상이 필요합니다 (현재: $majorVersion)" -ForegroundColor Red
+            Write-Host "   https://nodejs.org 에서 최신 LTS 버전을 설치하세요." -ForegroundColor Yellow
+            exit 1
+        } else {
+            Write-Host "   Node.js 버전: $majorVersion (✅ 요구사항 충족)" -ForegroundColor Green
+        }
+    }
 } catch {
     Write-Host "❌ Node.js가 설치되지 않았습니다." -ForegroundColor Red
-    Write-Host "   https://nodejs.org 에서 Node.js를 설치하세요." -ForegroundColor Yellow
+    Write-Host "   https://nodejs.org 에서 Node.js 18+ LTS를 설치하세요." -ForegroundColor Yellow
     exit 1
 }
 
 try {
-    $yarnVersion = yarn --version
-    Write-Host "✅ Yarn 확인: v$yarnVersion" -ForegroundColor Green
+    $npmVersion = npm --version
+    Write-Host "✅ NPM 확인: v$npmVersion" -ForegroundColor Green
 } catch {
-    Write-Host "❌ Yarn이 설치되지 않았습니다." -ForegroundColor Red
-    Write-Host "   다음 명령어로 설치하세요: npm install -g yarn" -ForegroundColor Yellow
+    Write-Host "❌ NPM을 찾을 수 없습니다." -ForegroundColor Red
+    Write-Host "   Node.js와 함께 자동 설치되어야 합니다." -ForegroundColor Yellow
     exit 1
 }
 
@@ -45,7 +62,7 @@ if (-not (Test-Path "package.json")) {
 # 의존성 설치 확인
 if (-not (Test-Path "node_modules")) {
     Write-Host "📦 의존성을 설치합니다..." -ForegroundColor Cyan
-    yarn install
+    npm install
     
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ 의존성 설치 실패" -ForegroundColor Red
@@ -59,7 +76,7 @@ if (-not (Test-Path "node_modules")) {
     $updateDeps = Read-Host "의존성을 업데이트하시겠습니까? (y/N)"
     if ($updateDeps -eq "y" -or $updateDeps -eq "Y") {
         Write-Host "🔄 의존성을 업데이트합니다..." -ForegroundColor Cyan
-        yarn install
+        npm install
         Write-Host "✅ 의존성 업데이트 완료" -ForegroundColor Green
     }
 }
@@ -92,15 +109,15 @@ if ($checkBackend -eq "y" -or $checkBackend -eq "Y") {
 # Vite 개발 서버 시작
 Write-Host ""
 Write-Host "🚀 Vite 개발 서버를 시작합니다..." -ForegroundColor Green
-Write-Host "   포트: 5173" -ForegroundColor Gray
+Write-Host "   포트: 3000" -ForegroundColor Gray
 Write-Host "   모드: development" -ForegroundColor Gray
 Write-Host ""
-Write-Host "🌐 브라우저에서 http://localhost:5173 을 열어주세요" -ForegroundColor Cyan
+Write-Host "🌐 브라우저에서 http://localhost:3000 을 열어주세요" -ForegroundColor Cyan
 Write-Host "⏹️  중지하려면 Ctrl+C를 누르세요" -ForegroundColor Yellow
 Write-Host ""
 
 try {
-    yarn dev
+    npm run dev
 } catch {
     Write-Host "❌ 개발 서버 시작 실패: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
