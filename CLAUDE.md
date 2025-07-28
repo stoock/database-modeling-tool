@@ -33,7 +33,7 @@ MSSQL 데이터베이스 모델링 도구 - 드래그 앤 드롭 인터페이스
 ### 프론트엔드 (React)
 - **프레임워크**: React 19.1.0 + TypeScript 5.8.3
 - **빌드 도구**: Vite 7.0.4
-- **패키지 매니저**: NPM (yarn.lock 존재하지만 package.json 기준)
+- **패키지 매니저**: Yarn (yarn.lock 기반 의존성 관리)
 - **상태 관리**: Zustand 5.0.6
 - **스타일링**: Tailwind CSS 4.1.11
 - **UI 컴포넌트**: Headless UI 2.2.4 + React Hook Form 7.60.0
@@ -73,22 +73,22 @@ cd backend
 cd frontend
 
 # 개발 서버 실행 (포트 3000, 백엔드 프록시 설정됨)
-npm run dev
+yarn dev
 
 # 빌드
-npm run build
+yarn build
 
 # 타입 체크
-npm run type-check
+yarn type-check
 
 # 린트
-npm run lint
+yarn lint
 
 # 단위 테스트
-npm run test
+yarn test
 
 # E2E 테스트
-npm run test:e2e
+yarn test:e2e
 ```
 
 ### Docker 환경 관리
@@ -187,7 +187,7 @@ frontend/src/
 ### 프론트엔드
 - **단위 테스트**: Vitest 1.0.0 + React Testing Library 14.1.0
 - **E2E 테스트**: Playwright 1.40.0 (주요 사용자 플로우)
-- **테스트 실행**: `npm run test` (단위), `npm run test:e2e` (E2E)
+- **테스트 실행**: `yarn test` (단위), `yarn test:e2e` (E2E)
 
 ## 성능 고려사항
 
@@ -221,10 +221,10 @@ frontend/src/
 ### 프론트엔드
 ```bash
 # 린트 검사 및 수정
-npm run lint
+yarn lint
 
 # 타입 체크
-npm run type-check
+yarn type-check
 ```
 
 ### 백엔드
