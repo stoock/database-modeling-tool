@@ -1,21 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import ReactFlow, {
-  Node,
-  Edge,
   addEdge,
   useNodesState,
   useEdgesState,
   Controls,
   Background,
   BackgroundVariant,
-  Connection,
-  NodeChange,
-  EdgeChange,
   applyNodeChanges,
   applyEdgeChanges,
   MiniMap,
   Panel,
 } from 'reactflow';
+import type { Node, Edge, Connection, NodeChange, EdgeChange } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useChangeTracker } from '../../utils/changeTracker';
 

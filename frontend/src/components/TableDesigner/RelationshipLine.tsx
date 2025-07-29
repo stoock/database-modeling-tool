@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { EdgeProps, getBezierPath, EdgeLabelRenderer } from 'reactflow';
+import { getBezierPath, EdgeLabelRenderer } from 'reactflow';
+import type { EdgeProps } from 'reactflow';
 import type { RelationshipEdgeData } from '../../types';
 
 interface RelationshipLineProps extends EdgeProps<RelationshipEdgeData> {}
