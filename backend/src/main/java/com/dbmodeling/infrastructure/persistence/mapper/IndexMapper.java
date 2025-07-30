@@ -14,7 +14,7 @@ import java.util.UUID;
 /**
  * 인덱스 Entity-Domain 매퍼
  */
-@Component
+@Component("persistenceIndexMapper")
 public class IndexMapper {
     
     private final ObjectMapper objectMapper;

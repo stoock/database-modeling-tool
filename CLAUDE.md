@@ -23,7 +23,7 @@ MSSQL 데이터베이스 모델링 도구 - 드래그 앤 드롭 인터페이스
 
 ### 백엔드 (Clean Architecture)
 - **언어/프레임워크**: Java 21, Spring Boot 3.2.0
-- **빌드 도구**: Maven (./mvnw)
+- **빌드 도구**: Gradle 8.5+ (./gradlew)
 - **데이터베이스**: PostgreSQL 15+ (개발), H2 (테스트)
 - **아키텍처 패턴**: Clean Architecture (헥사고날 아키텍처)
 - **ORM**: Spring Data JPA + Hibernate
@@ -80,16 +80,19 @@ MSSQL 데이터베이스 모델링 도구 - 드래그 앤 드롭 인터페이스
 cd backend
 
 # Spring Boot 애플리케이션 실행 (개발 프로파일)
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+./gradlew bootRunDev
+
+# H2 테스트 환경 실행
+./gradlew bootRunH2
 
 # 테스트 실행
-./mvnw test
+./gradlew test
 
-# 통합 테스트 실행
-./mvnw verify
+# 빌드
+./gradlew build
 
 # Flyway 마이그레이션 실행
-./mvnw flyway:migrate -Dflyway.url=jdbc:postgresql://localhost:5432/dbmodeling_dev
+./gradlew flywayMigrate -Pflyway.url=jdbc:postgresql://localhost:5432/dbmodeling_dev
 ```
 
 ### 프론트엔드 개발
@@ -136,6 +139,13 @@ backend/src/main/java/com/dbmodeling/
 ├── application/           # 유스케이스, 애플리케이션 서비스
 ├── domain/               # 도메인 모델, 비즈니스 로직
 └── infrastructure/       # 데이터베이스, 외부 시스템 연동
+
+backend/
+├── build.gradle          # Gradle 빌드 설정
+├── settings.gradle       # 프로젝트 설정
+├── gradle.properties     # Gradle 속성
+├── gradlew               # Gradle Wrapper (Unix)
+└── gradlew.bat          # Gradle Wrapper (Windows)
 ```
 
 ### 프론트엔드 컴포넌트 구조
@@ -159,6 +169,7 @@ frontend/src/
 - Node.js 18+
 - Docker & Docker Compose
 - PostgreSQL (Docker로 실행)
+- Gradle 8.5+ (Wrapper 포함)
 
 ### 데이터베이스 설정
 - **개발**: PostgreSQL (포트 5432)
@@ -254,7 +265,7 @@ yarn type-check
 ### 백엔드
 코드 수정 후 반드시 테스트 실행:
 ```bash
-./mvnw test
+./gradlew test
 ```
 
 ## 언어 정책

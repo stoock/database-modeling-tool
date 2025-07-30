@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * 프로젝트 Entity-Domain 매퍼
  */
-@Component
+@Component("persistenceProjectMapper")
 public class ProjectMapper {
     
     private final ObjectMapper objectMapper;

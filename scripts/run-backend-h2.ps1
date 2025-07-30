@@ -29,12 +29,12 @@ try {
         exit 1
     }
     
-    if (-not (Test-Path "mvnw.cmd")) {
-        Write-Host "❌ Maven Wrapper를 찾을 수 없습니다" -ForegroundColor Red
+    if (-not (Test-Path "gradlew.bat")) {
+        Write-Host "❌ Gradle Wrapper를 찾을 수 없습니다" -ForegroundColor Red
         exit 1
     }
     
-    Write-Host "✅ Maven Wrapper 확인됨" -ForegroundColor Green
+    Write-Host "✅ Gradle Wrapper 확인됨" -ForegroundColor Green
     Write-Host ""
     Write-Host "🏗️ Spring Boot 애플리케이션 실행..." -ForegroundColor Cyan
     Write-Host "   프로파일: test-h2 (H2 인메모리 데이터베이스)" -ForegroundColor Gray
@@ -42,7 +42,7 @@ try {
     Write-Host ""
     
     Write-Host "🔄 Spring Boot 실행 중... (Ctrl+C로 중지)" -ForegroundColor Yellow
-    .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=test-h2 -Dmaven.test.skip=true
+    .\gradlew.bat bootRunH2
 
 } catch {
     Write-Host "❌ 백엔드 실행 중 오류 발생: $($_.Exception.Message)" -ForegroundColor Red

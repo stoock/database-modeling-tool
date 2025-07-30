@@ -25,15 +25,19 @@ public class ExportRequest {
     @Schema(description = "주석 포함 여부", example = "true")
     private Boolean includeComments = true;
     
+    @Schema(description = "유효성 검사 포함 여부", example = "true")
+    private Boolean includeValidation = false;
+    
     public ExportRequest() {}
     
     public ExportRequest(String format, Boolean includeTables, Boolean includeIndexes, 
-                        Boolean includeConstraints, Boolean includeComments) {
+                        Boolean includeConstraints, Boolean includeComments, Boolean includeValidation) {
         this.format = format;
         this.includeTables = includeTables;
         this.includeIndexes = includeIndexes;
         this.includeConstraints = includeConstraints;
         this.includeComments = includeComments;
+        this.includeValidation = includeValidation;
     }
     
     // Getters and Setters
@@ -75,5 +79,17 @@ public class ExportRequest {
     
     public void setIncludeComments(Boolean includeComments) {
         this.includeComments = includeComments;
+    }
+    
+    public Boolean getIncludeValidation() {
+        return includeValidation;
+    }
+    
+    public Boolean isIncludeValidation() {
+        return includeValidation;
+    }
+    
+    public void setIncludeValidation(Boolean includeValidation) {
+        this.includeValidation = includeValidation;
     }
 }

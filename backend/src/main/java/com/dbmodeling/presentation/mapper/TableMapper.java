@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * 테이블 DTO 매퍼
  * 도메인 모델과 DTO 간의 변환을 담당합니다.
  */
-@Component
+@Component("presentationTableMapper")
 public class TableMapper {
 
     /**

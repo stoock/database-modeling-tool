@@ -47,7 +47,12 @@
       "Bash(grep:*)",
       "Bash(echo:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__context7__resolve-library-id",
+      "Bash(gradle wrapper:*)",
+      "Bash(.gradlew.bat build:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew bootRunH2:*)"
     ],
     "deny": []
   }

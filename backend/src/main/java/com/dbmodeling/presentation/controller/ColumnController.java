@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,7 @@ public class ColumnController extends BaseController {
     private final ColumnService columnService;
     private final ColumnMapper columnMapper;
 
-    public ColumnController(ColumnService columnService, ColumnMapper columnMapper) {
+    public ColumnController(ColumnService columnService, @Qualifier("presentationColumnMapper") ColumnMapper columnMapper) {
         this.columnService = columnService;
         this.columnMapper = columnMapper;
     }

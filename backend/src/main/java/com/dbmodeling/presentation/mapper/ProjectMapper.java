@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * 프로젝트 DTO 매퍼
  * 도메인 모델과 DTO 간의 변환을 담당합니다.
  */
-@Component
+@Component("presentationProjectMapper")
 public class ProjectMapper {
 
     /**

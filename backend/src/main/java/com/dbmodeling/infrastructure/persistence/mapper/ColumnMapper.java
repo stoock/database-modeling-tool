@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 /**
  * 컬럼 Entity-Domain 매퍼
  */
-@Component
+@Component("persistenceColumnMapper")
 public class ColumnMapper {
     
     /**

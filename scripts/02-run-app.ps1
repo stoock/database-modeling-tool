@@ -48,8 +48,8 @@ try {
 Write-Host "🏗️ 백엔드 검증..." -ForegroundColor Cyan
 Set-Location backend
 
-if (-not (Test-Path "mvnw.cmd")) {
-    Handle-Error "Maven Wrapper를 찾을 수 없습니다"
+if (-not (Test-Path "gradlew.bat")) {
+    Handle-Error "Gradle Wrapper를 찾을 수 없습니다"
 }
 
 if (-not (Test-Path "src\main\java\com\dbmodeling\DatabaseModelingToolApplication.java")) {
@@ -97,7 +97,7 @@ Write-Host ""
 
 Write-Host "1️⃣ 백엔드 시작 (새 터미널):" -ForegroundColor Yellow
 Write-Host "   cd backend" -ForegroundColor Gray
-Write-Host "   .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev" -ForegroundColor Gray
+Write-Host "   .\gradlew.bat bootRunDev" -ForegroundColor Gray
 Write-Host ""
 
 Write-Host "2️⃣ 프론트엔드 시작 (새 터미널):" -ForegroundColor Yellow  
@@ -121,7 +121,7 @@ if ($autoRun -eq "y" -or $autoRun -eq "Y") {
     
     # 백엔드 시작 (백그라운드)
     Write-Host "🏗️ 백엔드 서버 시작 중..." -ForegroundColor Cyan
-    $backendProcess = Start-Process powershell -ArgumentList "-Command", "cd '$($originalLocation.Path)\backend'; .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev" -PassThru
+    $backendProcess = Start-Process powershell -ArgumentList "-Command", "cd '$($originalLocation.Path)\backend'; .\gradlew.bat bootRunDev" -PassThru
     
     # 잠시 대기
     Start-Sleep -Seconds 5
