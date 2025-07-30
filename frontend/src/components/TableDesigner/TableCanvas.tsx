@@ -133,7 +133,7 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
     if (currentProject?.id) {
       loadTables(currentProject.id);
     }
-  }, [currentProject?.id, loadTables]);
+  }, [currentProject?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 노드 변경 처리 (드래그 등)
   const handleNodesChange = useCallback(

@@ -64,14 +64,14 @@ const DashboardMain: React.FC = () => {
   // 초기 로딩
   useEffect(() => {
     loadProjects();
-  }, [loadProjects]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // URL projectId 처리
   useEffect(() => {
     if (projectId) {
       loadProject(projectId);
     }
-  }, [projectId, loadProject]);
+  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 현재 프로젝트 변경 시 테이블 로드
   useEffect(() => {
@@ -79,7 +79,7 @@ const DashboardMain: React.FC = () => {
       loadTables(currentProject.id);
       clearValidations();
     }
-  }, [currentProject, loadTables, clearValidations]);
+  }, [currentProject]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 프로젝트 선택 핸들러
   const handleProjectSelect = useCallback((project: Project) => {
