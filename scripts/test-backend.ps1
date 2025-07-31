@@ -22,9 +22,9 @@ if (-not (Test-Path "backend")) {
     Set-Location backend
 }
 
-# Maven Wrapper 확인
-if (-not (Test-Path "mvnw.cmd")) {
-    Write-Host "❌ Maven Wrapper (mvnw.cmd)를 찾을 수 없습니다." -ForegroundColor Red
+# Gradle Wrapper 확인
+if (-not (Test-Path "gradlew.bat")) {
+    Write-Host "❌ Gradle Wrapper (gradlew.bat)를 찾을 수 없습니다." -ForegroundColor Red
     exit 1
 }
 
@@ -62,7 +62,7 @@ if ($testChoice -eq "1" -or $testChoice -eq "3") {
     }
     
     Write-Host "🏃 PostgreSQL 테스트 실행 중..." -ForegroundColor Yellow
-    & .\mvnw.cmd test -Dspring.profiles.active=test -Dspring.test.database.replace=none
+    & .\gradlew.bat test -Dspring.profiles.active=test -Dspring.test.database.replace=none
     
     $postgresqlTestResult = $LASTEXITCODE
     if ($postgresqlTestResult -eq 0) {
@@ -78,7 +78,7 @@ if ($testChoice -eq "2" -or $testChoice -eq "3") {
     Write-Host "💾 H2 인메모리 데이터베이스에서 테스트를 실행합니다..." -ForegroundColor Cyan
     Write-Host "🏃 H2 테스트 실행 중..." -ForegroundColor Yellow
     
-    & .\mvnw.cmd test -Dspring.profiles.active=test-h2
+    & .\gradlew.bat test -Dspring.profiles.active=test-h2
     
     $h2TestResult = $LASTEXITCODE
     if ($h2TestResult -eq 0) {
@@ -136,9 +136,9 @@ if ($overallResult -eq 0) {
 
 Write-Host ""
 Write-Host "💡 유용한 명령어:" -ForegroundColor White
-Write-Host "   - 특정 테스트 클래스 실행: .\mvnw.cmd test -Dtest=클래스명" -ForegroundColor Gray
-Write-Host "   - 테스트 커버리지 확인: .\mvnw.cmd jacoco:report" -ForegroundColor Gray
-Write-Host "   - 통합 테스트만 실행: .\mvnw.cmd verify -DskipUnitTests" -ForegroundColor Gray
+Write-Host "   - 특정 테스트 클래스 실행: .\gradlew.bat test --tests 클래스명" -ForegroundColor Gray
+Write-Host "   - 테스트 커버리지 확인: .\gradlew.bat jacocoTestReport" -ForegroundColor Gray
+Write-Host "   - 빌드 포함 테스트: .\gradlew.bat build" -ForegroundColor Gray
 
 # 원래 디렉토리로 복귀
 Set-Location $currentPath
