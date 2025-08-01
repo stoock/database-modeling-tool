@@ -47,13 +47,13 @@ if ($env:JAVA_HOME -and (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
     $issues += "JAVA_HOME이 설정되지 않았거나 Java가 설치되지 않았습니다"
 }
 
-# Maven Wrapper 확인
-if (Test-Path "backend\mvnw.cmd") {
-    Write-Host "   ✅ Maven Wrapper 존재" -ForegroundColor Green
+# Gradle Wrapper 확인
+if (Test-Path "backend\gradlew.bat") {
+    Write-Host "   ✅ Gradle Wrapper 존재" -ForegroundColor Green
     $healthScore += 5
 } else {
-    Write-Host "   ❌ Maven Wrapper 없음" -ForegroundColor Red
-    $issues += "backend/mvnw.cmd 파일이 없습니다"
+    Write-Host "   ❌ Gradle Wrapper 없음" -ForegroundColor Red
+    $issues += "backend/gradlew.bat 파일이 없습니다"
 }
 
 # 백엔드 소스 확인
@@ -140,11 +140,11 @@ try {
 Write-Host "📄 설정 파일 확인..." -ForegroundColor Cyan
 
 $configFiles = @(
-    "backend\pom.xml",
+    "backend\build.gradle",
     "backend\src\main\resources\application.yml", 
     "backend\src\main\resources\application-dev.yml",
     "frontend\vite.config.ts",
-    "scripts\start-dev.ps1"
+    "scripts\01-env-setup.ps1"
 )
 
 $existingConfigs = 0

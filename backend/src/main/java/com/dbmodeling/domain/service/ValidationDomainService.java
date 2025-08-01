@@ -7,6 +7,7 @@ import com.dbmodeling.domain.model.Column;
 import com.dbmodeling.domain.model.Index;
 import com.dbmodeling.domain.model.MSSQLDataType;
 import com.dbmodeling.infrastructure.external.mssql.MSSQLTypeMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  * 네이밍 규칙 검증을 위한 도메인 서비스
  * 프로젝트의 네이밍 규칙에 따라 데이터베이스 객체들의 이름을 검증하고 제안을 제공
  */
+@Service
 public class ValidationDomainService {
 
     /**

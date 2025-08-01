@@ -52,7 +52,10 @@
       "Bash(gradle wrapper:*)",
       "Bash(.gradlew.bat build:*)",
       "Bash(./gradlew build:*)",
-      "Bash(./gradlew bootRunH2:*)"
+      "Bash(./gradlew bootRunH2:*)",
+      "Bash(./gradlew bootRunDev:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

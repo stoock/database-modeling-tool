@@ -24,6 +24,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.containsString;
 
 /**
  * ValidationController 통합 테스트
@@ -64,7 +65,7 @@ class ValidationControllerIntegrationTest {
         namingRules.setTablePattern("^[A-Z][a-zA-Z0-9]*$");
         namingRules.setColumnPattern("^[a-z][a-z0-9_]*$");
         namingRules.setIndexPattern("^IX_[A-Z][a-zA-Z0-9]*_[a-zA-Z0-9]+$");
-        namingRules.setEnforceCase(NamingRules.CaseRule.PASCAL);
+        namingRules.setEnforceCase(NamingRules.CaseType.PASCAL);
         testProject.setNamingRules(namingRules);
         
         testProject = projectRepository.save(testProject);
@@ -112,7 +113,7 @@ class ValidationControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.type").value("TABLE"))
                 .andExpect(jsonPath("$.data.errors").isArray())
                 .andExpect(jsonPath("$.data.errors", hasSize(greaterThan(0))))
-                .andExpected(jsonPath("$.data.suggestion").exists());
+                .andExpect(jsonPath("$.data.suggestion").exists());
     }
 
     @Test
@@ -215,7 +216,7 @@ class ValidationControllerIntegrationTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data", hasSize(greaterThan(0))))
-                .andExpect(jsonPath("$.message").containsString("네이밍 규칙 위반"));
+                .andExpect(jsonPath("$.message").value(containsString("네이밍 규칙 위반")));
     }
 
     @Test

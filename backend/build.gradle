@@ -44,9 +44,9 @@ tasks.named('test') {
 
 // Flyway Configuration
 flyway {
-	url = System.getProperty('flyway.url', 'jdbc:postgresql://localhost:5432/dbmodeling_dev')
-	user = System.getProperty('flyway.user', 'postgres')
-	password = System.getProperty('flyway.password', 'postgres')
+	url = project.findProperty('flyway.url') ?: 'jdbc:postgresql://localhost:5432/dbmodeling_dev'
+	user = project.findProperty('flyway.user') ?: 'postgres'
+	password = project.findProperty('flyway.password') ?: 'postgres'
 	locations = ['filesystem:src/main/resources/db/migration']
 	baselineOnMigrate = true
 	validateOnMigrate = true

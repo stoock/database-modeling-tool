@@ -2,6 +2,7 @@ package com.dbmodeling.presentation.controller;
 
 import com.dbmodeling.domain.model.*;
 import com.dbmodeling.domain.repository.*;
+import static org.hamcrest.Matchers.containsString;
 import com.dbmodeling.presentation.dto.request.CreateIndexRequest;
 import com.dbmodeling.presentation.dto.request.UpdateIndexRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,8 +73,8 @@ class IndexControllerIntegrationTest {
         testColumn = new Column();
         testColumn.setTableId(testTable.getId());
         testColumn.setName("test_column");
-        testColumn.setDataType("NVARCHAR");
-        testColumn.setLength(50);
+        testColumn.setDataType(MSSQLDataType.NVARCHAR);
+        testColumn.setMaxLength(50);
         testColumn.setNullable(false);
         testColumn = columnRepository.save(testColumn);
 
@@ -84,10 +85,10 @@ class IndexControllerIntegrationTest {
         testIndex.setType(Index.IndexType.NONCLUSTERED);
         testIndex.setUnique(false);
         
-        IndexColumn indexColumn = new IndexColumn();
+        Index.IndexColumn indexColumn = new Index.IndexColumn();
         indexColumn.setColumnId(testColumn.getId());
         indexColumn.setColumnName(testColumn.getName());
-        indexColumn.setOrder(IndexColumn.SortOrder.ASC);
+        indexColumn.setOrder(Index.SortOrder.ASC);
         testIndex.setColumns(List.of(indexColumn));
         
         testIndex = indexRepository.save(testIndex);
@@ -172,7 +173,7 @@ class IndexControllerIntegrationTest {
     @Test
     @DisplayName("인덱스 수정 성공")
     void updateIndex_Success() throws Exception {
-        UpdateIndexRequest.IndexColumnRequest columnRequest = new UpdateIndexRequest.IndexColumnRequest();
+        CreateIndexRequest.IndexColumnRequest columnRequest = new CreateIndexRequest.IndexColumnRequest();
         columnRequest.setColumnId(testColumn.getId().toString());
         columnRequest.setOrder("DESC");
 

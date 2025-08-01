@@ -2,6 +2,7 @@ package com.dbmodeling.domain.service;
 
 import com.dbmodeling.domain.model.*;
 import com.dbmodeling.infrastructure.external.mssql.MSSQLTypeMapper;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
  * MSSQL SQL 스크립트 생성을 위한 도메인 서비스
  * 프로젝트의 테이블, 컬럼, 인덱스 정보를 기반으로 MSSQL DDL 스크립트를 생성
  */
+@Service
 public class SqlGeneratorService {
     
     private final MSSQLTypeMapper typeMapper;

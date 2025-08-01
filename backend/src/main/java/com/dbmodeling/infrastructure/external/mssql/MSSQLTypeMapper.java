@@ -2,11 +2,13 @@ package com.dbmodeling.infrastructure.external.mssql;
 
 import com.dbmodeling.domain.model.MSSQLDataType;
 import com.dbmodeling.domain.model.Column;
+import org.springframework.stereotype.Component;
 
 /**
  * MSSQL 데이터 타입 매핑 및 변환을 담당하는 클래스
  * 도메인 모델의 데이터 타입을 MSSQL 호환 문자열로 변환
  */
+@Component
 public class MSSQLTypeMapper {
 
     /**

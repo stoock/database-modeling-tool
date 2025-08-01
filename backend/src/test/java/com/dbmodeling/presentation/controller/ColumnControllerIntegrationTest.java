@@ -1,6 +1,7 @@
 package com.dbmodeling.presentation.controller;
 
 import com.dbmodeling.domain.model.Column;
+import com.dbmodeling.domain.model.MSSQLDataType;
 import com.dbmodeling.domain.model.Project;
 import com.dbmodeling.domain.model.Table;
 import com.dbmodeling.domain.repository.ColumnRepository;
@@ -71,8 +72,8 @@ class ColumnControllerIntegrationTest {
         testColumn = new Column();
         testColumn.setTableId(testTable.getId());
         testColumn.setName("test_column");
-        testColumn.setDataType("NVARCHAR");
-        testColumn.setLength(50);
+        testColumn.setDataType(MSSQLDataType.NVARCHAR);
+        testColumn.setMaxLength(50);
         testColumn.setNullable(false);
         testColumn.setPrimaryKey(false);
         testColumn.setOrderIndex(1);
@@ -101,7 +102,7 @@ class ColumnControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.id").value(testColumn.getId().toString()))
                 .andExpect(jsonPath("$.data.name").value(testColumn.getName()))
                 .andExpect(jsonPath("$.data.dataType").value(testColumn.getDataType()))
-                .andExpect(jsonPath("$.data.length").value(testColumn.getLength()))
+                .andExpect(jsonPath("$.data.length").value(testColumn.getMaxLength()))
                 .andExpect(jsonPath("$.data.nullable").value(testColumn.isNullable()))
                 .andExpect(jsonPath("$.data.primaryKey").value(testColumn.isPrimaryKey()))
                 .andExpect(jsonPath("$.message").value("컬럼을 성공적으로 조회했습니다."));
@@ -124,8 +125,8 @@ class ColumnControllerIntegrationTest {
         CreateColumnRequest request = new CreateColumnRequest();
         request.setName("new_column");
         request.setDataType("BIGINT");
-        request.setNullable(true);
-        request.setPrimaryKey(false);
+        request.setIsNullable(true);
+        request.setIsPrimaryKey(false);
         request.setDescription("새로운 컬럼입니다.");
 
         mockMvc.perform(post("/api/tables/{tableId}/columns", testTable.getId())
@@ -162,7 +163,7 @@ class ColumnControllerIntegrationTest {
         request.setDataType("DECIMAL");
         request.setPrecision(18);
         request.setScale(2);
-        request.setNullable(true);
+        request.setIsNullable(true);
         request.setDescription("수정된 컬럼입니다.");
 
         mockMvc.perform(put("/api/columns/{id}", testColumn.getId())

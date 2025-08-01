@@ -56,7 +56,7 @@ class ProjectControllerIntegrationTest {
         namingRules.setTablePattern("^[A-Z][a-zA-Z0-9]*$");
         namingRules.setColumnPattern("^[a-z][a-z0-9_]*$");
         namingRules.setIndexPattern("^IX_[A-Z][a-zA-Z0-9]*_[a-zA-Z0-9]+$");
-        namingRules.setEnforceCase(NamingRules.CaseRule.PASCAL);
+        namingRules.setEnforceCase(NamingRules.CaseType.PASCAL);
         testProject.setNamingRules(namingRules);
         
         testProject = projectRepository.save(testProject);

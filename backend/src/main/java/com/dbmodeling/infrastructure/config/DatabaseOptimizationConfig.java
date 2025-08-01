@@ -3,21 +3,16 @@ package com.dbmodeling.infrastructure.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import jakarta.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
 import java.util.Properties;
 
 /**
  * 데이터베이스 성능 최적화 설정
+ * JPA 레포지토리는 DatabaseConfig에서 설정되므로 여기서는 제외
  */
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = "com.dbmodeling.infrastructure.persistence.repository")
 @ConfigurationProperties(prefix = "spring.jpa")
 public class DatabaseOptimizationConfig {
 
@@ -54,17 +49,4 @@ public class DatabaseOptimizationConfig {
         return properties;
     }
 
-    /**
-     * 트랜잭션 매니저 설정
-     */
-    @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
-        JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory);
-        
-        // 트랜잭션 타임아웃 설정 (30초)
-        transactionManager.setDefaultTimeout(30);
-        
-        return transactionManager;
-    }
 }

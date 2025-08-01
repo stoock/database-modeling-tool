@@ -219,42 +219,26 @@ try {
 Write-Host "🏗️ 백엔드 설정을 시작합니다..." -ForegroundColor Cyan
 Set-Location backend
 
-# Maven Wrapper 확인 및 생성
-if (-not (Test-Path "mvnw.cmd")) {
-    Write-Host "⚠️ Maven Wrapper가 없습니다. 생성을 시도합니다..." -ForegroundColor Yellow
-    
-    # Maven Wrapper가 없는 경우 다운로드 시도
-    try {
-        Write-Host "   Maven Wrapper JAR 다운로드 중..." -ForegroundColor Gray
-        $wrapperDir = ".mvn\wrapper"
-        $wrapperJar = "$wrapperDir\maven-wrapper.jar"
-        
-        if (-not (Test-Path $wrapperDir)) {
-            New-Item -ItemType Directory -Path $wrapperDir -Force | Out-Null
-        }
-        
-        if (-not (Test-Path $wrapperJar)) {
-            $wrapperUrl = "https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
-            Invoke-WebRequest -Uri $wrapperUrl -OutFile $wrapperJar -UseBasicParsing
-            Write-Host "✅ Maven Wrapper JAR 다운로드 완료" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "❌ Maven Wrapper 설정 실패. Maven이 설치되지 않았을 수 있습니다." -ForegroundColor Red
-        Write-Host "   다음을 확인하세요:" -ForegroundColor Yellow
-        Write-Host "   1. JAVA_HOME 환경변수 설정" -ForegroundColor Yellow
-        Write-Host "   2. Java 21+ 설치 확인" -ForegroundColor Yellow
-        exit 1
-    }
+# Gradle Wrapper 확인
+if (-not (Test-Path "gradlew.bat")) {
+    Write-Host "❌ Gradle Wrapper가 없습니다." -ForegroundColor Red
+    Write-Host "   Gradle Wrapper는 프로젝트에 포함되어 있어야 합니다." -ForegroundColor Yellow
+    Write-Host "   다음을 확인하세요:" -ForegroundColor Yellow
+    Write-Host "   1. JAVA_HOME 환경변수 설정" -ForegroundColor Yellow
+    Write-Host "   2. Java 21+ 설치 확인" -ForegroundColor Yellow
+    Write-Host "   3. 프로젝트 루트에서 실행" -ForegroundColor Yellow
+    exit 1
+} else {
+    Write-Host "✅ Gradle Wrapper 확인 완료" -ForegroundColor Green
 }
 
 # Flyway 마이그레이션 실행
 Write-Host "🔄 데이터베이스 마이그레이션을 실행합니다..." -ForegroundColor Cyan
 try {
-    & .\mvnw.cmd flyway:migrate `
-        "-Dflyway.url=jdbc:postgresql://localhost:5432/dbmodeling_dev" `
-        "-Dflyway.user=postgres" `
-        "-Dflyway.password=postgres" `
-        "-Dflyway.locations=classpath:db/migration"
+    & .\gradlew.bat flywayMigrate `
+        "-Pflyway.url=jdbc:postgresql://localhost:5432/dbmodeling_dev" `
+        "-Pflyway.user=postgres" `
+        "-Pflyway.password=postgres"
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ 데이터베이스 마이그레이션 완료" -ForegroundColor Green
@@ -301,7 +285,7 @@ Write-Host "   백엔드와 프론트엔드를 동시에 실행하려면 다음 
 Write-Host "   .\scripts\02-run-app.ps1" -ForegroundColor Green
 Write-Host ""
 Write-Host "🔧 개별 실행:" -ForegroundColor White
-Write-Host "   - 백엔드만: cd backend && .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev" -ForegroundColor Gray
+Write-Host "   - 백엔드만: cd backend && .\gradlew.bat bootRunDev" -ForegroundColor Gray
 Write-Host "   - 프론트엔드만: cd frontend && yarn dev" -ForegroundColor Gray
 Write-Host ""
 Write-Host "🛠️ 유용한 명령어:" -ForegroundColor White

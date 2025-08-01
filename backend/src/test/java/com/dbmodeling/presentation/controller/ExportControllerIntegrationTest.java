@@ -63,7 +63,7 @@ class ExportControllerIntegrationTest {
         namingRules.setTablePattern("^[A-Z][a-zA-Z0-9]*$");
         namingRules.setColumnPattern("^[a-z][a-z0-9_]*$");
         namingRules.setIndexPattern("^IX_[A-Z][a-zA-Z0-9]*_[a-zA-Z0-9]+$");
-        namingRules.setEnforceCase(NamingRules.CaseRule.PASCAL);
+        namingRules.setEnforceCase(NamingRules.CaseType.PASCAL);
         testProject.setNamingRules(namingRules);
         
         testProject = projectRepository.save(testProject);
@@ -136,7 +136,7 @@ class ExportControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.content").value(containsString("[User]")))
                 .andExpect(jsonPath("$.data.content").value(containsString("[id]")))
                 .andExpect(jsonPath("$.data.content").value(containsString("[name]")))
-                .andExpected(jsonPath("$.data.content").value(containsString("[email]")))
+                .andExpect(jsonPath("$.data.content").value(containsString("[email]")))
                 .andExpect(jsonPath("$.data.fileName").value(endsWith(".sql")))
                 .andExpect(jsonPath("$.data.contentType").value("application/sql"))
                 .andExpect(jsonPath("$.message").value("스키마 미리보기가 성공적으로 생성되었습니다."));
@@ -285,7 +285,7 @@ class ExportControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.message").containsString("지원하지 않는 내보내기 형식"));
+                .andExpect(jsonPath("$.error.message").value(containsString("지원하지 않는 내보내기 형식")));
     }
 
     @Test
