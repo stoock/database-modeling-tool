@@ -336,7 +336,7 @@ export const useTableStore = create<TableState>()(
             });
           } catch (batchError) {
             // 배치 API가 지원되지 않는 경우 개별 업데이트로 폴백
-            console.warn('배치 업데이트 API 미지원, 개별 업데이트로 처리합니다.');
+            console.warn('Batch update API not supported, processing individually.');
             
             const promises = columnIds.map((columnId, index) => 
               cachedApiClient.updateColumn(columnId, { orderIndex: index })

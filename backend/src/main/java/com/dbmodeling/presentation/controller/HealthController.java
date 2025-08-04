@@ -25,7 +25,7 @@ public class HealthController extends BaseController {
         description = "API 서버가 정상적으로 작동하는지 확인합니다."
     )
     @GetMapping("/health")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> health() {
+    public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> healthInfo = Map.of(
             "status", "UP",
             "timestamp", LocalDateTime.now(),
@@ -33,6 +33,6 @@ public class HealthController extends BaseController {
             "version", "1.0.0"
         );
         
-        return success(healthInfo, "API 서버가 정상적으로 작동 중입니다.");
+        return ResponseEntity.ok(healthInfo);
     }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProjectStore } from '../stores/projectStore';
 import { useTableStore } from '../stores/tableStore';
-import { useChangeTracker } from './changeTracker';
+import ChangeTracker from './changeTracker';
 
 /**
  * 자동 저장 상태
@@ -39,7 +39,6 @@ const LOCAL_STORAGE_KEYS = {
 export function useAutoSave(config: AutoSaveConfig = {}) {
   const { currentProject, updateProject } = useProjectStore();
   const { tables, updateTable } = useTableStore();
-  const changeTracker = useChangeTracker();
   
   // 로컬 스토리지에서 설정 불러오기
   const getStoredConfig = () => {
@@ -92,8 +91,12 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
   
   // 변경사항 저장
   const saveChanges = async () => {
-    if (!currentProject || state.isSaving) return false;
+    if (!currentProject) return false;
     
+    // 중복 실행 방지를 위한 상태 확인
+    if (state.isSaving) return false;
+    
+    const changeTracker = ChangeTracker.getInstance();
     const trackerState = changeTracker.getState();
     if (!trackerState.hasUnsavedChanges) return false;
     
@@ -150,18 +153,21 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
     if (!state.isEnabled || state.interval <= 0) return;
     
     const timer = setInterval(async () => {
+      const changeTracker = ChangeTracker.getInstance();
       const trackerState = changeTracker.getState();
-      if (trackerState.hasUnsavedChanges && !state.isSaving) {
+      // state.isSaving을 직접 참조하지 않고 현재 상태를 확인
+      if (trackerState.hasUnsavedChanges) {
         await saveChanges();
       }
     }, state.interval);
     
     return () => clearInterval(timer);
-  }, [state.isEnabled, state.interval, state.isSaving, currentProject?.id, changeTracker]);
+  }, [state.isEnabled, state.interval]); // state.isSaving 제거하여 무한 렌더링 방지
   
   // 브라우저 새로고침 시 변경사항 저장
   useEffect(() => {
     const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
+      const changeTracker = ChangeTracker.getInstance();
       const trackerState = changeTracker.getState();
       
       if (trackerState.hasUnsavedChanges) {
@@ -185,7 +191,7 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [currentProject?.id, changeTracker]);
+  }, [currentProject?.id]); // changeTracker는 싱글톤이므로 의존성에서 제거
   
   // 브라우저 새로고침 후 변경사항 복구
   useEffect(() => {
@@ -213,6 +219,7 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
       
       // 변경사항 복구 (테이블 위치 등)
       if (pendingChanges.tables && pendingChanges.tables.length > 0) {
+        const changeTracker = ChangeTracker.getInstance();
         pendingChanges.tables.forEach((tableId: string) => {
           changeTracker.trackChange('table', tableId);
         });
@@ -224,7 +231,7 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
     } catch (err) {
       console.error('변경사항을 복구하는 중 오류 발생:', err);
     }
-  }, [currentProject, changeTracker]);
+  }, [currentProject]); // changeTracker는 싱글톤이므로 의존성에서 제거
   
   return {
     state,

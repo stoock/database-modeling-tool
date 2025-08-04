@@ -69,13 +69,13 @@ CREATE TABLE indexes (
     name VARCHAR(255) NOT NULL,
     type VARCHAR(50) NOT NULL DEFAULT 'NONCLUSTERED',
     is_unique BOOLEAN DEFAULT FALSE,
-    columns JSONB NOT NULL,
+    columns TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
     CONSTRAINT indexes_name_not_empty CHECK (LENGTH(TRIM(name)) > 0),
     CONSTRAINT indexes_type_valid CHECK (type IN ('CLUSTERED', 'NONCLUSTERED')),
-    CONSTRAINT indexes_columns_not_empty CHECK (jsonb_array_length(columns) > 0),
+    CONSTRAINT indexes_columns_not_empty CHECK (LENGTH(TRIM(columns)) > 0),
     UNIQUE(table_id, name)
 );
 

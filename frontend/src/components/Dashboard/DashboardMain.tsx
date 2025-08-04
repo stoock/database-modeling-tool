@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useProjectStore } from '../../stores/projectStore';
 import { useTableStore } from '../../stores/tableStore';
 import { useValidationStore } from '../../stores/validationStore';
-import { useChangeTracker } from '../../utils/changeTracker';
+import ChangeTracker from '../../utils/changeTracker';
 import { useAutoSave } from '../../utils/autoSave';
 import { UnsavedChangesDialog } from '../ChangeTracker';
 import { ProjectCreateModal } from '../ProjectManager';
@@ -40,7 +40,6 @@ const DashboardMain: React.FC = () => {
   
   const { tables, selectedTable, loadTables, updateTable } = useTableStore();
   const { clearValidations } = useValidationStore();
-  const changeTracker = useChangeTracker();
   
   // 컴포넌트 상태
   const [saveFeedbackStatus, setSaveFeedbackStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
@@ -50,36 +49,46 @@ const DashboardMain: React.FC = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedDashboardView, setSelectedDashboardView] = useState<'overview' | 'columns' | 'indexes' | 'export'>('overview');
   
-  // 자동 저장 설정
+  // 자동 저장 콜백 함수들을 useCallback으로 메모화
+  const onBeforeSave = useCallback(() => {
+    setSaveFeedbackStatus('saving');
+    return true;
+  }, []);
+
+  const onAfterSave = useCallback(() => {
+    setSaveFeedbackStatus('success');
+  }, []);
+
+  // 자동 저장 설정 (활성화됨)
   const autoSave = useAutoSave({
-    onBeforeSave: () => {
-      setSaveFeedbackStatus('saving');
-      return true;
-    },
-    onAfterSave: () => {
-      setSaveFeedbackStatus('success');
-    }
+    enabled: false, // 자동 저장 기능 비활성화
+    onBeforeSave,
+    onAfterSave
   });
 
   // 초기 로딩
   useEffect(() => {
+    const { loadProjects } = useProjectStore.getState();
     loadProjects();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // 의존성 없음
 
   // URL projectId 처리
   useEffect(() => {
     if (projectId) {
+      const { loadProject } = useProjectStore.getState();
       loadProject(projectId);
     }
-  }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [projectId]); // 오직 projectId만 의존성
 
   // 현재 프로젝트 변경 시 테이블 로드
   useEffect(() => {
     if (currentProject) {
+      const { loadTables } = useTableStore.getState();
+      const { clearValidations } = useValidationStore.getState();
       loadTables(currentProject.id);
       clearValidations();
     }
-  }, [currentProject]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentProject?.id]); // 오직 currentProject.id만 의존성
 
   // 프로젝트 선택 핸들러
   const handleProjectSelect = useCallback((project: Project) => {
@@ -125,6 +134,7 @@ const DashboardMain: React.FC = () => {
   const saveAllChanges = useCallback(async (): Promise<void> => {
     if (!currentProject) return;
     
+    const changeTracker = ChangeTracker.getInstance();
     const state = changeTracker.getState();
     
     try {
@@ -146,10 +156,10 @@ const DashboardMain: React.FC = () => {
       changeTracker.markAsSaved();
       setSaveFeedbackStatus('success');
     } catch (error) {
-      console.error('변경사항 저장 중 오류 발생:', error);
+      console.error('Error occurred while saving changes:', error);
       setSaveFeedbackStatus('error');
     }
-  }, [currentProject, changeTracker, tables, updateTable]);
+  }, [currentProject, tables, updateTable]);
 
   // 로딩 상태 처리
   if (isLoading) {
@@ -157,7 +167,7 @@ const DashboardMain: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     );

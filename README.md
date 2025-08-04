@@ -17,19 +17,23 @@ MSSQL 데이터베이스 스키마의 직관적인 설계와 관리를 가능하
 ## 기술 스택
 
 ### 프론트엔드
-- **프레임워크**: React 19 with TypeScript
-- **스타일링**: Tailwind CSS
-- **상태 관리**: Zustand (경량 상태 관리)
-- **UI 컴포넌트**: Headless UI + React Hook Form
-- **시각화**: React Flow (테이블 관계 다이어그램용)
-- **테스팅**: Jest + React Testing Library
+- **프레임워크**: React 19.1.0 + TypeScript 5.8.3
+- **빌드 도구**: Vite 7.0.4
+- **패키지 매니저**: Yarn (yarn.lock 기반 의존성 관리)
+- **상태 관리**: Zustand 5.0.6
+- **스타일링**: Tailwind CSS 4.1.11
+- **UI 컴포넌트**: Headless UI 2.2.4 + React Hook Form 7.60.0
+- **시각화**: React Flow 11.11.4 (테이블 관계 다이어그램용)
+- **테스팅**: Vitest 1.0.0 + React Testing Library, Playwright 1.40.0 (E2E)
 
 ### 백엔드
-- **언어**: Java 17
-- **프레임워크**: Spring Boot 3.x
+- **언어**: Java 21
+- **프레임워크**: Spring Boot 3.2.0
+- **빌드 도구**: Gradle 8.5+ (./gradlew)
 - **아키텍처**: Clean Architecture (헥사고날 아키텍처)
-- **데이터베이스**: PostgreSQL 15+
+- **데이터베이스**: PostgreSQL 15+ (개발), H2 (테스트)
 - **ORM**: Spring Data JPA + Hibernate
+- **마이그레이션**: Flyway
 - **API 문서화**: OpenAPI/Swagger
 - **테스팅**: JUnit 5 + Mockito + Spring Boot Test
 
@@ -37,10 +41,24 @@ MSSQL 데이터베이스 스키마의 직관적인 설계와 관리를 가능하
 
 ```
 database-modeling-tool/
-├── frontend/                    # React 애플리케이션 (예정)
+├── frontend/                    # React 애플리케이션
+│   ├── src/
+│   │   ├── components/         # UI 컴포넌트
+│   │   ├── stores/             # Zustand 상태 관리
+│   │   ├── services/           # API 클라이언트
+│   │   └── types/              # TypeScript 타입 정의
+│   ├── package.json
+│   └── yarn.lock
 ├── backend/                     # Spring Boot 애플리케이션
-├── docs/                        # 프로젝트 문서
-├── docker/                      # Docker 설정 (예정)
+│   ├── src/main/java/com/dbmodeling/
+│   │   ├── domain/             # 도메인 모델 및 비즈니스 로직
+│   │   ├── application/        # 유스케이스 및 애플리케이션 서비스
+│   │   ├── infrastructure/     # 데이터베이스 및 외부 시스템 연동
+│   │   └── presentation/       # REST API 컨트롤러
+│   ├── build.gradle
+│   └── gradlew
+├── scripts/                     # 개발 스크립트 (PowerShell)
+├── docker/                      # Docker 설정
 └── .kiro/                       # Kiro IDE 설정
     ├── specs/                   # 기능 명세서
     └── steering/                # AI 어시스턴트 가이드
@@ -48,36 +66,83 @@ database-modeling-tool/
 
 ## 개발 상태
 
-현재 백엔드의 도메인 계층, 애플리케이션 계층, 인프라스트럭처 계층이 구현 완료되었습니다.
-
-### 완료된 기능
-- ✅ 도메인 모델 (Project, Table, Column, Index, NamingRules)
-- ✅ 데이터 영속성 (JPA 엔티티, 리포지토리)
-- ✅ 애플리케이션 서비스 (ProjectService, TableService, IndexService)
+### 백엔드 (완료)
+- ✅ 도메인 계층 (Project, Table, Column, Index, NamingRules)
+- ✅ 애플리케이션 계층 (유스케이스, 애플리케이션 서비스)
+- ✅ 인프라 계층 (JPA 엔티티, 리포지토리, 외부 연동)
 - ✅ MSSQL 스키마 생성 엔진 (SqlGeneratorService, SchemaExportService)
-- ✅ 검증 엔진 (ValidationDomainService)
-- ✅ 포괄적인 단위 테스트 및 통합 테스트
+- ✅ 검증 엔진 (ValidationService)
+- ✅ Flyway 마이그레이션 및 H2/PostgreSQL 지원
 
-### 진행 예정
-- 🔄 REST API 컨트롤러 구현
-- 🔄 프론트엔드 React 애플리케이션 개발
-- 🔄 E2E 테스트 구현
+### 프론트엔드 (16.3단계까지 완료)
+- ✅ 프로젝트 관리 (생성, 편집, 삭제)
+- ✅ 테이블 설계 캔버스 (React Flow 기반)
+- ✅ 컬럼 관리 인터페이스 (MSSQL 데이터 타입 지원)
+- ✅ 인덱스 관리 (클러스터드/논클러스터드)
+- ✅ 실시간 명명 규칙 검증
+- ✅ 자동 저장 및 변경사항 추적
+- ✅ 반응형 UI (Tailwind CSS)
+
+### 현재 작업 상태
+- 🔄 API 연동 및 에러 처리 완성 (17단계)
+- ⚠️ 알려진 이슈: 백엔드 테스트 일부 실패 (115/351개)
+- ⚠️ 자동 저장 기능 임시 비활성화 (무한 렌더링 방지)
+
+### 최근 수정 사항
+- ✅ React useEffect 무한 렌더링 오류 해결
+- ✅ CORS 설정 업데이트 (포트 3000, 3001, 3002, 5173 지원)
+- ✅ 영어 로그 메시지 적용 (한글 깨짐 해결)
+- ✅ 포트 관리 프로세스 개선
 
 ## 빠른 시작
 
-### 백엔드 실행
+### 통합 개발 환경 시작 (권장)
+```powershell
+# 1단계: 개발 환경 설정
+.\scripts\01-env-setup.ps1
 
-```bash
-cd backend
-./mvnw spring-boot:run
+# 2단계: 애플리케이션 실행
+.\scripts\02-run-app.ps1
+
+# 선택사항: 시스템 상태 확인
+.\scripts\03-health-check.ps1
 ```
 
-### 테스트 실행
+### 개별 서비스 실행
 
+#### 백엔드 (Spring Boot)
 ```bash
 cd backend
-./mvnw test
+
+# 개발 프로파일로 실행
+./gradlew bootRunDev
+
+# H2 테스트 환경 실행
+./gradlew bootRunH2
+
+# 빌드 (테스트 제외)
+./gradlew build -x test
 ```
+
+#### 프론트엔드 (React + Vite)
+```bash
+cd frontend
+
+# 개발 서버 시작 (포트 3000)
+yarn dev
+
+# 타입 체크
+yarn type-check
+
+# 린트 검사
+yarn lint
+```
+
+### 접속 정보
+- **프론트엔드**: http://localhost:3000
+- **백엔드 API**: http://localhost:8080/api
+- **Swagger UI**: http://localhost:8080/api/swagger-ui.html
+- **pgAdmin**: http://localhost:5050 (Podman Compose로 실행)
 
 ## 기여하기
 

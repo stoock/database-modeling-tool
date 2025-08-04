@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { useProjectStore } from '../stores/projectStore';
 import { useTableStore } from '../stores/tableStore';
 
@@ -187,16 +187,17 @@ export class ChangeTracker {
  * 변경사항 추적 훅
  */
 export function useChangeTracker() {
-  const tracker = ChangeTracker.getInstance();
+  const tracker = useMemo(() => ChangeTracker.getInstance(), []); // 메모화
   const { updateTable } = useTableStore();
   const { updateProject } = useProjectStore();
   
   // 페이지 이탈 시 경고 설정
   useEffect(() => {
     return tracker.setupBeforeUnloadWarning();
-  }, []);
+  }, []); // 의존성 제거 (tracker는 싱글톤)
   
-  return {
+  // 메모화된 반환 객체
+  return useMemo(() => ({
     getState: tracker.getState.bind(tracker),
     trackChange: tracker.trackChange.bind(tracker),
     markAsSaved: tracker.markAsSaved.bind(tracker),
@@ -209,7 +210,7 @@ export function useChangeTracker() {
       await updateTable(tableId, { positionX: x, positionY: y });
       tracker.markItemAsSaved('table', tableId);
     }
-  };
+  }), [tracker, updateTable, updateProject]); // 필요한 의존성만 포함
 }
 
 export default ChangeTracker;

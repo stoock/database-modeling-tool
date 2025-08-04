@@ -43,7 +43,7 @@ const ChangeIndicator: React.FC<ChangeIndicatorProps> = ({
           await onSave();
           changeTracker.markAsSaved();
         } catch (error) {
-          console.error('자동 저장 중 오류 발생:', error);
+          console.error('Auto save error occurred:', error);
         } finally {
           setIsSaving(false);
         }
@@ -63,7 +63,7 @@ const ChangeIndicator: React.FC<ChangeIndicatorProps> = ({
       await onSave();
       changeTracker.markAsSaved();
     } catch (error) {
-      console.error('저장 중 오류 발생:', error);
+      console.error('Error occurred during save:', error);
     } finally {
       setIsSaving(false);
     }

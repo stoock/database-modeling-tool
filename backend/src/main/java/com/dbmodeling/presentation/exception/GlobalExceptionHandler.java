@@ -141,11 +141,14 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGenericException(Exception ex) {
-        logger.error("Unexpected error occurred", ex);
+        logger.error("Unexpected error occurred: {} - {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+        
+        // 디버깅용 상세 정보 포함
+        String detailedMessage = "서버 내부 오류가 발생했습니다. [" + ex.getClass().getSimpleName() + ": " + ex.getMessage() + "]";
         
         ApiResponse<Object> response = ApiResponse.error(
             "INTERNAL_SERVER_ERROR",
-            "서버 내부 오류가 발생했습니다."
+            detailedMessage
         );
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
