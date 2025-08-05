@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useProjectStore } from '../stores/projectStore';
 import { useTableStore } from '../stores/tableStore';
 import ChangeTracker from './changeTracker';
@@ -37,7 +37,8 @@ const LOCAL_STORAGE_KEYS = {
  * 자동 저장 훅
  */
 export function useAutoSave(config: AutoSaveConfig = {}) {
-  const { currentProject, updateProject } = useProjectStore();
+  const { currentProject } = useProjectStore();
+  // const updateProject = useProjectStore().updateProject; // 현재 미사용
   const { tables, updateTable } = useTableStore();
   
   // 로컬 스토리지에서 설정 불러오기
@@ -90,7 +91,7 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
   };
   
   // 변경사항 저장
-  const saveChanges = async () => {
+  const saveChanges = useCallback(async () => {
     if (!currentProject) return false;
     
     // 중복 실행 방지를 위한 상태 확인
@@ -146,27 +147,29 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
       }));
       return false;
     }
-  };
+  }, [currentProject, state.isSaving, tables, updateTable, config.onBeforeSave, config.onAfterSave]);
   
   // 자동 저장 타이머
   useEffect(() => {
     if (!state.isEnabled || state.interval <= 0) return;
     
-    const timer = setInterval(async () => {
+    const timer = window.setInterval(() => {
       const changeTracker = ChangeTracker.getInstance();
       const trackerState = changeTracker.getState();
       // state.isSaving을 직접 참조하지 않고 현재 상태를 확인
       if (trackerState.hasUnsavedChanges) {
-        await saveChanges();
+        saveChanges();
       }
     }, state.interval);
     
-    return () => clearInterval(timer);
-  }, [state.isEnabled, state.interval]); // state.isSaving 제거하여 무한 렌더링 방지
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [state.isEnabled, state.interval, saveChanges]);
   
   // 브라우저 새로고침 시 변경사항 저장
   useEffect(() => {
-    const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = async () => {
       const changeTracker = ChangeTracker.getInstance();
       const trackerState = changeTracker.getState();
       

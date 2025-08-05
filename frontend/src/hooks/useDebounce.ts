@@ -26,15 +26,15 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number
 ): T => {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<number | undefined>(undefined);
 
   const debouncedCallback = useCallback(
     (...args: Parameters<T>) => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current);
       }
 
-      timeoutRef.current = setTimeout(() => {
+      timeoutRef.current = window.setTimeout(() => {
         callback(...args);
       }, delay);
     },
@@ -45,7 +45,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current);
       }
     };
   }, []);
@@ -62,8 +62,8 @@ export const useDebouncedApi = <T>(
 ) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const abortControllerRef = useRef<AbortController>();
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
+  const timeoutRef = useRef<number | undefined>(undefined);
 
   const debouncedApiCall = useCallback(
     async (...args: any[]): Promise<T | null> => {
@@ -74,11 +74,11 @@ export const useDebouncedApi = <T>(
 
       // 이전 타이머 취소
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current);
       }
 
       return new Promise((resolve, reject) => {
-        timeoutRef.current = setTimeout(async () => {
+        timeoutRef.current = window.setTimeout(async () => {
           try {
             setLoading(true);
             setError(null);
@@ -111,7 +111,7 @@ export const useDebouncedApi = <T>(
         abortControllerRef.current.abort();
       }
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current);
       }
     };
   }, []);

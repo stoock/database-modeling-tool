@@ -1,12 +1,18 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
+  root: Element | null = null
+  rootMargin: string = ''
+  thresholds: readonly number[] = []
+  
   constructor() {}
   disconnect() {}
   observe() {}
   unobserve() {}
-}
+  takeRecords(): IntersectionObserverEntry[] { return [] }
+} as any
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -31,5 +37,3 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Import vi from vitest
-import { vi } from 'vitest'

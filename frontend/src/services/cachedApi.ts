@@ -27,11 +27,11 @@ interface CacheEntry<T> {
  * 캐싱 기능이 추가된 API 클라이언트
  */
 class CachedApiClient {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private readonly defaultTtl = 5 * 60 * 1000; // 5분
   private readonly maxCacheSize = 100;
 
-  private getCacheKey(method: string, ...args: any[]): string {
+  private getCacheKey(method: string, ...args: unknown[]): string {
     return `${method}:${JSON.stringify(args)}`;
   }
 
@@ -48,7 +48,7 @@ class CachedApiClient {
       return null;
     }
 
-    return entry.data;
+    return entry.data as T;
   }
 
   private set<T>(key: string, data: T, ttl: number = this.defaultTtl): void {

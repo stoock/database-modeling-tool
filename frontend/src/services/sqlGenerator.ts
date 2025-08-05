@@ -22,10 +22,10 @@ export class SqlGenerator {
       let columnDef = `  [${column.name}] ${this.formatDataType(column)}`;
       
       // NULL 허용 여부
-      columnDef += column.isNullable ? ' NULL' : ' NOT NULL';
+      columnDef += column.nullable ? ' NULL' : ' NOT NULL';
       
       // 자동 증가
-      if (column.isIdentity) {
+      if (column.identity) {
         const seed = column.identitySeed || 1;
         const increment = column.identityIncrement || 1;
         columnDef += ` IDENTITY(${seed},${increment})`;
@@ -47,7 +47,7 @@ export class SqlGenerator {
     sql += columnDefs.join(',\n');
     
     // 기본키 제약조건
-    const primaryKeyColumns = table.columns.filter(c => c.isPrimaryKey);
+    const primaryKeyColumns = table.columns.filter(c => c.primaryKey);
     if (primaryKeyColumns.length > 0) {
       const pkColumnNames = primaryKeyColumns.map(c => `[${c.name}]`).join(', ');
       sql += `,\n  CONSTRAINT [PK_${table.name}] PRIMARY KEY CLUSTERED (${pkColumnNames})`;
@@ -152,7 +152,7 @@ export class SqlGenerator {
     format: ExportFormat,
     includeComments: boolean = true,
     includeIndexes: boolean = true,
-    includeConstraints: boolean = true
+    _includeConstraints: boolean = true // 현재 미사용
   ): { content: string; mimeType: string } {
     switch (format) {
       case 'SQL':
@@ -173,9 +173,9 @@ export class SqlGenerator {
                 maxLength: column.maxLength,
                 precision: column.precision,
                 scale: column.scale,
-                isNullable: column.isNullable,
-                isPrimaryKey: column.isPrimaryKey,
-                isIdentity: column.isIdentity,
+                nullable: column.nullable,
+                primaryKey: column.primaryKey,
+                identity: column.identity,
                 identitySeed: column.identitySeed,
                 identityIncrement: column.identityIncrement,
                 defaultValue: column.defaultValue,
@@ -249,13 +249,13 @@ export class SqlGenerator {
       
       table.columns.forEach(column => {
         const dataType = this.formatDataType(column);
-        const isNullable = column.isNullable ? 'Y' : 'N';
-        const isPrimaryKey = column.isPrimaryKey ? 'Y' : 'N';
-        const isIdentity = column.isIdentity ? 'Y' : 'N';
+        const nullable = column.nullable ? 'Y' : 'N';
+        const primaryKey = column.primaryKey ? 'Y' : 'N';
+        const identity = column.identity ? 'Y' : 'N';
         const defaultValue = column.defaultValue || '';
         const description = column.description || '';
         
-        md += `| ${column.name} | ${dataType} | ${isNullable} | ${isPrimaryKey} | ${isIdentity} | ${defaultValue} | ${description} |\n`;
+        md += `| ${column.name} | ${dataType} | ${nullable} | ${primaryKey} | ${identity} | ${defaultValue} | ${description} |\n`;
       });
       
       if (includeIndexes && table.indexes.length > 0) {
@@ -351,18 +351,18 @@ export class SqlGenerator {
       
       table.columns.forEach(column => {
         const dataType = this.formatDataType(column);
-        const isNullable = column.isNullable ? 'Y' : 'N';
-        const isPrimaryKey = column.isPrimaryKey ? 'Y' : 'N';
-        const isIdentity = column.isIdentity ? 'Y' : 'N';
+        const nullable = column.nullable ? 'Y' : 'N';
+        const primaryKey = column.primaryKey ? 'Y' : 'N';
+        const identity = column.identity ? 'Y' : 'N';
         const defaultValue = column.defaultValue || '';
         const description = column.description || '';
         
         html += '    <tr>\n';
         html += `      <td>${column.name}</td>\n`;
         html += `      <td>${dataType}</td>\n`;
-        html += `      <td>${isNullable}</td>\n`;
-        html += `      <td>${isPrimaryKey}</td>\n`;
-        html += `      <td>${isIdentity}</td>\n`;
+        html += `      <td>${nullable}</td>\n`;
+        html += `      <td>${primaryKey}</td>\n`;
+        html += `      <td>${identity}</td>\n`;
         html += `      <td>${defaultValue}</td>\n`;
         html += `      <td>${description}</td>\n`;
         html += '    </tr>\n';
@@ -416,13 +416,13 @@ export class SqlGenerator {
     tables.forEach(table => {
       table.columns.forEach(column => {
         const dataType = this.formatDataType(column);
-        const isNullable = column.isNullable ? 'Y' : 'N';
-        const isPrimaryKey = column.isPrimaryKey ? 'Y' : 'N';
-        const isIdentity = column.isIdentity ? 'Y' : 'N';
+        const nullable = column.nullable ? 'Y' : 'N';
+        const primaryKey = column.primaryKey ? 'Y' : 'N';
+        const identity = column.identity ? 'Y' : 'N';
         const defaultValue = column.defaultValue ? `"${column.defaultValue}"` : '';
         const description = column.description ? `"${column.description}"` : '';
         
-        csv += `"${table.name}","${column.name}","${dataType}",${isNullable},${isPrimaryKey},${isIdentity},${defaultValue},${description}\n`;
+        csv += `"${table.name}","${column.name}","${dataType}",${nullable},${primaryKey},${identity},${defaultValue},${description}\n`;
       });
     });
     

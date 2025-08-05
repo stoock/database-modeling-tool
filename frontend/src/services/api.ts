@@ -47,7 +47,7 @@ class ApiClient {
 
     // 응답 인터셉터
     this.client.interceptors.response.use(
-      (response: AxiosResponse<ApiResponse<any>>) => response,
+      (response: AxiosResponse<ApiResponse<unknown>>) => response,
       (error) => {
         if (error.response?.status === 401) {
           // 인증 오류 처리
@@ -190,13 +190,20 @@ class ApiClient {
 export const apiClient = new ApiClient();
 
 // 에러 처리 유틸리티
-export const handleApiError = (error: any): ApiError => {
-  if (error.response?.data?.error) {
-    return error.response.data as ApiError;
+export const handleApiError = (error: unknown): ApiError => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as { response?: { data?: ApiError } };
+    if (axiosError.response?.data?.error) {
+      return axiosError.response.data;
+    }
   }
   
+  const errorMessage = error && typeof error === 'object' && 'message' in error
+    ? (error as { message: string }).message
+    : '알 수 없는 오류가 발생했습니다.';
+  
   return {
-    error: error.message || '알 수 없는 오류가 발생했습니다.',
+    error: errorMessage,
     code: 'UNKNOWN_ERROR',
   };
 };
