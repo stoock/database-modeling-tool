@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import ReactFlow, {
-  addEdge,
   useNodesState,
   useEdgesState,
   Controls,
@@ -56,8 +55,8 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
   
   const changeTracker = useChangeTracker();
 
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, _onNodesChange] = useNodesState([]);
+  const [edges, setEdges, _onEdgesChange] = useEdgesState([]);
 
   // 모달 상태
   const [tableEditModal, setTableEditModal] = useState<{
@@ -234,7 +233,7 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
       setIndexManageModal({ isOpen: true, tableId });
     };
 
-    const handleAddTableFromCanvas = (event: CustomEvent) => {
+    const handleAddTableFromCanvas = (_event: CustomEvent) => {
       setTableEditModal({ isOpen: true, table: null });
     };
     

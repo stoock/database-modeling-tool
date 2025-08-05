@@ -4,7 +4,7 @@ import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useTableStore } from '../../stores/tableStore';
 import { useValidationStore } from '../../stores/validationStore';
 import { useProjectStore } from '../../stores/projectStore';
-import type { Table, Index, IndexColumn, Column } from '../../types';
+import type { Table, Index } from '../../types';
 import IndexList from '../IndexManager/IndexList';
 import IndexForm from '../IndexManager/IndexForm';
 
@@ -20,13 +20,13 @@ const IndexManagerModal: React.FC<IndexManagerModalProps> = ({
   tableId
 }) => {
   const { getTableById } = useTableStore();
-  const { currentProject } = useProjectStore();
-  const { validateIndex } = useValidationStore();
+  const { currentProject: _currentProject } = useProjectStore();
+  const { validateIndex: _validateIndex } = useValidationStore();
   
   const [table, setTable] = useState<Table | undefined>(undefined);
   const [selectedIndex, setSelectedIndex] = useState<Index | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, _setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // 테이블 정보 로드

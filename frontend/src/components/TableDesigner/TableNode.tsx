@@ -3,7 +3,7 @@ import { Handle, Position } from 'reactflow';
 import type { NodeProps } from 'reactflow';
 import { 
   TableCellsIcon, 
-  KeyIcon, 
+ 
   EyeIcon,
   PencilIcon,
   TrashIcon,
@@ -30,9 +30,9 @@ import IndexManagerModal from './IndexManagerModal';
 
 interface TableNodeProps extends NodeProps<TableNodeData> {}
 
-const TableNode: React.FC<TableNodeProps> = memo(({ data, selected, id }) => {
+const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
   const { table, isSelected } = data;
-  const { deleteTable, setSelectedTable, updateTable } = useTableStore();
+  const { deleteTable, setSelectedTable } = useTableStore();
   const { validateTable, tableValidations } = useValidationStore();
   const { currentProject } = useProjectStore();
   const changeTracker = useChangeTracker();
@@ -60,10 +60,10 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected, id }) => {
 
   // 컬럼 타입별 아이콘 반환
   const getColumnTypeIcon = useCallback((column: Column) => {
-    if (column.isPrimaryKey) {
+    if (column.primaryKey) {
       return <KeyIconSolid className="w-3 h-3 text-yellow-600" title="기본키" />;
     }
-    if (!column.isNullable) {
+    if (!column.nullable) {
       return <EyeIcon className="w-3 h-3 text-blue-600" title="필수" />;
     }
     return <EyeSlashIcon className="w-3 h-3 text-gray-400" title="선택적" />;
@@ -400,17 +400,17 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected, id }) => {
                     <span className="text-xs text-gray-500 font-mono">
                       {formatDataType(column)}
                     </span>
-                    {column.isIdentity && (
+                    {column.identity && (
                       <span className="text-xs bg-green-100 text-green-800 px-1 rounded">
                         AI
                       </span>
                     )}
-                    {!column.isNullable && !column.isPrimaryKey && (
+                    {!column.nullable && !column.primaryKey && (
                       <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">
                         필수
                       </span>
                     )}
-                    {column.isPrimaryKey && (
+                    {column.primaryKey && (
                       <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">
                         PK
                       </span>
@@ -512,14 +512,14 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected, id }) => {
           table={table}
           position={{ x: contextMenu.x, y: contextMenu.y }}
           onClose={closeContextMenu}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-          onDuplicate={handleDuplicateClick}
-          onAddColumn={handleAddColumnClick}
-          onManageIndexes={handleIndexClick}
-          onToggleExpand={toggleExpand}
+          onEdit={() => handleEditClick({} as React.MouseEvent)}
+          onDelete={() => handleDeleteClick({} as React.MouseEvent)}
+          onDuplicate={() => handleDuplicateClick({} as React.MouseEvent)}
+          onAddColumn={() => handleAddColumnClick({} as React.MouseEvent)}
+          onManageIndexes={() => handleIndexClick({} as React.MouseEvent)}
+          onToggleExpand={() => toggleExpand({} as React.MouseEvent)}
           isExpanded={isExpanded}
-          onToggleShowAllColumns={toggleShowAllColumns}
+          onToggleShowAllColumns={() => toggleShowAllColumns({} as React.MouseEvent)}
           showAllColumns={showAllColumns}
         />
       )}

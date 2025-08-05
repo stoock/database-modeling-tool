@@ -43,7 +43,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty: _isDirty },
   } = useForm<TableFormData>({
     defaultValues: {
       name: '',

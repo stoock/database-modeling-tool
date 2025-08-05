@@ -30,7 +30,7 @@ const IndexManageModal: React.FC<IndexManageModalProps> = ({
   const { validateIndexName } = useValidationStore();
   
   const [table, setTable] = useState<Table | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<Index | null>(null);
+  const [_selectedIndex, setSelectedIndex] = useState<Index | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 

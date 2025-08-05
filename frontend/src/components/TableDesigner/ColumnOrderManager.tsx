@@ -5,9 +5,6 @@ import {
   TrashIcon,
   DocumentDuplicateIcon,
   KeyIcon,
-  EyeSlashIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import {
@@ -87,7 +84,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
   const getColumnBadges = (column: Column) => {
     const badges = [];
     
-    if (column.isPrimaryKey) {
+    if (column.primaryKey) {
       badges.push(
         <span key="pk" className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
           <KeyIcon className="w-3 h-3 mr-1" />
@@ -96,7 +93,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
       );
     }
     
-    if (column.isIdentity) {
+    if (column.identity) {
       badges.push(
         <span key="identity" className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
           AI
@@ -104,7 +101,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = ({
       );
     }
     
-    if (!column.isNullable) {
+    if (!column.nullable) {
       badges.push(
         <span key="not-null" className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
           NOT NULL
@@ -297,9 +294,9 @@ export const ColumnOrderManager: React.FC<ColumnOrderManagerProps> = ({
         maxLength: column.maxLength,
         precision: column.precision,
         scale: column.scale,
-        isNullable: column.isNullable,
-        isPrimaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
-        isIdentity: false, // 복사된 컬럼은 자동증가가 될 수 없음
+        nullable: column.nullable,
+        primaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
+        identity: false, // 복사된 컬럼은 자동증가가 될 수 없음
         defaultValue: column.defaultValue,
         orderIndex: columns.length,
       };
@@ -405,7 +402,7 @@ export const ColumnOrderManager: React.FC<ColumnOrderManagerProps> = ({
                 <p className="text-sm text-gray-500 mt-2">
                   이 작업은 되돌릴 수 없습니다.
                 </p>
-                {deleteConfirmColumn.isPrimaryKey && (
+                {deleteConfirmColumn.primaryKey && (
                   <div className="mt-3 p-3 bg-red-50 rounded-md">
                     <p className="text-sm text-red-800">
                       <strong>경고:</strong> 이 컬럼은 기본키입니다. 삭제하면 테이블의 무결성에 영향을 줄 수 있습니다.
