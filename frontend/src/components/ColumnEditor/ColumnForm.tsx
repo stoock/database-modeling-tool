@@ -14,17 +14,15 @@ interface ColumnFormProps {
 
 interface ColumnFormData {
   name: string;
-  description: string;
   dataType: MSSQLDataType;
-  maxLength: number | null;
-  precision: number | null;
-  scale: number | null;
-  isNullable: boolean;
-  isPrimaryKey: boolean;
-  isIdentity: boolean;
-  identitySeed: number | null;
-  identityIncrement: number | null;
-  defaultValue: string;
+  maxLength?: number;
+  precision?: number;
+  scale?: number;
+  nullable: boolean;
+  primaryKey: boolean;
+  identity: boolean;
+  defaultValue?: string;
+  description?: string;
 }
 
 const ColumnForm: React.FC<ColumnFormProps> = ({
@@ -48,20 +46,18 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
       name: '',
       description: '',
       dataType: 'NVARCHAR',
-      maxLength: null,
-      precision: null,
-      scale: null,
-      isNullable: true,
-      isPrimaryKey: false,
-      isIdentity: false,
-      identitySeed: null,
-      identityIncrement: null,
+      maxLength: undefined,
+      precision: undefined,
+      scale: undefined,
+      nullable: true,
+      primaryKey: false,
+      identity: false,
       defaultValue: '',
     }
   });
 
-  const watchedIsIdentity = watch('isIdentity');
-  const watchedIsPrimaryKey = watch('isPrimaryKey');
+  const watchedIsIdentity = watch('identity');
+  const watchedIsPrimaryKey = watch('primaryKey');
 
   // 컬럼 데이터로 폼 초기화
   useEffect(() => {
@@ -70,14 +66,12 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
         name: column.name,
         description: column.description || '',
         dataType: column.dataType,
-        maxLength: column.maxLength || null,
-        precision: column.precision || null,
-        scale: column.scale || null,
-        isNullable: column.isNullable,
-        isPrimaryKey: column.isPrimaryKey,
-        isIdentity: column.isIdentity,
-        identitySeed: column.identitySeed || null,
-        identityIncrement: column.identityIncrement || null,
+        maxLength: column.maxLength || undefined,
+        precision: column.precision || undefined,
+        scale: column.scale || undefined,
+        nullable: column.nullable,
+        primaryKey: column.primaryKey,
+        identity: column.identity,
         defaultValue: column.defaultValue || '',
       });
     } else {
@@ -85,14 +79,12 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
         name: '',
         description: '',
         dataType: 'NVARCHAR',
-        maxLength: null,
-        precision: null,
-        scale: null,
-        isNullable: true,
-        isPrimaryKey: false,
-        isIdentity: false,
-        identitySeed: null,
-        identityIncrement: null,
+        maxLength: undefined,
+        precision: undefined,
+        scale: undefined,
+        nullable: true,
+        primaryKey: false,
+        identity: false,
         defaultValue: '',
       });
     }
@@ -101,20 +93,16 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
   // 기본키 설정 시 자동으로 NOT NULL 설정
   useEffect(() => {
     if (watchedIsPrimaryKey) {
-      setValue('isNullable', false);
+      setValue('nullable', false);
     }
   }, [watchedIsPrimaryKey, setValue]);
 
   // IDENTITY 설정 시 기본값 설정
   useEffect(() => {
     if (watchedIsIdentity) {
-      setValue('identitySeed', 1);
-      setValue('identityIncrement', 1);
       setValue('defaultValue', '');
-    } else {
-      setValue('identitySeed', null);
-      setValue('identityIncrement', null);
     }
+    // identitySeed/identityIncrement는 ColumnFormData에 없어서 제거
   }, [watchedIsIdentity, setValue]);
 
   const onFormSubmit = (data: ColumnFormData) => {
@@ -124,17 +112,16 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
 
     const submitData = {
       name: data.name.trim(),
-      description: data.description.trim() || undefined,
+      description: data.description?.trim() || undefined,
       dataType: data.dataType,
       maxLength: data.maxLength || undefined,
       precision: data.precision || undefined,
       scale: data.scale || undefined,
-      isNullable: data.isNullable,
-      isPrimaryKey: data.isPrimaryKey,
-      isIdentity: data.isIdentity,
-      identitySeed: data.identitySeed || undefined,
-      identityIncrement: data.identityIncrement || undefined,
-      defaultValue: data.defaultValue.trim() || undefined,
+      nullable: data.nullable,
+      primaryKey: data.primaryKey,
+      identity: data.identity,
+      // identitySeed/identityIncrement는 ColumnFormData에 없음
+      defaultValue: data.defaultValue?.trim() || undefined,
       orderIndex: nextOrderIndex,
     };
 
@@ -247,7 +234,7 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <Controller
-                      name="isPrimaryKey"
+                      name="primaryKey"
                       control={control}
                       render={({ field: { value, onChange } }) => (
                         <input
@@ -265,7 +252,7 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
 
                   <div className="flex items-center">
                     <Controller
-                      name="isNullable"
+                      name="nullable"
                       control={control}
                       render={({ field: { value, onChange } }) => (
                         <input

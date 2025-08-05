@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ColumnManager from './ColumnManager';
 import { useTableStore } from '../../stores/tableStore';
 import { useProjectStore } from '../../stores/projectStore';
-import type { Table, Project } from '../../types';
+import type { Table } from '../../types';
 
 /**
  * 컬럼 관리 기능 데모 컴포넌트

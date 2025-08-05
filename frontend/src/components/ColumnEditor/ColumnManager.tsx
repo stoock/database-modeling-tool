@@ -76,9 +76,9 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
         maxLength: column.maxLength,
         precision: column.precision,
         scale: column.scale,
-        isNullable: column.isNullable,
-        isPrimaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
-        isIdentity: false, // 복사된 컬럼은 자동증가가 될 수 없음
+        nullable: column.nullable,
+        primaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
+        identity: false, // 복사된 컬럼은 자동증가가 될 수 없음
         defaultValue: column.defaultValue,
         orderIndex: table.columns.length,
       };

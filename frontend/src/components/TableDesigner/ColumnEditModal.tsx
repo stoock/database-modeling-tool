@@ -23,9 +23,9 @@ interface ColumnFormData {
   maxLength: number | null;
   precision: number | null;
   scale: number | null;
-  isNullable: boolean;
-  isPrimaryKey: boolean;
-  isIdentity: boolean;
+  nullable: boolean;
+  primaryKey: boolean;
+  identity: boolean;
   identitySeed: number;
   identityIncrement: number;
   defaultValue: string;
@@ -69,9 +69,9 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
       maxLength: null,
       precision: null,
       scale: null,
-      isNullable: true,
-      isPrimaryKey: false,
-      isIdentity: false,
+      nullable: true,
+      primaryKey: false,
+      identity: false,
       identitySeed: 1,
       identityIncrement: 1,
       defaultValue: '',
@@ -80,8 +80,8 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
 
   const watchedName = watch('name');
   const watchedDataType = watch('dataType');
-  const watchedIsPrimaryKey = watch('isPrimaryKey');
-  const watchedIsIdentity = watch('isIdentity');
+  const watchedIsPrimaryKey = watch('primaryKey');
+  const watchedIsIdentity = watch('identity');
 
   // 컬럼 데이터로 폼 초기화
   useEffect(() => {
@@ -93,9 +93,9 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
         maxLength: column.maxLength,
         precision: column.precision,
         scale: column.scale,
-        isNullable: column.isNullable,
-        isPrimaryKey: column.isPrimaryKey,
-        isIdentity: column.isIdentity,
+        nullable: column.nullable,
+        primaryKey: column.primaryKey,
+        identity: column.identity,
         identitySeed: column.identitySeed || 1,
         identityIncrement: column.identityIncrement || 1,
         defaultValue: column.defaultValue || '',
@@ -106,7 +106,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
   // 기본키 설정 시 자동으로 NOT NULL 설정
   useEffect(() => {
     if (watchedIsPrimaryKey) {
-      setValue('isNullable', false);
+      setValue('nullable', false);
     }
   }, [watchedIsPrimaryKey, setValue]);
 
@@ -151,11 +151,11 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
         maxLength: needsLength ? data.maxLength || undefined : undefined,
         precision: needsPrecision ? data.precision || undefined : undefined,
         scale: needsPrecision ? data.scale || undefined : undefined,
-        isNullable: data.isNullable,
-        isPrimaryKey: data.isPrimaryKey,
-        isIdentity: data.isIdentity,
-        identitySeed: data.isIdentity ? data.identitySeed : undefined,
-        identityIncrement: data.isIdentity ? data.identityIncrement : undefined,
+        nullable: data.nullable,
+        primaryKey: data.primaryKey,
+        identity: data.identity,
+        identitySeed: data.identity ? data.identitySeed : undefined,
+        identityIncrement: data.identity ? data.identityIncrement : undefined,
         defaultValue: data.defaultValue.trim() || undefined,
       };
 
@@ -197,9 +197,9 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
         maxLength: column.maxLength,
         precision: column.precision,
         scale: column.scale,
-        isNullable: column.isNullable,
-        isPrimaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
-        isIdentity: false, // 복사된 컬럼은 자동증가가 될 수 없음
+        nullable: column.nullable,
+        primaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
+        identity: false, // 복사된 컬럼은 자동증가가 될 수 없음
         defaultValue: column.defaultValue,
         orderIndex: table.columns.length,
       };
@@ -223,9 +223,9 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
       maxLength: null,
       precision: null,
       scale: null,
-      isNullable: true,
-      isPrimaryKey: false,
-      isIdentity: false,
+      nullable: true,
+      primaryKey: false,
+      identity: false,
       identitySeed: 1,
       identityIncrement: 1,
       defaultValue: '',
@@ -417,7 +417,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
                 <input
                   id="isNullable"
                   type="checkbox"
-                  {...register('isNullable')}
+                  {...register('nullable')}
                   disabled={watchedIsPrimaryKey}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
                 />
@@ -431,7 +431,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
                 <input
                   id="isPrimaryKey"
                   type="checkbox"
-                  {...register('isPrimaryKey')}
+                  {...register('primaryKey')}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="isPrimaryKey" className="ml-2 block text-sm text-gray-900">
@@ -445,7 +445,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
                   <input
                     id="isIdentity"
                     type="checkbox"
-                    {...register('isIdentity')}
+                    {...register('identity')}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label htmlFor="isIdentity" className="ml-2 block text-sm text-gray-900">
@@ -583,7 +583,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
                 <p className="text-sm text-gray-500 mt-2">
                   이 작업은 되돌릴 수 없습니다.
                 </p>
-                {column?.isPrimaryKey && (
+                {column?.primaryKey && (
                   <div className="mt-3 p-3 bg-red-50 rounded-md">
                     <p className="text-sm text-red-800">
                       <strong>경고:</strong> 이 컬럼은 기본키입니다. 삭제하면 테이블의 무결성에 영향을 줄 수 있습니다.

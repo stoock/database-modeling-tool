@@ -1,13 +1,26 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import type { Control, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import type { Control, UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import type { MSSQLDataType } from '../../types';
 
+interface ColumnFormData {
+  name: string;
+  dataType: MSSQLDataType;
+  maxLength?: number;
+  precision?: number;
+  scale?: number;
+  nullable: boolean;
+  primaryKey: boolean;
+  identity: boolean;
+  defaultValue?: string;
+  description?: string;
+}
+
 interface DataTypeSelectorProps {
-  control: Control<any>;
-  watch: UseFormWatch<any>;
-  setValue: UseFormSetValue<any>;
-  errors: any;
+  control: Control<ColumnFormData>;
+  watch: UseFormWatch<ColumnFormData>;
+  setValue: UseFormSetValue<ColumnFormData>;
+  errors: FieldErrors<ColumnFormData>;
 }
 
 interface DataTypeInfo {
@@ -275,7 +288,7 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({
   errors,
 }) => {
   const watchedDataType = watch('dataType');
-  const watchedIsIdentity = watch('isIdentity');
+  const watchedIsIdentity = watch('identity');
   
   const currentTypeInfo = DATA_TYPE_INFO[watchedDataType as MSSQLDataType];
 
@@ -285,25 +298,24 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({
     
     // 길이 관련 필드 초기화
     if (typeInfo.needsLength) {
-      setValue('maxLength', typeInfo.defaultLength || null);
+      setValue('maxLength', typeInfo.defaultLength || undefined);
     } else {
-      setValue('maxLength', null);
+      setValue('maxLength', undefined);
     }
     
     // 정밀도/스케일 관련 필드 초기화
     if (typeInfo.needsPrecisionScale) {
-      setValue('precision', typeInfo.defaultPrecision || null);
-      setValue('scale', typeInfo.defaultScale || null);
+      setValue('precision', typeInfo.defaultPrecision || undefined);
+      setValue('scale', typeInfo.defaultScale || undefined);
     } else {
-      setValue('precision', null);
-      setValue('scale', null);
+      setValue('precision', undefined);
+      setValue('scale', undefined);
     }
     
     // Identity 설정 초기화 (지원하지 않는 타입인 경우)
     if (!typeInfo.canBeIdentity && watchedIsIdentity) {
-      setValue('isIdentity', false);
-      setValue('identitySeed', null);
-      setValue('identityIncrement', null);
+      setValue('identity', false);
+      // identitySeed/identityIncrement는 ColumnFormData에 없어서 제거
     }
   };
 
@@ -475,7 +487,7 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({
                 },
                 validate: (value) => {
                   const precision = watch('precision');
-                  if (precision && value > precision) {
+                  if (precision && value && value > precision) {
                     return '스케일은 정밀도보다 클 수 없습니다.';
                   }
                   return true;
@@ -507,7 +519,7 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({
         <div className="bg-green-50 border border-green-200 rounded-md p-4">
           <div className="flex items-center mb-3">
             <Controller
-              name="isIdentity"
+              name="identity"
               control={control}
               render={({ field: { value, onChange } }) => (
                 <input
@@ -534,7 +546,7 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({
                   시작값 (Seed)
                 </label>
                 <Controller
-                  name="identitySeed"
+                  name="maxLength"
                   control={control}
                   rules={{
                     required: watchedIsIdentity ? '시작값을 입력하세요.' : false,
@@ -557,7 +569,7 @@ const DataTypeSelector: React.FC<DataTypeSelectorProps> = ({
                   증가값 (Increment)
                 </label>
                 <Controller
-                  name="identityIncrement"
+                  name="precision"
                   control={control}
                   rules={{
                     required: watchedIsIdentity ? '증가값을 입력하세요.' : false,

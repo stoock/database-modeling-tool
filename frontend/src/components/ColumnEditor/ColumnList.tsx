@@ -101,12 +101,12 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = memo(({
       default:
         return dataType;
     }
-  }, [column.dataType, column.maxLength, column.precision, column.scale]);
+  }, [column]);
 
   const columnBadges = useMemo(() => {
     const badges = [];
     
-    if (column.isPrimaryKey) {
+    if (column.primaryKey) {
       badges.push(
         <span key="pk" className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
           PK
@@ -114,7 +114,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = memo(({
       );
     }
     
-    if (column.isIdentity) {
+    if (column.identity) {
       badges.push(
         <span key="identity" className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
           IDENTITY
@@ -122,7 +122,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = memo(({
       );
     }
     
-    if (!column.isNullable) {
+    if (!column.nullable) {
       badges.push(
         <span key="not-null" className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
           NOT NULL
@@ -131,7 +131,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = memo(({
     }
     
     return badges;
-  }, [column.isPrimaryKey, column.isIdentity, column.isNullable]);
+  }, [column.primaryKey, column.identity, column.nullable]);
 
   return (
     <div
@@ -238,7 +238,7 @@ const SortableColumnItem: React.FC<SortableColumnItemProps> = memo(({
             onClick={(e) => {
               e.stopPropagation();
               // 기본키인 경우 추가 경고
-              const confirmMessage = column.isPrimaryKey 
+              const confirmMessage = column.primaryKey 
                 ? `경고: "${column.name}"은(는) 기본키입니다.\n삭제하면 테이블 무결성에 영향을 줄 수 있습니다.\n정말 삭제하시겠습니까?`
                 : `컬럼 "${column.name}"을(를) 삭제하시겠습니까?`;
               
