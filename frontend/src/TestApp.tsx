@@ -1,4 +1,5 @@
-import React from 'react';
+// React import 현재 미사용
+// import React from 'react';
 import ColumnManagerTest from './components/ColumnEditor/ColumnManagerTest';
 import './index.css';
 

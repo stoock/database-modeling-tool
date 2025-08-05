@@ -5,8 +5,7 @@ import IndexList from '../IndexManager/IndexList';
 import IndexForm from '../IndexManager/IndexForm';
 import IndexPerformancePanel from '../IndexManager/IndexPerformancePanel';
 import IndexSqlPreview from '../IndexManager/IndexSqlPreview';
-import { useTableStore } from '../../stores/tableStore';
-import type { Table, Index, CreateIndexRequest } from '../../types';
+import type { Table, Index } from '../../types';
 
 interface IndexManagerPanelProps {
   selectedTable: Table | null;
@@ -23,11 +22,10 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
   selectedTable,
   className = ''
 }) => {
-  const { createIndex, updateIndex } = useTableStore();
-  
   const [activeTab, setActiveTab] = useState<'list' | 'form' | 'performance' | 'sql'>('list');
   const [editingIndex, setEditingIndex] = useState<Index | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [selectedIndex] = useState<Index | null>(null);
+  const [, setIsCreating] = useState(false);
 
   // 인덱스 편집 핸들러
   const handleEditIndex = useCallback((index: Index) => {
@@ -43,7 +41,8 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
     setIsCreating(true);
   }, []);
 
-  // 인덱스 저장 핸들러
+  // 인덱스 저장 핸들러 (현재 미사용)
+  /*
   const handleSaveIndex = useCallback(async (indexData: CreateIndexRequest) => {
     if (!selectedTable) return;
 
@@ -62,6 +61,7 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
       alert('인덱스 저장에 실패했습니다. 다시 시도해주세요.');
     }
   }, [selectedTable, isCreating, editingIndex, createIndex, updateIndex]);
+  */
 
   // 폼 취소 핸들러
   const handleCancelForm = useCallback(() => {
@@ -140,25 +140,35 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
 
         {activeTab === 'form' && (
           <IndexForm
-            table={selectedTable}
+            tableId={selectedTable.id}
             index={editingIndex}
-            onSave={handleSaveIndex}
+            columns={selectedTable.columns}
             onCancel={handleCancelForm}
+            onSuccess={() => {
+              setActiveTab('list');
+              setEditingIndex(null);
+            }}
           />
         )}
 
-        {activeTab === 'performance' && (
+        {activeTab === 'performance' && selectedIndex && (
           <IndexPerformancePanel
+            index={selectedIndex}
             table={selectedTable}
-            indexes={selectedTable.indexes}
           />
         )}
 
-        {activeTab === 'sql' && (
+        {activeTab === 'sql' && selectedIndex && (
           <IndexSqlPreview
+            index={selectedIndex}
             table={selectedTable}
-            indexes={selectedTable.indexes}
           />
+        )}
+
+        {(activeTab === 'performance' || activeTab === 'sql') && !selectedIndex && (
+          <div className="text-center py-8 text-gray-500">
+            먼저 인덱스를 선택해주세요.
+          </div>
         )}
       </div>
     </div>

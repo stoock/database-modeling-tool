@@ -18,7 +18,7 @@ interface ExportHistoryProps {
 
 const ExportHistory: React.FC<ExportHistoryProps> = ({ projectId }) => {
   const [history, setHistory] = useState<ExportRecord[]>([]);
-  const { currentProject } = useProjectStore();
+  useProjectStore(); // 현재 미사용
   
   // 내보내기 기록 로드 (로컬 스토리지에서)
   useEffect(() => {
@@ -42,7 +42,8 @@ const ExportHistory: React.FC<ExportHistoryProps> = ({ projectId }) => {
     }
   }, [projectId]);
   
-  // 내보내기 기록 저장 (로컬 스토리지에)
+  // 내보내기 기록 저장 (로컬 스토리지에) - 현재 미사용
+  /*
   const saveExportRecord = (record: ExportRecord) => {
     if (!projectId) return;
     
@@ -56,6 +57,7 @@ const ExportHistory: React.FC<ExportHistoryProps> = ({ projectId }) => {
       console.error('내보내기 기록을 저장하는 중 오류가 발생했습니다:', err);
     }
   };
+  */
   
   // 파일 다운로드
   const handleDownload = (record: ExportRecord) => {

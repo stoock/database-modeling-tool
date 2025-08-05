@@ -1,4 +1,4 @@
-import type { Index, Table, Column, IndexColumn } from '../types';
+import type { Index, Table, Column } from '../types';
 
 /**
  * 인덱스 이름 생성 유틸리티

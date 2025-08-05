@@ -10,7 +10,7 @@ interface ProjectListProps {
 }
 
 export const ProjectList: React.FC<ProjectListProps> = ({ onProjectSelect }) => {
-  const { projects, setCurrentProject, deleteProject, isLoading } = useProjectStore();
+  const { projects, setCurrentProject, deleteProject } = useProjectStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleSelectProject = (project: Project) => {

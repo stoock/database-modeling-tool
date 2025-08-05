@@ -1,11 +1,10 @@
 import React from 'react';
-import { ProjectSelector, ProjectCreateModal } from '../ProjectManager';
+import { ProjectSelector } from '../ProjectManager';
 import { ChangeIndicator, AutoSaveSettings, SaveFeedback } from '../ChangeTracker';
 import type { Project } from '../../types';
 
 interface DashboardHeaderProps {
   currentProject: Project | null;
-  showCreateModal: boolean;
   saveFeedbackStatus: 'idle' | 'saving' | 'success' | 'error';
   onProjectSelect: (project: Project) => void;
   onProjectSettings: (project: Project) => void;
@@ -23,7 +22,6 @@ interface DashboardHeaderProps {
  */
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentProject,
-  showCreateModal,
   saveFeedbackStatus,
   onProjectSelect,
   onProjectSettings,

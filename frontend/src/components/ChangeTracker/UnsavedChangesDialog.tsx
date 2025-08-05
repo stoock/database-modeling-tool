@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
+import { useNavigate, UNSAFE_NavigationContext } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useChangeTracker } from '../../utils/changeTracker';
@@ -9,7 +9,7 @@ import { useChangeTracker } from '../../utils/changeTracker';
  */
 const UnsavedChangesDialog: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation(); // 현재 미사용
   const changeTracker = useChangeTracker();
   const [showDialog, setShowDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { DocumentTextIcon, DocumentDuplicateIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useProjectStore } from '../../stores/projectStore';
 import { apiClient } from '../../services/api';
-import type { ExportFormat } from '../../types';
+// ExportFormat 현재 미사용
+// import type { ExportFormat } from '../../types';
 
 interface SchemaDocumentationProps {
   projectId: string;

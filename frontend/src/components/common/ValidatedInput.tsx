@@ -41,8 +41,8 @@ export const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(
             className={cn(
               'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm',
               hasError && 'border-red-300 focus:border-red-500 focus:ring-red-500',
-              isValid && showValidationIcon && 'pr-10',
-              hasError && showValidationIcon && 'pr-10',
+              isValid && showValidationIcon ? 'pr-10' : '',
+              hasError && showValidationIcon ? 'pr-10' : '',
               className
             )}
             {...props}

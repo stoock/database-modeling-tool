@@ -33,7 +33,8 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
   
   const { currentProject } = useProjectStore();
   
-  // 옵션 변경 시 상위 컴포넌트에 알림
+  // 옵션 변경 시 상위 컴포넌트에 알림 - 현재 미사용
+  /*
   const handleOptionChange = () => {
     onOptionsChange({
       format,
@@ -42,6 +43,7 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
       includeConstraints
     });
   };
+  */
   
   // 포맷 변경
   const handleFormatChange = (newFormat: ExportFormat) => {

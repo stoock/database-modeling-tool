@@ -222,7 +222,7 @@ export const useValidationStore = create<ValidationState>()(
         }
 
         // 기본키 검증
-        const primaryKeyColumns = table.columns.filter(c => c.isPrimaryKey);
+        const primaryKeyColumns = table.columns.filter(c => c.primaryKey);
         if (primaryKeyColumns.length === 0) {
           errors.push({
             field: 'primaryKey',

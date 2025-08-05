@@ -29,8 +29,8 @@ const DashboardMain: React.FC = () => {
   const { 
     projects, 
     currentProject, 
-    loadProjects, 
-    loadProject, 
+    // loadProjects, // 현재 미사용
+    // loadProject, // 현재 미사용
     deleteProject, 
     setCurrentProject, 
     isLoading, 
@@ -38,8 +38,8 @@ const DashboardMain: React.FC = () => {
     clearError 
   } = useProjectStore();
   
-  const { tables, selectedTable, loadTables, updateTable } = useTableStore();
-  const { clearValidations } = useValidationStore();
+  const { tables, selectedTable, updateTable } = useTableStore();
+  // loadTables와 clearValidations는 useEffect 내에서 직접 호출
   
   // 컴포넌트 상태
   const [saveFeedbackStatus, setSaveFeedbackStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
@@ -88,7 +88,7 @@ const DashboardMain: React.FC = () => {
       loadTables(currentProject.id);
       clearValidations();
     }
-  }, [currentProject?.id]); // 오직 currentProject.id만 의존성
+  }, [currentProject]); // currentProject 전체를 의존성으로 사용
 
   // 프로젝트 선택 핸들러
   const handleProjectSelect = useCallback((project: Project) => {
@@ -195,7 +195,6 @@ const DashboardMain: React.FC = () => {
   const headerComponent = (
     <DashboardHeader
       currentProject={currentProject}
-      showCreateModal={showCreateModal}
       saveFeedbackStatus={saveFeedbackStatus}
       onProjectSelect={handleProjectSelect}
       onProjectSettings={handleProjectEdit}

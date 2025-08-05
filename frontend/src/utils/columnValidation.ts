@@ -127,10 +127,10 @@ export const validateColumn = (
   }
 
   // 4. IDENTITY 검증
-  if (column.isIdentity) {
+  if (column.identity) {
     if (!['INT', 'BIGINT', 'SMALLINT', 'TINYINT'].includes(column.dataType)) {
       errors.push({
-        field: 'isIdentity',
+        field: 'identity',
         message: 'IDENTITY는 정수 타입에서만 사용할 수 있습니다.',
         severity: 'error',
         suggestion: '데이터 타입을 INT, BIGINT, SMALLINT, TINYINT 중 하나로 변경하세요.',
@@ -155,10 +155,10 @@ export const validateColumn = (
   }
 
   // 5. 기본키 검증
-  if (column.isPrimaryKey) {
-    if (column.isNullable) {
+  if (column.primaryKey) {
+    if (column.nullable) {
       errors.push({
-        field: 'isNullable',
+        field: 'nullable',
         message: '기본키는 NULL을 허용할 수 없습니다.',
         severity: 'error',
       });
@@ -166,11 +166,11 @@ export const validateColumn = (
 
     // 다른 기본키 컬럼이 있는지 확인
     const otherPrimaryKeys = allColumns.filter(
-      c => c.id !== column.id && c.isPrimaryKey
+      c => c.id !== column.id && c.primaryKey
     );
     if (otherPrimaryKeys.length > 0) {
       warnings.push({
-        field: 'isPrimaryKey',
+        field: 'primaryKey',
         message: '이미 다른 기본키 컬럼이 존재합니다. 복합 기본키를 만들고 있는지 확인하세요.',
         severity: 'warning',
       });

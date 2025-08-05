@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 
 interface VirtualListProps<T> {
   items: T[];
@@ -47,14 +47,14 @@ function VirtualList<T>({
     setScrollTop(e.currentTarget.scrollTop);
   }, []);
 
-  // 특정 인덱스로 스크롤
-  const scrollToIndex = useCallback((index: number) => {
-    if (scrollElementRef.current) {
-      const scrollTop = index * itemHeight;
-      scrollElementRef.current.scrollTop = scrollTop;
-      setScrollTop(scrollTop);
-    }
-  }, [itemHeight]);
+  // 특정 인덱스로 스크롤 (필요시 사용)
+  // const scrollToIndex = useCallback((index: number) => {
+  //   if (scrollElementRef.current) {
+  //     const scrollTop = index * itemHeight;
+  //     scrollElementRef.current.scrollTop = scrollTop;
+  //     setScrollTop(scrollTop);
+  //   }
+  // }, [itemHeight]);
 
   return (
     <div

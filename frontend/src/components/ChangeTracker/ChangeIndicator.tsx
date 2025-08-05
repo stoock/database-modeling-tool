@@ -21,7 +21,7 @@ const ChangeIndicator: React.FC<ChangeIndicatorProps> = ({
   const [state, setState] = useState<ChangeTrackerState>(changeTracker.getState());
   const [isSaving, setIsSaving] = useState(false);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(autoSaveInterval > 0);
-  const [lastAutoSaveAttempt, setLastAutoSaveAttempt] = useState<Date | null>(null);
+  // const [lastAutoSaveAttempt, setLastAutoSaveAttempt] = useState<Date | null>(null); // 현재 미사용
   
   // 변경사항 추적 구독
   useEffect(() => {
@@ -37,7 +37,7 @@ const ChangeIndicator: React.FC<ChangeIndicatorProps> = ({
     const timer = setInterval(async () => {
       if (state.hasUnsavedChanges && !isSaving) {
         setIsSaving(true);
-        setLastAutoSaveAttempt(new Date());
+        // setLastAutoSaveAttempt(new Date()); // 함수가 주석 처리됨
         
         try {
           await onSave();

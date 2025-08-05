@@ -57,12 +57,12 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     if (isEditMode && project) {
       setValue('name', project.name);
       setValue('description', project.description || '');
-      setValue('tablePrefix', project.namingRules?.tableNamePrefix || '');
-      setValue('tableSuffix', project.namingRules?.tableNameSuffix || '');
-      setValue('tablePattern', project.namingRules?.tableNamePattern || '^[A-Z][a-zA-Z0-9]*$');
-      setValue('columnPattern', project.namingRules?.columnNamePattern || '^[a-z][a-z0-9_]*$');
-      setValue('indexPattern', project.namingRules?.indexNamePattern || '^IX_[A-Z][a-zA-Z0-9]*_[a-zA-Z0-9]+$');
-      setValue('enforceCase', project.namingRules?.tableNameCase || 'PASCAL_CASE');
+      setValue('tablePrefix', project.namingRules?.tablePrefix || '');
+      setValue('tableSuffix', project.namingRules?.tableSuffix || '');
+      setValue('tablePattern', project.namingRules?.tablePattern || '^[A-Z][a-zA-Z0-9]*$');
+      setValue('columnPattern', project.namingRules?.columnPattern || '^[a-z][a-z0-9_]*$');
+      setValue('indexPattern', project.namingRules?.indexPattern || '^IX_[A-Z][a-zA-Z0-9]*_[a-zA-Z0-9]+$');
+      setValue('enforceCase', project.namingRules?.enforceCase || 'PASCAL');
     }
   }, [isEditMode, project, setValue]);
 
@@ -70,12 +70,12 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     setSubmitError(null);
     
     const namingRules: NamingRules = {
-      tableNamePrefix: data.tablePrefix || undefined,
-      tableNameSuffix: data.tableSuffix || undefined,
-      tableNamePattern: data.tablePattern,
-      columnNamePattern: data.columnPattern,
-      indexNamePattern: data.indexPattern,
-      tableNameCase: data.enforceCase as CaseType
+      tablePrefix: data.tablePrefix || undefined,
+      tableSuffix: data.tableSuffix || undefined,
+      tablePattern: data.tablePattern,
+      columnPattern: data.columnPattern,
+      indexPattern: data.indexPattern,
+      enforceCase: data.enforceCase as CaseType
     };
 
     try {
