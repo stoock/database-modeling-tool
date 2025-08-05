@@ -21,7 +21,7 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
   autoRefresh = false
 }) => {
   const { validateProject, validationResult, isValidating, tableValidations, columnValidations, indexValidations } = useValidationStore();
-  const { currentProject } = useProjectStore();
+  useProjectStore(); // 현재 미사용
   const { tables } = useTableStore();
   
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
@@ -134,7 +134,7 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
     
     // 예시: 테이블 이름 수정
     if (error.field.startsWith('table:')) {
-      const tableId = error.field.substring(6);
+      error.field.substring(6); // tableId 현재 미사용
       // 테이블 이름 업데이트 로직
     }
     // 다른 엔티티 타입에 대한 처리 추가

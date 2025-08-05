@@ -18,8 +18,8 @@ interface ValidationDashboardProps {
 const ValidationDashboard: React.FC<ValidationDashboardProps> = ({
   projectId
 }) => {
-  const { validateProject, validationResult, isValidating } = useValidationStore();
-  const { tables } = useTableStore();
+  const { validateProject, validationResult: _validationResult, isValidating } = useValidationStore();
+  const { tables: _tables } = useTableStore();
   
   const [activeTab, setActiveTab] = useState<'results' | 'rules' | 'guide'>('results');
   const [autoRefresh, setAutoRefresh] = useState(false);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CheckIcon, 
-  XMarkIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useProjectStore } from '../../stores/projectStore';
@@ -12,7 +11,7 @@ interface NamingRulesProps {
 }
 
 const NamingRulesPanel: React.FC<NamingRulesProps> = ({
-  projectId
+  projectId: _projectId
 }) => {
   const { currentProject, updateNamingRules } = useProjectStore();
   
