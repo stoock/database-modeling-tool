@@ -10,7 +10,7 @@ interface PerformanceMetrics {
  * 컴포넌트 렌더링 성능을 모니터링하는 훅
  */
 export const usePerformanceMonitor = (componentName: string) => {
-  const renderStartTime = useRef<number>();
+  const renderStartTime = useRef<number>(0);
   const metricsRef = useRef<PerformanceMetrics[]>([]);
 
   // 렌더링 시작 시간 기록
