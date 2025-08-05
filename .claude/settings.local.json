@@ -61,7 +61,8 @@
       "mcp__playwright-stealth__playwright_click",
       "mcp__playwright-stealth__playwright_click",
       "Bash(claude code:*)",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "mcp__terminal__execute_command"
     ],
     "deny": []
   }
