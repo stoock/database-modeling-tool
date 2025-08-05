@@ -5,6 +5,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["vitest/globals"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -32,5 +33,6 @@
       "@/hooks/*": ["src/hooks/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts", "src/**/*.test.tsx", "src/e2e/**/*"]
 }
