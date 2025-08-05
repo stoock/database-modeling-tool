@@ -59,9 +59,9 @@ export interface Column extends BaseEntity {
   maxLength?: number;
   precision?: number;
   scale?: number;
-  isNullable: boolean;
-  isPrimaryKey: boolean;
-  isIdentity: boolean;
+  nullable: boolean;
+  primaryKey: boolean;
+  identity: boolean;
   identitySeed?: number;
   identityIncrement?: number;
   defaultValue?: string;
@@ -75,9 +75,9 @@ export interface CreateColumnRequest {
   maxLength?: number;
   precision?: number;
   scale?: number;
-  isNullable?: boolean;
-  isPrimaryKey?: boolean;
-  isIdentity?: boolean;
+  nullable?: boolean;
+  primaryKey?: boolean;
+  identity?: boolean;
   identitySeed?: number;
   identityIncrement?: number;
   defaultValue?: string;
@@ -91,9 +91,9 @@ export interface UpdateColumnRequest {
   maxLength?: number;
   precision?: number;
   scale?: number;
-  isNullable?: boolean;
-  isPrimaryKey?: boolean;
-  isIdentity?: boolean;
+  nullable?: boolean;
+  primaryKey?: boolean;
+  identity?: boolean;
   identitySeed?: number;
   identityIncrement?: number;
   defaultValue?: string;
@@ -128,25 +128,14 @@ export interface UpdateIndexRequest {
   columns?: IndexColumn[];
 }
 
-// 네이밍 규칙 타입
+// 네이밍 규칙 타입 (백엔드와 일치)
 export interface NamingRules {
-  tableNamePattern?: string;
-  tableNameCase?: CaseType;
-  tableNamePrefix?: string;
-  tableNameSuffix?: string;
-  columnNamePattern?: string;
-  columnNameCase?: CaseType;
-  columnNamePrefix?: string;
-  columnNameSuffix?: string;
-  indexNamePattern?: string;
-  indexNameCase?: CaseType;
-  indexNamePrefix?: string;
-  indexNameSuffix?: string;
-  primaryKeyPattern?: string;
-  foreignKeyPattern?: string;
-  uniqueConstraintPattern?: string;
-  checkConstraintPattern?: string;
-  reservedWords?: string[];
+  tablePrefix?: string;
+  tableSuffix?: string;
+  tablePattern?: string;
+  columnPattern?: string;
+  indexPattern?: string;
+  enforceCase?: CaseType;
 }
 
 // 검증 관련 타입
@@ -192,7 +181,7 @@ export interface ApiResponse<T> {
 export interface ApiError {
   error: string;
   code: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 // 열거형 타입
@@ -232,7 +221,7 @@ export type IndexType = 'CLUSTERED' | 'NONCLUSTERED';
 
 export type SortOrder = 'ASC' | 'DESC';
 
-export type CaseType = 'PASCAL_CASE' | 'CAMEL_CASE' | 'SNAKE_CASE' | 'KEBAB_CASE' | 'UPPER_CASE' | 'LOWER_CASE';
+export type CaseType = 'UPPER' | 'LOWER' | 'PASCAL' | 'SNAKE';
 
 export type ExportFormat = 'SQL' | 'MARKDOWN' | 'HTML' | 'JSON' | 'CSV';
 
