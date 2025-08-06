@@ -18,6 +18,10 @@ spring:
   h2:
     console:
       enabled: true
+      
+  # Flyway 비활성화 (테스트에서는 JPA가 스키마 생성)
+  flyway:
+    enabled: false
 
 logging:
   level:

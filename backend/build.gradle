@@ -39,7 +39,31 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform() {
+		excludeTags 'integration'
+	}
+	// 통합 테스트 제외
+	exclude '**/*IntegrationTest*'
+	exclude '**/DatabaseConnectionTest*'
+	exclude '**/PostgreSQLConnectionTest*'
+	exclude '**/DatabaseModelingToolApplicationTests*'
+	exclude '**/OptimisticLockingTest*'
+	exclude '**/ValidationServiceTest*'
+}
+
+// 통합 테스트를 위한 별도 태스크
+task integrationTest(type: Test) {
+	description = 'Run integration tests'
+	group = 'verification'
+	
+	useJUnitPlatform() {
+		includeTags 'integration'
+	}
+	include '**/*IntegrationTest*'
+	include '**/DatabaseConnectionTest*'
+	include '**/PostgreSQLConnectionTest*'
+	
+	shouldRunAfter test
 }
 
 // Flyway Configuration

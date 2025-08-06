@@ -62,7 +62,13 @@
       "mcp__playwright-stealth__playwright_click",
       "Bash(claude code:*)",
       "Bash(claude mcp:*)",
-      "mcp__terminal__execute_command"
+      "mcp__terminal__execute_command",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(VITE_PORT=3000 yarn dev)",
+      "mcp__playwright-stealth__playwright_press_key",
+      "mcp__playwright-stealth__playwright_drag",
+      "mcp__playwright-stealth__playwright_get_visible_html"
     ],
     "deny": []
   }

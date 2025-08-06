@@ -10,7 +10,17 @@ interface ProjectListProps {
 }
 
 export const ProjectList: React.FC<ProjectListProps> = ({ onProjectSelect }) => {
-  const { projects, setCurrentProject, deleteProject } = useProjectStore();
+  const { 
+    projects, 
+    setCurrentProject, 
+    deleteProject, 
+    isLoading, 
+    error, 
+    retryCount, 
+    hasReachedMaxRetries, 
+    retryLoadProjects,
+    resetRetryState 
+  } = useProjectStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleSelectProject = (project: Project) => {
@@ -35,7 +45,72 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onProjectSelect }) => 
     }
   };
 
-  if (projects.length === 0) {
+  const handleRetry = () => {
+    resetRetryState();
+    retryLoadProjects();
+  };
+
+  // 로딩 상태 표시
+  if (isLoading && projects.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="max-w-md mx-auto">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            프로젝트 목록을 불러오는 중...
+          </h2>
+          {retryCount > 0 && (
+            <p className="text-gray-600 text-sm">
+              {retryCount}회 시도 중...
+            </p>
+          )}
+          {error && !hasReachedMaxRetries && (
+            <p className="text-orange-600 text-sm mt-2">
+              {error}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 최대 재시도 도달 시 에러 표시
+  if (hasReachedMaxRetries && error) {
+    return (
+      <div className="text-center py-12">
+        <div className="max-w-md mx-auto">
+          <div className="text-red-500 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            프로젝트 목록을 불러올 수 없습니다
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error}
+          </p>
+          <div className="space-y-3">
+            <Button onClick={handleRetry} size="lg" className="w-full">
+              다시 시도
+            </Button>
+            <Button 
+              onClick={handleCreateProject} 
+              variant="secondary" 
+              size="lg" 
+              className="w-full"
+            >
+              새 프로젝트 생성
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 프로젝트가 없을 때
+  if (projects.length === 0 && !isLoading) {
     return (
       <div className="text-center py-12">
         <div className="max-w-md mx-auto">

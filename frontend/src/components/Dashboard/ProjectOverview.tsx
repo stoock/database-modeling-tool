@@ -18,8 +18,8 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
   tables,
   onEditProject
 }) => {
-  const totalColumns = tables.reduce((sum, table) => sum + table.columns.length, 0);
-  const totalIndexes = tables.reduce((sum, table) => sum + table.indexes.length, 0);
+  const totalColumns = tables.reduce((sum, table) => sum + (table.columns?.length || 0), 0);
+  const totalIndexes = tables.reduce((sum, table) => sum + (table.indexes?.length || 0), 0);
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

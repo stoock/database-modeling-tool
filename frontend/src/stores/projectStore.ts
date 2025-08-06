@@ -8,6 +8,7 @@ import type {
   NamingRules 
 } from '../types';
 import { apiClient, handleApiError } from '../services/api';
+import { useToastStore } from './toastStore';
 
 interface ProjectState {
   // 상태
@@ -15,16 +16,21 @@ interface ProjectState {
   currentProject: Project | null;
   isLoading: boolean;
   error: string | null;
+  retryCount: number;
+  hasReachedMaxRetries: boolean;
+  isRetrying: boolean;
 
   // 액션
   loadProjects: () => Promise<void>;
   loadProject: (id: string) => Promise<void>;
+  retryLoadProjects: () => Promise<void>;
   createProject: (request: CreateProjectRequest) => Promise<Project | null>;
   updateProject: (id: string, request: UpdateProjectRequest) => Promise<Project | null>;
   deleteProject: (id: string) => Promise<boolean>;
   setCurrentProject: (project: Project | null) => void;
   updateNamingRules: (namingRules: NamingRules) => Promise<void>;
   clearError: () => void;
+  resetRetryState: () => void;
 }
 
 export const useProjectStore = create<ProjectState>()(
@@ -35,26 +41,106 @@ export const useProjectStore = create<ProjectState>()(
       currentProject: null,
       isLoading: false,
       error: null,
+      retryCount: 0,
+      hasReachedMaxRetries: false,
+      isRetrying: false,
 
-      // 프로젝트 목록 로드
+      // 프로젝트 목록 로드 (재시도 로직 포함)
       loadProjects: async () => {
-        set((state) => {
-          state.isLoading = true;
-          state.error = null;
-        });
+        const state = get();
+        
+        // 이미 로딩 중이거나 재시도 중이면 중복 호출 방지
+        if (state.isLoading || state.isRetrying) {
+          console.log('프로젝트 로드가 이미 진행 중입니다.');
+          return;
+        }
 
-        try {
-          const projects = await apiClient.getProjects();
+        const MAX_RETRIES = 3;
+        const DELAY_MS = 1000;
+        const BACKOFF_MULTIPLIER = 2;
+
+        const attemptLoad = async (attempt: number): Promise<void> => {
           set((state) => {
-            state.projects = projects;
-            state.isLoading = false;
+            state.isLoading = true;
+            state.error = null;
+            state.retryCount = attempt;
+            state.hasReachedMaxRetries = false;
+            state.isRetrying = attempt > 1;
           });
-        } catch (error) {
-          const apiError = handleApiError(error);
+
+          try {
+            const projects = await apiClient.getProjects();
+            set((state) => {
+              state.projects = projects;
+              state.isLoading = false;
+              state.error = null;
+              state.retryCount = 0;
+              state.hasReachedMaxRetries = false;
+              state.isRetrying = false;
+            });
+
+            // 재시도 후 성공 시 토스트 알림
+            if (attempt > 1) {
+              const { success } = useToastStore.getState();
+              success(
+                '프로젝트 목록 로드 성공',
+                `${attempt}회 시도 후 성공적으로 불러왔습니다.`,
+                3000
+              );
+            }
+          } catch (error) {
+            handleApiError(error);
+            
+            if (attempt >= MAX_RETRIES) {
+              const finalError = `프로젝트 목록을 불러오는데 실패했습니다. (${MAX_RETRIES}회 재시도 완료)`;
+              set((state) => {
+                state.error = finalError;
+                state.isLoading = false;
+                state.retryCount = attempt;
+                state.hasReachedMaxRetries = true;
+                state.isRetrying = false;
+              });
+
+              // 최종 실패 시 토스트 알림
+              const { error: showErrorToast } = useToastStore.getState();
+              showErrorToast(
+                '프로젝트 목록 로드 실패',
+                `네트워크 연결을 확인하고 다시 시도해주세요. (${attempt}회 시도 완료)`,
+                8000
+              );
+              return;
+            }
+
+            // 재시도 전 딜레이 - 무한루프 방지를 위해 setTimeout 대신 Promise 사용
+            const delay = DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, attempt - 1);
+            
+            set((state) => {
+              state.error = `프로젝트 목록 로드 중... (${attempt}/${MAX_RETRIES}회 시도)`;
+              state.retryCount = attempt;
+            });
+
+            // setTimeout 대신 Promise를 사용하여 더 안전한 비동기 처리
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return attemptLoad(attempt + 1);
+          }
+        };
+
+        await attemptLoad(1);
+      },
+
+      // 수동 재시도
+      retryLoadProjects: async () => {
+        const { hasReachedMaxRetries } = get();
+        if (hasReachedMaxRetries) {
+          const { info } = useToastStore.getState();
+          info('재시도 중...', '프로젝트 목록을 다시 불러오고 있습니다.', 2000);
+          
           set((state) => {
-            state.error = apiError.error;
-            state.isLoading = false;
+            state.retryCount = 0;
+            state.hasReachedMaxRetries = false;
+            state.error = null;
           });
+          await get().loadProjects();
         }
       },
 
@@ -186,6 +272,16 @@ export const useProjectStore = create<ProjectState>()(
       clearError: () => {
         set((state) => {
           state.error = null;
+        });
+      },
+
+      // 재시도 상태 초기화
+      resetRetryState: () => {
+        set((state) => {
+          state.retryCount = 0;
+          state.hasReachedMaxRetries = false;
+          state.error = null;
+          state.isRetrying = false;
         });
       },
     })),

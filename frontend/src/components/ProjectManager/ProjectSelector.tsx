@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronDownIcon, PlusIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { useProjectStore } from '../../stores/projectStore';
@@ -20,18 +20,21 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     projects, 
     currentProject, 
     setCurrentProject, 
-    loadProjects, 
-    isLoading 
+    isLoading,
+    error,
+    hasReachedMaxRetries,
+    retryLoadProjects,
+    resetRetryState
   } = useProjectStore();
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
-  // 컴포넌트 마운트 시 프로젝트 목록 로드
-  useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
+  // 컴포넌트 마운트 시 프로젝트 목록 로드 - DashboardMain에서 이미 호출하므로 제거
+  // useEffect(() => {
+  //   loadProjects();
+  // }, [loadProjects]);
 
   const handleProjectSelect = (project: Project) => {
     setCurrentProject(project);
@@ -61,10 +64,38 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     }
   };
 
+  const handleRetry = () => {
+    resetRetryState();
+    retryLoadProjects();
+  };
+
   if (isLoading && projects.length === 0) {
     return (
       <div className={`animate-pulse ${className}`}>
         <div className="h-10 bg-gray-200 rounded-md"></div>
+      </div>
+    );
+  }
+
+  // 에러 상태 처리
+  if (hasReachedMaxRetries && error && projects.length === 0) {
+    return (
+      <div className={className}>
+        <button
+          onClick={handleRetry}
+          className="inline-flex w-full justify-between items-center rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          title={error}
+        >
+          <div className="flex items-center min-w-0 flex-1">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span className="truncate">불러오기 실패 - 다시 시도</span>
+          </div>
+          <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
       </div>
     );
   }
