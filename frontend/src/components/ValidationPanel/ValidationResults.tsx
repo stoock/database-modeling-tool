@@ -62,19 +62,31 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
     }
     
     // 테이블별 검증 결과
-    Object.values(tableValidations).forEach(tableErrors => {
-      errors.push(...tableErrors);
-    });
+    if (tableValidations) {
+      Object.values(tableValidations).forEach(tableErrors => {
+        if (Array.isArray(tableErrors)) {
+          errors.push(...tableErrors);
+        }
+      });
+    }
     
     // 컬럼별 검증 결과
-    Object.values(columnValidations).forEach(columnErrors => {
-      errors.push(...columnErrors);
-    });
+    if (columnValidations) {
+      Object.values(columnValidations).forEach(columnErrors => {
+        if (Array.isArray(columnErrors)) {
+          errors.push(...columnErrors);
+        }
+      });
+    }
     
     // 인덱스별 검증 결과
-    Object.values(indexValidations).forEach(indexErrors => {
-      errors.push(...indexErrors);
-    });
+    if (indexValidations) {
+      Object.values(indexValidations).forEach(indexErrors => {
+        if (Array.isArray(indexErrors)) {
+          errors.push(...indexErrors);
+        }
+      });
+    }
     
     return errors;
   };
@@ -84,8 +96,8 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
     return validationResult?.warnings || [];
   };
   
-  const errors = getAllErrors();
-  const warnings = getAllWarnings();
+  const errors = getAllErrors() || [];
+  const warnings = getAllWarnings() || [];
   
   // 테이블 이름 조회
   const getTableName = (tableId: string): string => {
@@ -178,7 +190,7 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-gray-700">총 검증 항목</h3>
             <span className="text-lg font-semibold text-gray-900">
-              {tables.length + tables.reduce((sum, t) => sum + t.columns.length + t.indexes.length, 0)}
+              {(tables?.length || 0) + (tables || []).reduce((sum, t) => sum + (t.columns?.length || 0) + (t.indexes?.length || 0), 0)}
             </span>
           </div>
           <p className="text-xs text-gray-500 mt-1">

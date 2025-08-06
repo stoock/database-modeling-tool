@@ -76,6 +76,11 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
 
   // 테이블 데이터를 React Flow 노드로 변환 (메모이제이션)
   const convertTablesToNodes = useMemo((): Node<TableNodeData>[] => {
+    // tables가 undefined이거나 배열이 아닌 경우 빈 배열 반환
+    if (!tables || !Array.isArray(tables)) {
+      return [];
+    }
+
     return tables.map((table) => ({
       id: table.id,
       type: 'tableNode',
@@ -87,35 +92,44 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
       draggable: true,
       selectable: true,
     }));
-  }, [tables, selectedTable?.id]);
+  }, [tables, selectedTable]);
 
   // 테이블 관계를 React Flow 엣지로 변환 (메모이제이션)
   const convertRelationshipsToEdges = useMemo((): Edge[] => {
     const edges: Edge[] = [];
     
+    // tables가 undefined이거나 배열이 아닌 경우 빈 배열 반환
+    if (!tables || !Array.isArray(tables) || tables.length < 2) {
+      return edges;
+    }
+    
     // 현재는 예시 관계만 표시 (실제로는 외래키 관계를 기반으로 구현)
     // 향후 외래키 관계 구현 시 실제 관계 데이터로 대체
     
-    // 테이블 간 관계가 있는 경우 엣지 생성
-    if (tables.length >= 2) {
+    try {
       // 예시 관계 (첫 번째 테이블과 두 번째 테이블 사이)
       const firstTable = tables[0];
       const secondTable = tables[1];
       
-      if (firstTable && secondTable) {
+      // 테이블과 컬럼이 모두 존재하는지 확인
+      if (firstTable && secondTable && 
+          firstTable.columns && Array.isArray(firstTable.columns) && firstTable.columns.length > 0 &&
+          secondTable.columns && Array.isArray(secondTable.columns) && secondTable.columns.length > 0) {
         edges.push({
           id: `${firstTable.id}-${secondTable.id}`,
           source: firstTable.id,
           target: secondTable.id,
           type: 'relationshipEdge',
           data: {
-            sourceColumnId: firstTable.columns[0]?.id,
-            targetColumnId: secondTable.columns[0]?.id,
+            sourceColumnId: firstTable.columns[0].id,
+            targetColumnId: secondTable.columns[0].id,
             type: 'ONE_TO_MANY'
           },
           animated: false,
         });
       }
+    } catch (error) {
+      console.warn('테이블 관계 변환 중 오류:', error);
     }
     
     return edges;
@@ -123,9 +137,12 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
 
   // 테이블 데이터가 변경될 때 노드 업데이트
   useEffect(() => {
-    setNodes(convertTablesToNodes);
-    setEdges(convertRelationshipsToEdges);
-  }, [convertTablesToNodes, convertRelationshipsToEdges, setNodes, setEdges]);
+    const newNodes = convertTablesToNodes;
+    const newEdges = convertRelationshipsToEdges;
+    
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }, [tables, selectedTable]);
 
   // 프로젝트가 변경될 때 테이블 로드
   useEffect(() => {
@@ -138,13 +155,23 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
       // 위치 변경 감지 및 서버 업데이트
-      changes.forEach((change) => {
+      changes.forEach(async (change) => {
         if (change.type === 'position' && change.position && change.dragging === false) {
-          // 드래그가 끝났을 때만 서버에 위치 업데이트
-          updateTablePosition(change.id, change.position.x, change.position.y);
-          
-          // 변경사항 추적
-          changeTracker.trackChange('table', change.id);
+          try {
+            console.log(`테이블 위치 저장 중: ${change.id} → (${change.position.x}, ${change.position.y})`);
+            
+            // 드래그가 끝났을 때만 서버에 위치 업데이트
+            await updateTablePosition(change.id, change.position.x, change.position.y);
+            
+            console.log(`테이블 위치 저장 완료: ${change.id}`);
+            
+            // 변경사항 추적
+            changeTracker.trackChange('table', change.id);
+          } catch (error) {
+            console.error(`테이블 위치 저장 실패: ${change.id}`, error);
+            // 토스트로 사용자에게 알림 (옵션)
+            // showToast?.('테이블 위치 저장에 실패했습니다.', 'error');
+          }
         }
       });
 

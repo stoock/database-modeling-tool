@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjectStore } from '../../stores/projectStore';
 import { useTableStore } from '../../stores/tableStore';
@@ -26,17 +26,14 @@ import type { Project } from '../../types';
  */
 const DashboardMain: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const { 
-    projects, 
-    currentProject, 
-    // loadProjects, // 현재 미사용
-    // loadProject, // 현재 미사용
-    deleteProject, 
-    setCurrentProject, 
-    isLoading, 
-    error, 
-    clearError 
-  } = useProjectStore();
+  // 필요한 상태만 선택적으로 구독하여 불필요한 리렌더링 방지
+  const projects = useProjectStore((state) => state.projects);
+  const currentProject = useProjectStore((state) => state.currentProject);
+  const deleteProject = useProjectStore((state) => state.deleteProject);
+  const setCurrentProject = useProjectStore((state) => state.setCurrentProject);
+  const isLoading = useProjectStore((state) => state.isLoading);
+  const error = useProjectStore((state) => state.error);
+  const clearError = useProjectStore((state) => state.clearError);
   
   const { tables, selectedTable, updateTable } = useTableStore();
   // loadTables와 clearValidations는 useEffect 내에서 직접 호출
@@ -66,11 +63,25 @@ const DashboardMain: React.FC = () => {
     onAfterSave
   });
 
-  // 초기 로딩
+  // 전역 상태로 한 번만 실행되도록 보장
+  const hasInitialized = useRef(false);
+
+  // 초기 로딩 - 정말로 한 번만 실행
   useEffect(() => {
+    // 이미 초기화되었거나 현재 로딩 중이면 건너뛰기
+    if (hasInitialized.current || isLoading) {
+      return;
+    }
+
+    hasInitialized.current = true;
+    console.log('프로젝트 목록 초기 로딩 시작');
+    
     const { loadProjects } = useProjectStore.getState();
-    loadProjects();
-  }, []); // 의존성 없음
+    loadProjects().catch((error) => {
+      console.error('초기 프로젝트 로딩 실패:', error);
+      // 실패해도 재시도하지 않음 - 사용자가 수동으로 재시도해야 함
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // URL projectId 처리
   useEffect(() => {
@@ -245,7 +256,7 @@ const DashboardMain: React.FC = () => {
               ].map((view) => (
                 <button
                   key={view.id}
-                  onClick={() => setSelectedDashboardView(view.id as any)}
+                  onClick={() => setSelectedDashboardView(view.id as 'overview' | 'columns' | 'indexes' | 'export')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     selectedDashboardView === view.id
                       ? 'border-blue-500 text-blue-600'
@@ -264,19 +275,7 @@ const DashboardMain: React.FC = () => {
           {/* 뷰 콘텐츠 */}
           <div className="p-6">
             {selectedDashboardView === 'overview' && (
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="p-4 border-b border-gray-200">
-                  <h2 className="text-lg font-medium text-gray-900">
-                    테이블 설계 캔버스
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    드래그 앤 드롭으로 테이블을 배치하고 관계를 설정하세요.
-                  </p>
-                </div>
-                <div className="h-[600px]">
-                  <TableDesignerPanel />
-                </div>
-              </div>
+              <TableDesignerPanel />
             )}
 
             {selectedDashboardView === 'columns' && (

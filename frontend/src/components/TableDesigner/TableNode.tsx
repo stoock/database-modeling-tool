@@ -217,15 +217,15 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
   }, [handleDragStart, handleDragEnd]);
 
   // 검증 오류 상태
-  const hasValidationErrors = validationErrors.length > 0 || tableValidations[table.id]?.length > 0;
+  const hasValidationErrors = validationErrors.length > 0 || (tableValidations[table.id]?.length || 0) > 0;
   const allErrors = [
     ...validationErrors,
     ...(tableValidations[table.id] || []).map(e => e.message)
   ];
   
   // 표시할 컬럼 수 결정
-  const displayColumnCount = showAllColumns ? table.columns.length : (isExpanded ? 12 : 6);
-  const hasMoreColumns = table.columns.length > displayColumnCount;
+  const displayColumnCount = showAllColumns ? (table.columns?.length || 0) : (isExpanded ? 12 : 6);
+  const hasMoreColumns = (table.columns?.length || 0) > displayColumnCount;
 
   const nodeClasses = `
     bg-white rounded-lg shadow-md border-2 transition-all duration-200 min-w-[280px] max-w-[400px] relative
@@ -374,9 +374,9 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
 
       {/* 컬럼 목록 */}
       <div className={`p-3 ${isExpanded ? 'max-h-[500px] overflow-y-auto' : ''}`}>
-        {table.columns.length > 0 ? (
+        {(table.columns?.length || 0) > 0 ? (
           <div className="space-y-1">
-            {table.columns
+            {(table.columns || [])
               .sort((a, b) => a.orderIndex - b.orderIndex)
               .slice(0, displayColumnCount)
               .map((column) => (
@@ -424,7 +424,7 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
                 onClick={toggleShowAllColumns}
                 className="w-full text-xs text-center py-1 text-blue-600 hover:text-blue-800 hover:underline"
               >
-                {showAllColumns ? "컬럼 접기" : `... 외 ${table.columns.length - displayColumnCount}개 컬럼 더 보기`}
+                {showAllColumns ? "컬럼 접기" : `... 외 ${(table.columns?.length || 0) - displayColumnCount}개 컬럼 더 보기`}
               </button>
             )}
           </div>
@@ -459,8 +459,8 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
                 ? 'text-blue-600 bg-blue-50'
                 : 'text-gray-500 bg-gray-50'
         }`}>
-          <span>컬럼: {table.columns.length}개</span>
-          <span>인덱스: {table.indexes.length}개</span>
+          <span>컬럼: {table.columns?.length || 0}개</span>
+          <span>인덱스: {table.indexes?.length || 0}개</span>
           {hasValidationErrors && (
             <span className="text-red-700 font-medium">오류 {allErrors.length}개</span>
           )}
