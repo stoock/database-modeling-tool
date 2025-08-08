@@ -52,7 +52,7 @@ const IndexForm: React.FC<IndexFormProps> = ({
       setName(index.name);
       setType(index.type);
       setIsUnique(index.isUnique);
-      setSelectedColumns([...index.columns]);
+      setSelectedColumns([...(index.columns || [])]);
     } else {
       // 새 인덱스 기본값 - 더 스마트한 이름 생성
       if (table && columns.length > 0) {

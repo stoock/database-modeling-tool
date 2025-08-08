@@ -110,7 +110,7 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
   }
 
   const tabs = [
-    { id: 'list', name: '인덱스 목록', count: selectedTable.indexes.length },
+    { id: 'list', name: '인덱스 목록', count: selectedTable?.indexes?.length || 0 },
     { id: 'performance', name: '성능 분석' },
     { id: 'sql', name: 'SQL 미리보기' },
   ];
@@ -120,7 +120,7 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
       <div className="px-4 py-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            인덱스 관리 - {selectedTable.name}
+            인덱스 관리{selectedTable?.name ? ` - ${selectedTable.name}` : ''}
           </h3>
           {activeTab === 'list' && (
             <Button onClick={handleAddIndex} size="sm">
@@ -172,8 +172,8 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
         {/* 탭 컨텐츠 */}
         {activeTab === 'list' && (
           <IndexList
-            indexes={selectedTable.indexes}
-            columns={selectedTable.columns}
+            indexes={selectedTable?.indexes || []}
+            columns={selectedTable?.columns || []}
             onEdit={handleEditIndex}
             onSelect={handleSelectIndex}
             onDelete={handleDeleteIndex}
@@ -183,9 +183,9 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
 
         {activeTab === 'form' && (
           <IndexForm
-            tableId={selectedTable.id}
+            tableId={selectedTable?.id || ''}
             index={editingIndex}
-            columns={selectedTable.columns}
+            columns={selectedTable?.columns || []}
             onCancel={handleCancelForm}
             onSuccess={() => {
               setActiveTab('list');
@@ -218,7 +218,7 @@ const IndexManagerPanel: React.FC<IndexManagerPanelProps> = ({
             <div className="text-gray-500 mb-4">
               먼저 인덱스를 선택해주세요.
             </div>
-            {selectedTable.indexes.length === 0 ? (
+            {(selectedTable?.indexes?.length || 0) === 0 ? (
               <div className="text-sm text-gray-400">
                 아직 생성된 인덱스가 없습니다. '인덱스 추가' 버튼을 눌러 새 인덱스를 생성해주세요.
               </div>

@@ -207,6 +207,7 @@ yarn dev
 # 포트 충돌 시 프로세스 종료 후 재시작
 lsof -ti:3000 | xargs kill -9  # macOS/Linux
 netstat -ano | findstr :3000   # Windows 에서 PID 확인 후 종료
+netstat -ano | findstr ":3000" | % {Stop-Process -Id ($_ -split "\s+")[-1] -Force -ErrorAction SilentlyContinue}
 ```
 
 ### 빌드 및 테스트

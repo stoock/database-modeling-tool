@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, Suspense, lazy } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjectStore } from '../../stores/projectStore';
 import { useTableStore } from '../../stores/tableStore';
@@ -10,13 +10,15 @@ import { ProjectCreateModal } from '../ProjectManager';
 import DashboardLayout from './DashboardLayout';
 import DashboardHeader from './DashboardHeader';
 import ProjectOverview from './ProjectOverview';
-import TableDesignerPanel from './TableDesignerPanel';
-import ColumnEditorPanel from './ColumnEditorPanel';
-import IndexManagerPanel from './IndexManagerPanel';
-import ValidationPanel from './ValidationPanel';
-import SchemaExportPanel from './SchemaExportPanel';
 import WelcomeScreen from './WelcomeScreen';
 import type { Project } from '../../types';
+
+// 무거운 컴포넌트들을 lazy loading으로 최적화
+const TableDesignerPanel = lazy(() => import('./TableDesignerPanel'));
+const ColumnEditorPanel = lazy(() => import('./ColumnEditorPanel'));
+const IndexManagerPanel = lazy(() => import('./IndexManagerPanel'));
+const ValidationPanel = lazy(() => import('./ValidationPanel'));
+const SchemaExportPanel = lazy(() => import('./SchemaExportPanel'));
 
 /**
  * 대시보드 메인 컴포넌트
@@ -218,7 +220,9 @@ const DashboardMain: React.FC = () => {
 
   // 사이드바 컴포넌트
   const sidebarComponent = currentProject ? (
-    <ValidationPanel currentProject={currentProject} />
+    <Suspense fallback={<div className="p-4 animate-pulse bg-gray-100 rounded">로딩 중...</div>}>
+      <ValidationPanel currentProject={currentProject} />
+    </Suspense>
   ) : null;
 
   // 메인 콘텐츠 렌더링
@@ -274,21 +278,28 @@ const DashboardMain: React.FC = () => {
 
           {/* 뷰 콘텐츠 */}
           <div className="p-6">
-            {selectedDashboardView === 'overview' && (
-              <TableDesignerPanel />
-            )}
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">컴포넌트 로딩 중...</span>
+              </div>
+            }>
+              {selectedDashboardView === 'overview' && (
+                <TableDesignerPanel />
+              )}
 
-            {selectedDashboardView === 'columns' && (
-              <ColumnEditorPanel selectedTable={selectedTable} />
-            )}
+              {selectedDashboardView === 'columns' && (
+                <ColumnEditorPanel selectedTable={selectedTable} />
+              )}
 
-            {selectedDashboardView === 'indexes' && (
-              <IndexManagerPanel selectedTable={selectedTable} />
-            )}
+              {selectedDashboardView === 'indexes' && (
+                <IndexManagerPanel selectedTable={selectedTable} />
+              )}
 
-            {selectedDashboardView === 'export' && (
-              <SchemaExportPanel />
-            )}
+              {selectedDashboardView === 'export' && (
+                <SchemaExportPanel />
+              )}
+            </Suspense>
           </div>
         </div>
       </>

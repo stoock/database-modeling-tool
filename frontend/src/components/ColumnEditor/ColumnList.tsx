@@ -278,7 +278,7 @@ const ColumnList: React.FC<ColumnListProps> = memo(({
   );
 
   const sortedColumns = useMemo(() => 
-    [...columns].sort((a, b) => a.orderIndex - b.orderIndex),
+    [...(columns || [])].sort((a, b) => a.orderIndex - b.orderIndex),
     [columns]
   );
 

@@ -212,7 +212,7 @@ export const ColumnOrderManager: React.FC<ColumnOrderManagerProps> = ({
   // 테이블이 변경될 때 컬럼 목록 업데이트
   React.useEffect(() => {
     if (table?.columns) {
-      const sortedColumns = [...table.columns].sort((a, b) => a.orderIndex - b.orderIndex);
+      const sortedColumns = [...(table.columns || [])].sort((a, b) => a.orderIndex - b.orderIndex);
       setColumns(sortedColumns);
     }
   }, [table]);
@@ -240,7 +240,7 @@ export const ColumnOrderManager: React.FC<ColumnOrderManagerProps> = ({
             await reorderColumns(table.id, columnIds);
           } catch (error) {
             // 에러 발생 시 원래 순서로 복원
-            const sortedColumns = [...table.columns].sort((a, b) => a.orderIndex - b.orderIndex);
+            const sortedColumns = [...(table.columns || [])].sort((a, b) => a.orderIndex - b.orderIndex);
             setColumns(sortedColumns);
             console.error('컬럼 순서 변경 실패:', error);
             // 사용자에게 에러 알림

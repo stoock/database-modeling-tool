@@ -125,7 +125,7 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
         primaryKey: false, // 복사된 컬럼은 기본키가 될 수 없음
         identity: false, // 복사된 컬럼은 자동증가가 될 수 없음
         defaultValue: column.defaultValue,
-        orderIndex: table.columns.length,
+        orderIndex: table.columns?.length || 0,
       };
 
       const newColumn = await createColumn(table.id, request);
@@ -163,7 +163,7 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
       return;
     }
 
-    const sortedColumns = [...table.columns].sort((a, b) => a.orderIndex - b.orderIndex);
+    const sortedColumns = [...(table.columns || [])].sort((a, b) => a.orderIndex - b.orderIndex);
     const currentIndex = sortedColumns.findIndex(c => c.id === columnId);
     
     if (currentIndex === -1) {
@@ -298,11 +298,11 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
         <div className="px-4 py-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              컬럼 관리 - {table.name}
+              컬럼 관리{table?.name ? ` - ${table.name}` : ''}
             </h3>
             <div className="flex items-center space-x-2">
               {/* 검증 상태 표시 */}
-              {table.columns.length > 0 && (
+              {(table.columns?.length || 0) > 0 && (
                 <div className="flex items-center space-x-2">
                   {validationSummary.totalErrors > 0 ? (
                     <div className="flex items-center text-red-600">
@@ -339,7 +339,7 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
                 onClick={() => setIsOrderManagerOpen(true)}
                 variant="secondary"
                 size="sm"
-                disabled={table.columns.length === 0}
+                disabled={(table.columns?.length || 0) === 0}
               >
                 <Bars3Icon className="h-4 w-4 mr-1" />
                 순서 관리
@@ -355,7 +355,7 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
           </div>
 
           {/* 검증 결과 */}
-          {showValidation && table.columns.length > 0 && (
+          {showValidation && (table.columns?.length || 0) > 0 && (
             <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <h4 className="text-sm font-medium text-gray-900 mb-3">검증 결과</h4>
               
@@ -384,7 +384,7 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
                   {Object.entries(validationResults)
                     .filter(([, result]) => result.errors.length > 0)
                     .map(([columnId, result]) => {
-                      const column = table.columns.find(c => c.id === columnId);
+                      const column = table.columns?.find(c => c.id === columnId);
                       return (
                         <div key={columnId} className="text-sm">
                           <div className="font-medium text-red-800">{column?.name}</div>
