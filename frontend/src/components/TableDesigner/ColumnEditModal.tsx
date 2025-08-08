@@ -165,6 +165,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
         handleClose();
       }
     } catch (error) {
+      console.error('컬럼 수정 오류:', error);
       setSubmitError('컬럼 수정 중 오류가 발생했습니다.');
     }
   };
@@ -179,6 +180,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
         handleClose();
       }
     } catch (error) {
+      console.error('컬럼 삭제 오류:', error);
       setSubmitError('컬럼 삭제 중 오류가 발생했습니다.');
     }
   };
@@ -210,6 +212,7 @@ const ColumnEditModal: React.FC<ColumnEditModalProps> = ({
         handleClose();
       }
     } catch (error) {
+      console.error('컬럼 복사 오류:', error);
       setSubmitError('컬럼 복사 중 오류가 발생했습니다.');
     }
   };

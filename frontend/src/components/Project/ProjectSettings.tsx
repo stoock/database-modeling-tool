@@ -44,6 +44,7 @@ const ProjectSettings: React.FC<ProjectSettingsProps> = ({
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
+      console.error('프로젝트 설정 저장 오류:', err);
       setError('프로젝트 정보 저장 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);

@@ -102,6 +102,7 @@ export const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
         handleClose();
       }
     } catch (error) {
+      console.error('프로젝트 생성/수정 오류:', error);
       setSubmitError(
         isEditMode 
           ? '프로젝트 수정 중 오류가 발생했습니다.' 
