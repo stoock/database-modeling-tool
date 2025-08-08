@@ -20,13 +20,13 @@ const IndexManagerModal: React.FC<IndexManagerModalProps> = ({
   tableId
 }) => {
   const { getTableById } = useTableStore();
-  const { currentProject: _currentProject } = useProjectStore();
-  const { validateIndex: _validateIndex } = useValidationStore();
+  const { } = useProjectStore();
+  const { } = useValidationStore();
   
   const [table, setTable] = useState<Table | undefined>(undefined);
   const [selectedIndex, setSelectedIndex] = useState<Index | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [isSubmitting, _setIsSubmitting] = useState(false);
+  const [isSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // 테이블 정보 로드

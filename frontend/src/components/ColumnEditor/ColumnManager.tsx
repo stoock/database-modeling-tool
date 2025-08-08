@@ -48,30 +48,75 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
 
   // 컬럼 삭제 핸들러
   const handleDeleteColumn = useCallback(async (columnId: string) => {
+    if (!table) {
+      alert('테이블 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    const column = table.columns.find(c => c.id === columnId);
+    if (!column) {
+      alert('삭제할 컬럼을 찾을 수 없습니다.');
+      return;
+    }
+
+    // 기본키 컬럼 삭제 방지
+    if (column.primaryKey) {
+      alert('기본키 컬럼은 삭제할 수 없습니다.');
+      return;
+    }
+
+    if (!confirm(`컬럼 '${column.name}'을(를) 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+
     try {
       await deleteColumn(columnId);
-    } catch (error) {
+      // 삭제된 컬럼이 선택된 컬럼이었다면 선택 해제
+      if (selectedColumn?.id === columnId) {
+        setSelectedColumn(null);
+      }
+    } catch (error: unknown) {
       console.error('컬럼 삭제 실패:', error);
-      alert('컬럼 삭제에 실패했습니다. 다시 시도해주세요.');
+      
+      // 네트워크 오류와 서버 오류 구분
+      const errorObj = error as { code?: string; message?: string; status?: number };
+      if (errorObj?.code === 'NETWORK_ERROR' || errorObj?.message?.includes('fetch')) {
+        alert('네트워크 연결을 확인하고 다시 시도해주세요.');
+      } else if (errorObj?.status === 409) {
+        alert('다른 테이블에서 참조 중인 컬럼은 삭제할 수 없습니다.');
+      } else {
+        alert(`컬럼 삭제에 실패했습니다: ${errorObj?.message || '알 수 없는 오류'}`);  
+      }
     }
-  }, [deleteColumn]);
+  }, [deleteColumn, table, selectedColumn, setSelectedColumn]);
 
   // 컬럼 복사 핸들러
   const handleDuplicateColumn = useCallback(async (column: Column) => {
-    if (!table) return;
+    if (!table) {
+      alert('테이블 정보를 찾을 수 없습니다.');
+      return;
+    }
 
     try {
-      // 중복되지 않는 이름 생성
+      // 중복되지 않는 이름 생성 (더 스마트한 로직)
       let copyName = `${column.name}_copy`;
       let counter = 1;
+      
+      // 기존 copy 패턴 확인 및 증분
       while (table.columns.some(c => c.name === copyName)) {
         copyName = `${column.name}_copy${counter}`;
         counter++;
+        
+        // 무한 루프 방지
+        if (counter > 999) {
+          copyName = `${column.name}_${Date.now()}`;
+          break;
+        }
       }
 
       const request: CreateColumnRequest = {
         name: copyName,
-        description: column.description ? `${column.description} (복사본)` : undefined,
+        description: column.description ? `${column.description} (복사본)` : `${column.name} 컬럼의 복사본`,
         dataType: column.dataType,
         maxLength: column.maxLength,
         precision: column.precision,
@@ -86,10 +131,20 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
       const newColumn = await createColumn(table.id, request);
       if (newColumn) {
         setSelectedColumn(newColumn);
+        alert(`컬럼 '${copyName}'이(가) 성공적으로 복사되었습니다.`);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('컬럼 복사 실패:', error);
-      alert('컬럼 복사에 실패했습니다. 다시 시도해주세요.');
+      
+      // 구체적인 오류 메시지 제공
+      const errorObj = error as { code?: string; message?: string; status?: number };
+      if (errorObj?.status === 400) {
+        alert('컬럼 정보가 올바르지 않습니다. 원본 컬럼을 확인해주세요.');
+      } else if (errorObj?.code === 'NETWORK_ERROR') {
+        alert('네트워크 연결을 확인하고 다시 시도해주세요.');
+      } else {
+        alert(`컬럼 복사에 실패했습니다: ${errorObj?.message || '알 수 없는 오류'}`);
+      }
     }
   }, [table, createColumn, setSelectedColumn]);
 
@@ -103,16 +158,31 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
 
   // 컬럼 순서 변경 핸들러
   const handleMoveColumn = useCallback(async (columnId: string, direction: 'up' | 'down') => {
-    if (!table) return;
+    if (!table) {
+      alert('테이블 정보를 찾을 수 없습니다.');
+      return;
+    }
 
     const sortedColumns = [...table.columns].sort((a, b) => a.orderIndex - b.orderIndex);
     const currentIndex = sortedColumns.findIndex(c => c.id === columnId);
     
-    if (currentIndex === -1) return;
+    if (currentIndex === -1) {
+      alert('이동할 컬럼을 찾을 수 없습니다.');
+      return;
+    }
     
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
     
-    if (newIndex < 0 || newIndex >= sortedColumns.length) return;
+    // 경계 검사
+    if (newIndex < 0) {
+      alert('첫 번째 컬럼은 더 이상 위로 이동할 수 없습니다.');
+      return;
+    }
+    
+    if (newIndex >= sortedColumns.length) {
+      alert('마지막 컬럼은 더 이상 아래로 이동할 수 없습니다.');
+      return;
+    }
 
     // 배열에서 순서 변경
     const newColumns = [...sortedColumns];
@@ -127,22 +197,63 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
     try {
       const columnIds = updatedColumns.map(col => col.id);
       await reorderColumns(table.id, columnIds);
-    } catch (error) {
+      
+      const movedColumn = sortedColumns[currentIndex];
+      alert(`컬럼 '${movedColumn.name}'의 순서가 변경되었습니다.`);
+    } catch (error: unknown) {
       console.error('컬럼 순서 변경 실패:', error);
-      alert('컬럼 순서 변경에 실패했습니다. 다시 시도해주세요.');
+      
+      const errorObj = error as { code?: string; message?: string; status?: number };
+      if (errorObj?.status === 409) {
+        alert('다른 사용자가 컬럼 순서를 변경했습니다. 페이지를 새로고침해주세요.');
+      } else if (errorObj?.code === 'NETWORK_ERROR') {
+        alert('네트워크 연결을 확인하고 다시 시도해주세요.');
+      } else {
+        alert(`컬럼 순서 변경에 실패했습니다: ${errorObj?.message || '알 수 없는 오류'}`);
+      }
     }
   }, [table, reorderColumns]);
 
-  // 컬럼 순서 재정렬 핸들러
+  // 컬럼 순서 재정렬 핸들러 (드래그앤드롭용)
   const handleReorderColumns = useCallback(async (newColumns: Column[]) => {
-    if (!table) return;
+    if (!table) {
+      console.warn('테이블 정보가 없어 컬럼 순서를 변경할 수 없습니다.');
+      return;
+    }
+
+    // 변경사항이 있는지 확인
+    const currentOrder = table.columns.map(col => col.id).join(',');
+    const newOrder = newColumns.map(col => col.id).join(',');
+    
+    if (currentOrder === newOrder) {
+      console.log('컬럼 순서에 변경사항이 없습니다.');
+      return;
+    }
 
     try {
       const columnIds = newColumns.map(col => col.id);
       await reorderColumns(table.id, columnIds);
-    } catch (error) {
+      
+      console.log('컬럼 순서가 성공적으로 변경되었습니다.');
+    } catch (error: unknown) {
       console.error('컬럼 순서 변경 실패:', error);
-      alert('컬럼 순서 변경에 실패했습니다. 다시 시도해주세요.');
+      
+      // 사용자에게 구체적인 피드백 제공
+      const errorObj = error as { code?: string; message?: string; status?: number };
+      if (errorObj?.status === 409) {
+        alert('다른 사용자가 컬럼 순서를 변경했습니다. 페이지를 새로고침해주세요.');
+      } else if (errorObj?.code === 'NETWORK_ERROR') {
+        alert('네트워크 연결 문제로 컬럼 순서 변경에 실패했습니다.');
+      } else {
+        alert(`컬럼 순서 변경에 실패했습니다: ${errorObj?.message || '알 수 없는 오류'}`);
+      }
+      
+      // 에러 발생 시 원래 순서로 복원하려고 시도
+      try {
+        window.location.reload();
+      } catch (reloadError) {
+        console.error('페이지 새로고침 실패:', reloadError);
+      }
     }
   }, [table, reorderColumns]);
 
@@ -271,7 +382,7 @@ const ColumnManager: React.FC<ColumnManagerProps> = ({ table, className = '' }) 
                 <div className="space-y-2">
                   <h5 className="text-sm font-medium text-red-900">오류가 있는 컬럼:</h5>
                   {Object.entries(validationResults)
-                    .filter(([_, result]) => result.errors.length > 0)
+                    .filter(([, result]) => result.errors.length > 0)
                     .map(([columnId, result]) => {
                       const column = table.columns.find(c => c.id === columnId);
                       return (

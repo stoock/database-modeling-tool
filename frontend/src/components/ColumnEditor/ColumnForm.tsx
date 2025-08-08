@@ -40,8 +40,9 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
     watch,
     setValue,
     reset,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting, touchedFields }
   } = useForm<ColumnFormData>({
+    mode: 'onChange', // 실시간 검증 활성화
     defaultValues: {
       name: '',
       description: '',
@@ -129,22 +130,46 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
   };
 
   const validateColumnName = (name: string) => {
-    if (!name.trim()) {
+    if (!name || !name.trim()) {
       return '컬럼명은 필수입니다.';
     }
     
     const trimmedName = name.trim();
+    
+    // 길이 검사
+    if (trimmedName.length === 0) {
+      return '컬럼명은 필수입니다.';
+    }
+    
+    if (trimmedName.length > 128) {
+      return '컬럼명은 128자를 초과할 수 없습니다.';
+    }
+    
+    // 패턴 검사
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmedName)) {
+      return '컬럼명은 영문자나 언더스코어로 시작하고, 영문자, 숫자, 언더스코어만 사용할 수 있습니다.';
+    }
+    
+    // SQL 예약어 검사
+    const reservedWords = [
+      'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'FROM', 'WHERE', 'ORDER', 'GROUP', 
+      'HAVING', 'UNION', 'CREATE', 'ALTER', 'DROP', 'INDEX', 'TABLE', 'DATABASE', 
+      'COLUMN', 'PRIMARY', 'FOREIGN', 'KEY', 'CONSTRAINT', 'NULL', 'NOT', 'DEFAULT', 
+      'AUTO_INCREMENT', 'IDENTITY', 'UNIQUE', 'CHECK', 'REFERENCES', 'CASCADE'
+    ];
+    
+    if (reservedWords.includes(trimmedName.toUpperCase())) {
+      return 'SQL 예약어는 컬럼명으로 사용할 수 없습니다.';
+    }
+    
+    // 중복 검사
     const duplicateColumn = existingColumns.find(
       c => c.name.toLowerCase() === trimmedName.toLowerCase() && 
-           (!isEditMode || c.id !== column!.id)
+           (!isEditMode || c.id !== column?.id)
     );
     
     if (duplicateColumn) {
       return '이미 존재하는 컬럼명입니다.';
-    }
-    
-    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(trimmedName)) {
-      return '컬럼명은 영문자, 숫자, 언더스코어만 사용할 수 있으며 숫자로 시작할 수 없습니다.';
     }
     
     return true;
@@ -199,7 +224,24 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
                     )}
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                    <div className="mt-1">
+                      <p className="text-sm text-red-600 flex items-center">
+                        <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {errors.name.message}
+                      </p>
+                    </div>
+                  )}
+                  {!errors.name && touchedFields.name && (
+                    <div className="mt-1">
+                      <p className="text-sm text-green-600 flex items-center">
+                        <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        유효한 컬럼명입니다.
+                      </p>
+                    </div>
                   )}
                 </div>
 
@@ -228,6 +270,7 @@ const ColumnForm: React.FC<ColumnFormProps> = ({
                   watch={watch}
                   setValue={setValue}
                   errors={errors}
+                  touchedFields={touchedFields}
                 />
 
                 {/* 체크박스 옵션들 */}

@@ -54,13 +54,19 @@ const IndexForm: React.FC<IndexFormProps> = ({
       setIsUnique(index.isUnique);
       setSelectedColumns([...index.columns]);
     } else {
-      // 새 인덱스 기본값
-      setName(`IX_${columns[0]?.tableId.substring(0, 8)}_${new Date().getTime().toString().substring(9, 13)}`);
+      // 새 인덱스 기본값 - 더 스마트한 이름 생성
+      if (table && columns.length > 0) {
+        const tableName = table.name;
+        const timestamp = Date.now().toString().slice(-4);
+        setName(`IX_${tableName}_${timestamp}`);
+      } else {
+        setName('IX_NewIndex');
+      }
       setType('NONCLUSTERED');
       setIsUnique(false);
       setSelectedColumns([]);
     }
-  }, [index, columns]);
+  }, [index, columns, table]);
   
   // 이름 변경 시 검증
   useEffect(() => {
@@ -131,6 +137,36 @@ const IndexForm: React.FC<IndexFormProps> = ({
       return;
     }
     
+    // 클러스터드 인덱스 중복 검증
+    if (type === 'CLUSTERED' && table) {
+      const existingClusteredIndex = table.indexes.find(
+        idx => idx.type === 'CLUSTERED' && (!index || idx.id !== index.id)
+      );
+      
+      if (existingClusteredIndex) {
+        setError(`클러스터드 인덱스는 테이블당 하나만 생성할 수 있습니다. 기존 인덱스: ${existingClusteredIndex.name}`);
+        return;
+      }
+    }
+    
+    // 인덱스명 중복 검증
+    if (table) {
+      const duplicateIndex = table.indexes.find(
+        idx => idx.name.toLowerCase() === name.toLowerCase() && (!index || idx.id !== index.id)
+      );
+      
+      if (duplicateIndex) {
+        setError(`이미 존재하는 인덱스명입니다: ${duplicateIndex.name}`);
+        return;
+      }
+    }
+    
+    // 명명 규칙 검증
+    if (nameErrors.length > 0) {
+      setError(`인덱스명이 명명 규칙을 위반합니다: ${nameErrors[0]}`);
+      return;
+    }
+    
     setIsSubmitting(true);
     setError(null);
     
@@ -156,9 +192,20 @@ const IndexForm: React.FC<IndexFormProps> = ({
       }
       
       onSuccess();
-    } catch (err) {
-      setError('인덱스 저장 중 오류가 발생했습니다.');
-      console.error(err);
+    } catch (err: unknown) {
+      console.error('인덱스 저장 실패:', err);
+      
+      // 구체적인 오류 메시지 제공
+      const errorObj = err as { code?: string; message?: string; status?: number };
+      if (errorObj?.status === 400) {
+        setError('입력된 인덱스 정보가 올바르지 않습니다. 다시 확인해주세요.');
+      } else if (errorObj?.status === 409) {
+        setError('인덱스 충돌이 발생했습니다. 다른 이름을 사용하거나 기존 인덱스를 확인해주세요.');
+      } else if (errorObj?.code === 'NETWORK_ERROR') {
+        setError('네트워크 연결을 확인하고 다시 시도해주세요.');
+      } else {
+        setError(`인덱스 저장에 실패했습니다: ${errorObj?.message || '알 수 없는 오류'}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

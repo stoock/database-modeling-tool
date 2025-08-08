@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import type { Control, UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
+import type { Control, UseFormWatch, UseFormSetValue, FieldErrors, FieldNamesMarkedBoolean } from 'react-hook-form';
 import type { MSSQLDataType } from '../../types';
 
 interface ColumnFormData {
@@ -21,6 +21,7 @@ interface DataTypeSelectorProps {
   watch: UseFormWatch<ColumnFormData>;
   setValue: UseFormSetValue<ColumnFormData>;
   errors: FieldErrors<ColumnFormData>;
+  touchedFields?: Partial<FieldNamesMarkedBoolean<ColumnFormData>>;
 }
 
 interface DataTypeInfo {

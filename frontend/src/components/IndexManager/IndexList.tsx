@@ -12,12 +12,18 @@ interface IndexListProps {
   indexes: Index[];
   columns: Column[];
   onEdit: (index: Index) => void;
+  onSelect?: (index: Index) => void;
+  onDelete?: (deletedIndexId: string) => void;
+  selectedIndexId?: string;
 }
 
 const IndexList: React.FC<IndexListProps> = ({
   indexes,
   columns,
-  onEdit
+  onEdit,
+  onSelect,
+  onDelete,
+  selectedIndexId
 }) => {
   const { deleteIndex } = useTableStore();
   
@@ -26,6 +32,7 @@ const IndexList: React.FC<IndexListProps> = ({
     if (window.confirm(`인덱스 "${index.name}"을(를) 삭제하시겠습니까?`)) {
       try {
         await deleteIndex(index.id);
+        onDelete?.(index.id); // 부모 컴포넌트에 삭제 알림
       } catch (error) {
         console.error('인덱스 삭제 중 오류 발생:', error);
       }
@@ -82,7 +89,15 @@ const IndexList: React.FC<IndexListProps> = ({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {indexes.map((index) => (
-            <tr key={index.id} className="hover:bg-gray-50">
+            <tr 
+              key={index.id} 
+              className={`cursor-pointer transition-colors ${
+                selectedIndexId === index.id 
+                  ? 'bg-blue-50 border-l-4 border-blue-500' 
+                  : 'hover:bg-gray-50'
+              }`}
+              onClick={() => onSelect?.(index)}
+            >
               <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                 {index.name}
               </td>
