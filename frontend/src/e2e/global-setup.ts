@@ -46,7 +46,7 @@ async function globalSetup(config: FullConfig) {
 /**
  * 테스트 데이터 설정
  */
-async function setupTestData(page: any) {
+async function setupTestData(page: import('@playwright/test').Page) {
   console.log('📊 테스트 데이터 설정 중...');
   
   try {

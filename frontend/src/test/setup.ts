@@ -12,7 +12,10 @@ global.IntersectionObserver = class IntersectionObserver {
   observe() {}
   unobserve() {}
   takeRecords(): IntersectionObserverEntry[] { return [] }
-} as any
+} as unknown as {
+  new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit): IntersectionObserver;
+  prototype: IntersectionObserver;
+}
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {

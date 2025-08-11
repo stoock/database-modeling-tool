@@ -22,7 +22,7 @@ export const useDebounce = <T>(value: T, delay: number): T => {
 /**
  * 함수 호출을 디바운스하는 훅
  */
-export const useDebouncedCallback = <T extends (...args: any[]) => any>(
+export const useDebouncedCallback = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
@@ -57,7 +57,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
  * API 호출을 디바운스하고 중복 요청을 방지하는 훅
  */
 export const useDebouncedApi = <T>(
-  apiCall: (...args: any[]) => Promise<T>,
+  apiCall: (...args: unknown[]) => Promise<T>,
   delay: number = 300
 ) => {
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export const useDebouncedApi = <T>(
   const timeoutRef = useRef<number | undefined>(undefined);
 
   const debouncedApiCall = useCallback(
-    async (...args: any[]): Promise<T | null> => {
+    async (...args: unknown[]): Promise<T | null> => {
       // 이전 요청 취소
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();

@@ -41,7 +41,7 @@ async function globalTeardown(config: FullConfig) {
 /**
  * 테스트 데이터 정리
  */
-async function cleanupTestData(page: any) {
+async function cleanupTestData(page: import('@playwright/test').Page) {
   console.log('🗑️ 테스트 데이터 정리 중...');
   
   try {

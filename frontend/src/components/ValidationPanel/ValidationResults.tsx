@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   ExclamationTriangleIcon, 
   CheckCircleIcon,
@@ -27,6 +27,12 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [showSuggestions, setShowSuggestions] = useState<Record<string, boolean>>({});
   
+  // 검증 결과 새로고침
+  const handleRefresh = useCallback(async () => {
+    await validateProject(projectId);
+    setLastRefreshed(new Date());
+  }, [validateProject, projectId]);
+  
   // 자동 새로고침 설정
   useEffect(() => {
     if (autoRefresh) {
@@ -36,13 +42,7 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
       
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, projectId]);
-  
-  // 검증 결과 새로고침
-  const handleRefresh = async () => {
-    await validateProject(projectId);
-    setLastRefreshed(new Date());
-  };
+  }, [autoRefresh, projectId, handleRefresh]);
   
   // 제안 표시 토글
   const toggleSuggestion = (id: string) => {

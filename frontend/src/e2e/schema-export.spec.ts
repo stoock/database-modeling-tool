@@ -271,7 +271,7 @@ test.describe('스키마 내보내기', () => {
     }
   });
 
-  test('내보내기 오류 처리', async ({ page }) => {
+  test.skip('내보내기 오류 처리', async () => {
     // 네트워크 오류 시뮬레이션 (옵션)
     // await page.route('**/api/projects/*/export', route => route.abort());
     

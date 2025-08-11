@@ -253,7 +253,7 @@ test.describe('테이블 디자이너', () => {
     
     // 2. 테이블 드래그 앤 드롭
     const userTableBounds = await userTable.boundingBox();
-    const orderTableBounds = await orderTable.boundingBox();
+    // const orderTableBounds = await orderTable.boundingBox();
     
     // User 테이블을 Order 테이블 위치로 드래그
     await userTable.dragTo(orderTable);
