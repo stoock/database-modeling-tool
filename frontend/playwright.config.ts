@@ -104,6 +104,6 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   
   // 전역 설정 파일
-  globalSetup: require.resolve('./src/e2e/global-setup.ts'),
-  globalTeardown: require.resolve('./src/e2e/global-teardown.ts'),
+  globalSetup: './src/e2e/global-setup.ts',
+  globalTeardown: './src/e2e/global-teardown.ts',
 });
