@@ -43,7 +43,7 @@ export const useRealTimeValidation = () => {
       if (tableId) {
         setTableValidation(tableId, validationErrors);
       }
-    }, [debouncedTableName, currentProject?.namingRules, tableId]);
+    }, [debouncedTableName, tableId]);
 
     return errors;
   };
@@ -70,7 +70,7 @@ export const useRealTimeValidation = () => {
       if (columnId) {
         setColumnValidation(columnId, validationErrors);
       }
-    }, [debouncedColumnName, currentProject?.namingRules, columnId]);
+    }, [debouncedColumnName, columnId]);
 
     return errors;
   };
@@ -97,7 +97,7 @@ export const useRealTimeValidation = () => {
       if (indexId) {
         setIndexValidation(indexId, validationErrors);
       }
-    }, [debouncedIndexName, currentProject?.namingRules, indexId]);
+    }, [debouncedIndexName, indexId]);
 
     return errors;
   };

@@ -22,21 +22,21 @@ import RelationshipLine from './RelationshipLine';
 import TableEditModal from './TableEditModal';
 import ColumnAddModal from './ColumnAddModal';
 import IndexManageModal from './IndexManageModal';
-
-// 커스텀 노드 및 엣지 타입 등록
-const nodeTypes = {
-  tableNode: TableNode,
-};
-
-const edgeTypes = {
-  relationshipEdge: RelationshipLine,
-};
+import Button from '../common/Button';
 
 interface TableCanvasProps {
   className?: string;
 }
 
 const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
+  // 커스텀 노드 및 엣지 타입 등록 (메모이제이션으로 재생성 방지)
+  const nodeTypes = useMemo(() => ({
+    tableNode: TableNode,
+  }), []);
+
+  const edgeTypes = useMemo(() => ({
+    relationshipEdge: RelationshipLine,
+  }), []);
   const { 
     tables, 
     selectedTable, 
@@ -55,8 +55,8 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
   
   const changeTracker = useChangeTracker();
 
-  const [nodes, setNodes, _onNodesChange] = useNodesState([]);
-  const [edges, setEdges, _onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes] = useNodesState([]);
+  const [edges, setEdges] = useEdgesState([]);
 
   // 모달 상태
   const [tableEditModal, setTableEditModal] = useState<{
@@ -142,7 +142,7 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
     
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [tables, selectedTable]);
+  }, [tables, selectedTable, convertTablesToNodes, convertRelationshipsToEdges, setNodes, setEdges]);
 
   // 프로젝트가 변경될 때 테이블 로드
   useEffect(() => {
@@ -260,7 +260,7 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
       setIndexManageModal({ isOpen: true, tableId });
     };
 
-    const handleAddTableFromCanvas = (_event: CustomEvent) => {
+    const handleAddTableFromCanvas = () => {
       setTableEditModal({ isOpen: true, table: null });
     };
     
@@ -293,12 +293,14 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
         <div className="absolute top-4 left-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <div className="flex items-center justify-between">
             <span>{errorMessage}</span>
-            <button
+            <Button
               onClick={clearTableError}
-              className="ml-4 text-red-500 hover:text-red-700"
+              variant="ghost"
+              size="sm"
+              className="ml-4 text-red-500 hover:text-red-700 p-1"
             >
               ×
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -369,13 +371,15 @@ const TableCanvas: React.FC<TableCanvasProps> = memo(({ className = '' }) => {
               </span>
             </div>
             
-            <button
+            <Button
               onClick={handleAddTable}
               disabled={!currentProject}
-              className="w-full px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="md"
+              className="w-full"
             >
               + 새 테이블 추가
-            </button>
+            </Button>
             
             {selectedTable && (
               <div className="mt-3 pt-3 border-t border-gray-200">

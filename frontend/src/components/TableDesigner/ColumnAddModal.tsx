@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
@@ -50,7 +50,7 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
   
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const getDefaultValues = (): ColumnFormData => {
+  const getDefaultValues = useCallback((): ColumnFormData => {
     if (copyFromColumn) {
       // 복사할 컬럼이 있는 경우 해당 컬럼의 값을 기본값으로 사용
       return {
@@ -83,7 +83,7 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
       identityIncrement: 1,
       defaultValue: '',
     };
-  };
+  }, [copyFromColumn]);
 
   const {
     register,
@@ -166,7 +166,7 @@ const ColumnAddModal: React.FC<ColumnAddModalProps> = ({
       reset(defaultValues);
       setValidationErrors([]);
     }
-  }, [isOpen, copyFromColumn, reset]);
+  }, [isOpen, copyFromColumn, reset, getDefaultValues]);
 
   const handleClose = () => {
     onClose();
