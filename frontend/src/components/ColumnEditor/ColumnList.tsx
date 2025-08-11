@@ -9,6 +9,7 @@ import {
   DocumentDuplicateIcon,
   Bars3Icon
 } from '@heroicons/react/24/outline';
+import Button from '../common/Button';
 import {
   DndContext,
   closestCenter,
@@ -308,13 +309,14 @@ const ColumnList: React.FC<ColumnListProps> = memo(({
           <h3 className="text-lg leading-6 font-medium text-gray-900">
             컬럼 목록
           </h3>
-          <button
+          <Button
             onClick={onAddColumn}
-            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            size="sm"
+            variant="primary"
           >
             <PlusIcon className="h-4 w-4 mr-1" />
             컬럼 추가
-          </button>
+          </Button>
         </div>
 
         {sortedColumns.length === 0 ? (

@@ -3,7 +3,7 @@ import { getBezierPath, EdgeLabelRenderer } from 'reactflow';
 import type { EdgeProps } from 'reactflow';
 import type { RelationshipEdgeData } from '../../types';
 
-interface RelationshipLineProps extends EdgeProps<RelationshipEdgeData> {}
+type RelationshipLineProps = EdgeProps<RelationshipEdgeData>;
 
 const RelationshipLine: React.FC<RelationshipLineProps> = memo(({
   id,

@@ -43,7 +43,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isDirty: _isDirty },
+    formState: { errors },
   } = useForm<TableFormData>({
     defaultValues: {
       name: '',
@@ -123,6 +123,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
         handleClose();
       }
     } catch (error) {
+      console.error('Table operation error:', error);
       setSubmitError(
         table 
           ? '테이블 수정 중 오류가 발생했습니다.' 
@@ -141,6 +142,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
         handleClose();
       }
     } catch (error) {
+      console.error('Table delete error:', error);
       setSubmitError('테이블 삭제 중 오류가 발생했습니다.');
     }
   };
@@ -183,8 +185,8 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
                 message: '테이블명은 최대 128자까지 입력할 수 있습니다.',
               },
             })}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-              errors.name || validationErrors.length > 0 ? 'border-red-300' : ''
+            className={`mt-1 block w-full rounded-xl border-2 bg-gradient-to-r from-white to-surface-50 px-4 py-3 text-surface-900 font-medium shadow-soft focus:border-primary-500 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-surface-400 hover:shadow-medium sm:text-sm ${
+              errors.name || validationErrors.length > 0 ? 'border-red-400 focus:border-red-500 focus:ring-red-200' : 'border-surface-300'
             }`}
             placeholder="테이블명을 입력하세요"
           />
@@ -214,7 +216,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
                 message: '설명은 최대 500자까지 입력할 수 있습니다.',
               },
             })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-xl border-2 border-surface-300 bg-gradient-to-r from-white to-surface-50 px-4 py-3 text-surface-900 font-medium shadow-soft focus:border-primary-500 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-surface-400 hover:shadow-medium sm:text-sm"
             placeholder="테이블에 대한 설명을 입력하세요 (선택사항)"
           />
           {errors.description && (
@@ -242,7 +244,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
                   message: 'X 좌표는 5000 이하여야 합니다.',
                 },
               })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-xl border-2 border-surface-300 bg-gradient-to-r from-white to-surface-50 px-4 py-3 text-surface-900 font-medium shadow-soft focus:border-primary-500 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-surface-400 hover:shadow-medium sm:text-sm"
               placeholder="0"
             />
             {errors.positionX && (
@@ -268,7 +270,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
                   message: 'Y 좌표는 5000 이하여야 합니다.',
                 },
               })}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-xl border-2 border-surface-300 bg-gradient-to-r from-white to-surface-50 px-4 py-3 text-surface-900 font-medium shadow-soft focus:border-primary-500 focus:ring-4 focus:ring-primary-200 focus:outline-none transition-all duration-200 hover:border-surface-400 hover:shadow-medium sm:text-sm"
               placeholder="0"
             />
             {errors.positionY && (
@@ -354,7 +356,9 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
             </Button>
             <Button
               type="submit"
+              variant="primary"
               disabled={isLoading || validationErrors.length > 0}
+              className="!bg-gradient-to-r !from-primary-600 !to-primary-700 !text-white font-bold px-8 py-3 hover:!from-primary-700 hover:!to-primary-800 disabled:!from-surface-400 disabled:!to-surface-500 disabled:!text-surface-200 shadow-medium hover:shadow-strong"
             >
               {isLoading ? '저장 중...' : isEdit ? '수정' : '생성'}
             </Button>
@@ -400,6 +404,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
                 variant="secondary"
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isLoading}
+                className="!bg-gradient-to-r !from-surface-100 !to-surface-200 !text-surface-700 font-medium px-6 py-2 hover:!from-surface-200 hover:!to-surface-300"
               >
                 취소
               </Button>
@@ -408,6 +413,7 @@ const TableEditModal: React.FC<TableEditModalProps> = ({
                 variant="danger"
                 onClick={handleDelete}
                 disabled={isLoading}
+                className="!bg-gradient-to-r !from-red-600 !to-red-700 !text-white font-bold px-6 py-2 hover:!from-red-700 hover:!to-red-800 disabled:!from-surface-400 disabled:!to-surface-500"
               >
                 {isLoading ? '삭제 중...' : '삭제'}
               </Button>

@@ -45,8 +45,8 @@ const SchemaDocumentation: React.FC<SchemaDocumentationProps> = ({ projectId }) 
           includeConstraints: true
         });
         setHtmlContent(htmlResult.content);
-      } catch (err: any) {
-        setError(err.message || '문서를 불러오는 중 오류가 발생했습니다.');
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : '문서를 불러오는 중 오류가 발생했습니다.');
         console.error(err);
       } finally {
         setIsLoading(false);

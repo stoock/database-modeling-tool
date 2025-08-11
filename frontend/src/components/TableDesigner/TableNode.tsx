@@ -27,8 +27,9 @@ import { useProjectStore } from '../../stores/projectStore';
 import TableContextMenu from './TableContextMenu';
 import ColumnEditModal from './ColumnEditModal';
 import IndexManagerModal from './IndexManagerModal';
+import Button from '../common/Button';
 
-interface TableNodeProps extends NodeProps<TableNodeData> {}
+type TableNodeProps = NodeProps<TableNodeData>;
 
 const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
   const { table, isSelected } = data;
@@ -334,41 +335,51 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
         </div>
         
         <div className="flex items-center space-x-1">
-          <button
+          <Button
             onClick={toggleExpand}
-            className="p-1 text-gray-400 hover:text-blue-600 rounded"
+            variant="ghost"
+            size="sm"
+            className="p-1 text-gray-400 hover:text-blue-600"
             title={isExpanded ? "테이블 축소" : "테이블 확장"}
           >
             <ArrowsPointingOutIcon className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleEditClick}
-            className="p-1 text-gray-400 hover:text-blue-600 rounded"
+            variant="ghost"
+            size="sm"
+            className="p-1 text-gray-400 hover:text-blue-600"
             title="테이블 편집"
           >
             <PencilIcon className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleIndexClick}
-            className="p-1 text-gray-400 hover:text-green-600 rounded"
+            variant="ghost"
+            size="sm"
+            className="p-1 text-gray-400 hover:text-green-600"
             title="인덱스 관리"
           >
             <Cog6ToothIcon className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleDuplicateClick}
-            className="p-1 text-gray-400 hover:text-purple-600 rounded"
+            variant="ghost"
+            size="sm"
+            className="p-1 text-gray-400 hover:text-purple-600"
             title="테이블 복제"
           >
             <DocumentDuplicateIcon className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleDeleteClick}
-            className="p-1 text-gray-400 hover:text-red-600 rounded"
+            variant="ghost"
+            size="sm"
+            className="p-1 text-gray-400 hover:text-red-600"
             title="테이블 삭제"
           >
             <TrashIcon className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -420,12 +431,14 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
               ))}
             
             {hasMoreColumns && (
-              <button
+              <Button
                 onClick={toggleShowAllColumns}
-                className="w-full text-xs text-center py-1 text-blue-600 hover:text-blue-800 hover:underline"
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-center py-1 text-blue-600 hover:text-blue-800"
               >
                 {showAllColumns ? "컬럼 접기" : `... 외 ${(table.columns?.length || 0) - displayColumnCount}개 컬럼 더 보기`}
-              </button>
+              </Button>
             )}
           </div>
         ) : (
@@ -436,16 +449,18 @@ const TableNode: React.FC<TableNodeProps> = memo(({ data, selected }) => {
         )}
 
         {/* 컬럼 추가 버튼 */}
-        <button
+        <Button
           onClick={handleAddColumnClick}
-          className={`w-full mt-3 px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150 ${
+          variant="outline"
+          size="sm"
+          className={`w-full mt-3 transition-colors duration-150 ${
             isHovered || isSelected || selected
-              ? 'text-blue-700 border-blue-300 bg-blue-50 hover:bg-blue-100 focus:ring-blue-500'
-              : 'text-blue-600 border-blue-200 hover:bg-blue-50 focus:ring-blue-500'
+              ? 'text-blue-700 border-blue-300 bg-blue-50 hover:bg-blue-100'
+              : 'text-blue-600 border-blue-200 hover:bg-blue-50'
           }`}
         >
           + 컬럼 추가
-        </button>
+        </Button>
       </div>
 
       {/* 테이블 통계 및 정보 */}

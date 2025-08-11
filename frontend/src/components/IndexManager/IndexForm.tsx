@@ -4,6 +4,7 @@ import {
   ArrowDownIcon, 
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import Button from '../common/Button';
 import { useTableStore } from '../../stores/tableStore';
 import { useValidationStore } from '../../stores/validationStore';
 import { useProjectStore } from '../../stores/projectStore';
@@ -460,21 +461,24 @@ const IndexForm: React.FC<IndexFormProps> = ({
       )}
       
       <div className="flex justify-end space-x-3 mt-6">
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          variant="outline"
+          size="md"
         >
           취소
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           disabled={isSubmitting || selectedColumns.length === 0}
-          className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          loading={isSubmitting}
         >
-          {isSubmitting ? '저장 중...' : index ? '인덱스 수정' : '인덱스 생성'}
-        </button>
+          {index ? '인덱스 수정' : '인덱스 생성'}
+        </Button>
       </div>
     </form>
   );

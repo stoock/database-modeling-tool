@@ -7,6 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useProjectStore } from '../../stores/projectStore';
 import NamingRulesPanel from '../ValidationPanel/NamingRules';
+import Button from '../common/Button';
 
 interface ProjectSettingsProps {
   projectId: string;
@@ -130,13 +131,14 @@ const ProjectSettings: React.FC<ProjectSettingsProps> = ({
               </div>
               
               <div className="flex justify-end">
-                <button
+                <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                  variant="primary"
+                  loading={isSubmitting}
                 >
-                  {isSubmitting ? '저장 중...' : '변경사항 저장'}
-                </button>
+                  변경사항 저장
+                </Button>
               </div>
             </form>
           </Tab.Panel>

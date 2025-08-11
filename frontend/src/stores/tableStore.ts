@@ -334,7 +334,7 @@ export const useTableStore = create<TableState>()(
                 state.selectedTable.columns = updatedColumns.sort((a, b) => a.orderIndex - b.orderIndex);
               }
             });
-          } catch (batchError) {
+          } catch {
             // 배치 API가 지원되지 않는 경우 개별 업데이트로 폴백
             console.warn('Batch update API not supported, processing individually.');
             

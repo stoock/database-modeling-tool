@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useTableStore } from '../../stores/tableStore';
-import { useValidationStore } from '../../stores/validationStore';
-import { useProjectStore } from '../../stores/projectStore';
+// import { useValidationStore } from '../../stores/validationStore';
+// import { useProjectStore } from '../../stores/projectStore';
 import type { Table, Index } from '../../types';
 import IndexList from '../IndexManager/IndexList';
 import IndexForm from '../IndexManager/IndexForm';
@@ -20,8 +20,8 @@ const IndexManagerModal: React.FC<IndexManagerModalProps> = ({
   tableId
 }) => {
   const { getTableById } = useTableStore();
-  const { } = useProjectStore();
-  const { } = useValidationStore();
+  // const { } = useProjectStore();
+  // const { } = useValidationStore();
   
   const [table, setTable] = useState<Table | undefined>(undefined);
   const [selectedIndex, setSelectedIndex] = useState<Index | null>(null);

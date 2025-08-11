@@ -164,8 +164,7 @@ class ApiClient {
         project.tables,
         request.format,
         request.includeComments,
-        request.includeIndexes,
-        request.includeConstraints
+        request.includeIndexes
       );
       
       // 파일명 생성

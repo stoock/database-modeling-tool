@@ -235,7 +235,7 @@ const validateColumnNaming = (
           severity: 'error',
         });
       }
-    } catch (e) {
+    } catch {
       console.warn('잘못된 네이밍 패턴:', namingRules.columnPattern);
     }
   }

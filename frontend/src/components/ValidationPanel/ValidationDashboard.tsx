@@ -6,7 +6,7 @@ import {
   QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 import { useValidationStore } from '../../stores/validationStore';
-import { useTableStore } from '../../stores/tableStore';
+// import { useTableStore } from '../../stores/tableStore';
 import ValidationResults from './ValidationResults';
 import NamingRulesPanel from './NamingRulesPanel';
 import ValidationGuide from './ValidationGuide';
@@ -18,8 +18,8 @@ interface ValidationDashboardProps {
 const ValidationDashboard: React.FC<ValidationDashboardProps> = ({
   projectId
 }) => {
-  const { validateProject, validationResult: _validationResult, isValidating } = useValidationStore();
-  const { tables: _tables } = useTableStore();
+  const { validateProject, isValidating } = useValidationStore();
+  // const { tables } = useTableStore();
   
   const [activeTab, setActiveTab] = useState<'results' | 'rules' | 'guide'>('results');
   const [autoRefresh, setAutoRefresh] = useState(false);

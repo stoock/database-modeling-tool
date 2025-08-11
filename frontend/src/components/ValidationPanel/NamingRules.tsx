@@ -10,9 +10,7 @@ interface NamingRulesProps {
   projectId: string;
 }
 
-const NamingRulesPanel: React.FC<NamingRulesProps> = ({
-  projectId: _projectId
-}) => {
+const NamingRulesPanel: React.FC<NamingRulesProps> = () => {
   const { currentProject, updateNamingRules } = useProjectStore();
   
   const [tablePrefix, setTablePrefix] = useState('');
@@ -51,7 +49,7 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = ({
       if (tablePattern) {
         try {
           new RegExp(tablePattern);
-        } catch (err) {
+        } catch {
           throw new Error('테이블 패턴이 유효한 정규식이 아닙니다.');
         }
       }
@@ -59,7 +57,7 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = ({
       if (columnPattern) {
         try {
           new RegExp(columnPattern);
-        } catch (err) {
+        } catch {
           throw new Error('컬럼 패턴이 유효한 정규식이 아닙니다.');
         }
       }
@@ -67,7 +65,7 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = ({
       if (indexPattern) {
         try {
           new RegExp(indexPattern);
-        } catch (err) {
+        } catch {
           throw new Error('인덱스 패턴이 유효한 정규식이 아닙니다.');
         }
       }

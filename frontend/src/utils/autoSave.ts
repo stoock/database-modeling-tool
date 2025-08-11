@@ -138,16 +138,16 @@ export function useAutoSave(config: AutoSaveConfig = {}) {
       }
       
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('자동 저장 중 오류 발생:', err);
       setState(prev => ({ 
         ...prev, 
         isSaving: false, 
-        error: err.message || '저장 중 오류가 발생했습니다.' 
+        error: err instanceof Error ? err.message : '저장 중 오류가 발생했습니다.' 
       }));
       return false;
     }
-  }, [currentProject, state.isSaving, tables, updateTable, config.onBeforeSave, config.onAfterSave]);
+  }, [currentProject, state.isSaving, tables, updateTable, config]);
   
   // 자동 저장 타이머
   useEffect(() => {

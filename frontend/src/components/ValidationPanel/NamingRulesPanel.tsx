@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useProjectStore } from '../../stores/projectStore';
-import { useValidationStore } from '../../stores/validationStore';
+// import { useValidationStore } from '../../stores/validationStore';
 import type { NamingRules, CaseType } from '../../types';
 
 interface NamingRulesPanelProps {
@@ -25,9 +25,9 @@ const CASE_OPTIONS: { value: CaseType; label: string }[] = [
   { value: 'LOWER', label: 'lower_case' },
 ];
 
-const NamingRulesPanel: React.FC<NamingRulesPanelProps> = ({ projectId: _projectId }) => {
+const NamingRulesPanel: React.FC<NamingRulesPanelProps> = () => {
   const { currentProject, updateProject } = useProjectStore();
-  const { validateProject: _validateProject } = useValidationStore();
+  // const { validateProject } = useValidationStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
@@ -36,7 +36,6 @@ const NamingRulesPanel: React.FC<NamingRulesPanelProps> = ({ projectId: _project
     register,
     handleSubmit,
     reset,
-    formState: { errors: _errors },
   } = useForm<NamingRulesFormData>();
 
   // 현재 프로젝트의 네이밍 규칙으로 폼 초기화

@@ -5,7 +5,8 @@ import { useValidationStore } from '../../stores/validationStore';
 import SqlPreview from './SqlPreview';
 import ExportOptions from './ExportOptions';
 import SchemaDocumentation from './SchemaDocumentation';
-import ExportHistory, { addExportRecord } from './ExportHistory';
+import ExportHistory from './ExportHistory';
+import { addExportRecord } from '../../utils/exportHistory';
 import type { ExportFormat } from '../../types';
 
 const SchemaExportPanel: React.FC = () => {
@@ -61,8 +62,7 @@ const SchemaExportPanel: React.FC = () => {
       currentProject.id,
       exportOptions.format,
       result.filename,
-      result.content,
-      result.mimeType
+      true
     );
   };
   

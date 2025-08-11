@@ -1,18 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, UNSAFE_NavigationContext } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useChangeTracker } from '../../utils/changeTracker';
+import Button from '../common/Button';
 
 /**
  * 저장되지 않은 변경사항이 있을 때 페이지 이탈 시 경고 다이얼로그
  */
 const UnsavedChangesDialog: React.FC = () => {
-  const navigate = useNavigate();
-  // const location = useLocation(); // 현재 미사용
   const changeTracker = useChangeTracker();
   const [showDialog, setShowDialog] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [pendingCallback, setPendingCallback] = useState<(() => void) | null>(null);
   
   // 현재 변경사항 상태
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(
@@ -26,44 +24,35 @@ const UnsavedChangesDialog: React.FC = () => {
     });
   }, [changeTracker]);
   
-  // 라우터 이탈 차단
-  const blockNavigation = useCallback(
-    (navigationAction: any) => {
-      if (hasUnsavedChanges) {
-        setShowDialog(true);
-        setPendingNavigation(navigationAction.location.pathname);
-        return false;
-      }
-      return true;
-    },
-    [hasUnsavedChanges]
-  );
-  
-  // 라우터 이탈 차단 설정
+  // 브라우저 beforeunload 이벤트 처리 (페이지 새로고침/닫기 시)
   useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        event.preventDefault();
+        event.returnValue = '저장되지 않은 변경사항이 있습니다. 정말 페이지를 떠나시겠습니까?';
+        return event.returnValue;
+      }
+    };
+
     if (hasUnsavedChanges) {
-      const unblock = (UNSAFE_NavigationContext as any)._context.navigator.block(
-        (tx: any) => {
-          blockNavigation(tx);
-        }
-      );
-      return unblock;
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }
-    return () => {};
-  }, [hasUnsavedChanges, blockNavigation]);
+  }, [hasUnsavedChanges]);
   
   // 이탈 확인
   const handleConfirmNavigation = () => {
     setShowDialog(false);
-    if (pendingNavigation) {
-      navigate(pendingNavigation);
+    if (pendingCallback) {
+      pendingCallback();
+      setPendingCallback(null);
     }
   };
   
   // 이탈 취소
   const handleCancelNavigation = () => {
     setShowDialog(false);
-    setPendingNavigation(null);
+    setPendingCallback(null);
   };
   
   return (
@@ -94,20 +83,20 @@ const UnsavedChangesDialog: React.FC = () => {
           </div>
           
           <div className="mt-6 flex justify-end space-x-3">
-            <button
+            <Button
               type="button"
               onClick={handleCancelNavigation}
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              variant="outline"
             >
               취소
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleConfirmNavigation}
-              className="inline-flex items-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              variant="danger"
             >
               변경사항 버리기
-            </button>
+            </Button>
           </div>
         </Dialog.Panel>
       </div>

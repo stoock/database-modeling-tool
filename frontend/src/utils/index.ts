@@ -54,7 +54,7 @@ export const formatDate = (date: Date | string): string => {
 /**
  * 디바운스 함수
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
@@ -83,7 +83,7 @@ export const cn = (...classes: (string | undefined | null | false)[]): string =>
  * MSSQL 데이터 타입별 기본 설정 반환
  */
 export const getDataTypeDefaults = (dataType: string) => {
-  const defaults: Record<string, any> = {
+  const defaults: Record<string, { maxLength?: number; precision?: number; scale?: number; isNullable?: boolean; defaultValue?: string }> = {
     'VARCHAR': { maxLength: 255, isNullable: true },
     'NVARCHAR': { maxLength: 255, isNullable: true },
     'CHAR': { maxLength: 10, isNullable: true },

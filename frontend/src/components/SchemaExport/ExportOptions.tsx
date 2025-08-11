@@ -3,6 +3,7 @@ import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { useProjectStore } from '../../stores/projectStore';
 import { apiClient } from '../../services/api';
 import type { ExportFormat } from '../../types';
+import { addExportRecord } from '../../utils/exportHistory';
 
 interface ExportOptionsProps {
   projectId: string;
@@ -123,12 +124,20 @@ const ExportOptions: React.FC<ExportOptionsProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
+      // 성공 기록 추가
+      addExportRecord(projectId, format, result.filename, true);
+      
       // 내보내기 완료 이벤트 발생
       if (onExportComplete) {
         onExportComplete(result);
       }
-    } catch (err: any) {
-      setError(err.message || '스키마 내보내기 중 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '스키마 내보내기 중 오류가 발생했습니다.';
+      setError(errorMessage);
+      
+      // 실패 기록 추가
+      addExportRecord(projectId, format, `${currentProject?.name || 'unknown'}_${format.toLowerCase()}_${new Date().getTime()}.${format.toLowerCase()}`, false, errorMessage);
+      
       console.error(err);
     } finally {
       setIsExporting(false);

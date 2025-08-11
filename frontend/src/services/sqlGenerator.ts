@@ -152,7 +152,7 @@ export class SqlGenerator {
     format: ExportFormat,
     includeComments: boolean = true,
     includeIndexes: boolean = true,
-    _includeConstraints: boolean = true // 현재 미사용
+    // 향후 제약조건 생성 시 사용 예정
   ): { content: string; mimeType: string } {
     switch (format) {
       case 'SQL':
