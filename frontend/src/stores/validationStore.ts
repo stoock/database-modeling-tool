@@ -25,7 +25,7 @@ interface ValidationState {
   // 액션
   validateProject: (projectId: string) => Promise<ValidationResult | null>;
   validateTableName: (name: string, namingRules: NamingRules) => ValidationError[];
-  validateColumnName: (name: string, namingRules: NamingRules) => ValidationError[];
+  validateColumnName: (name: string, namingRules: NamingRules, tableName?: string, isPrimaryKey?: boolean) => ValidationError[];
   validateIndexName: (name: string, namingRules: NamingRules) => ValidationError[];
   validateTable: (table: Table, namingRules: NamingRules) => ValidationError[];
   validateColumn: (column: Column, namingRules: NamingRules) => ValidationError[];
@@ -87,6 +87,16 @@ export const useValidationStore = create<ValidationState>()(
           return errors;
         }
 
+        // SQL Server 대문자 강제 검증
+        if (namingRules.enforceUpperCase && name !== name.toUpperCase()) {
+          errors.push({
+            field: 'name',
+            rule: 'sql_server_case',
+            message: '테이블명은 대문자로 작성해야 합니다.',
+            suggestion: name.toUpperCase(),
+          });
+        }
+
         // 패턴 검증
         if (namingRules.tablePattern) {
           const regex = new RegExp(namingRules.tablePattern);
@@ -119,8 +129,8 @@ export const useValidationStore = create<ValidationState>()(
           });
         }
 
-        // 케이스 검증
-        if (namingRules.enforceCase) {
+        // 케이스 검증 (SQL Server 대문자 강제가 아닌 경우에만)
+        if (!namingRules.enforceUpperCase && namingRules.enforceCase) {
           const caseError = validateCase(name, namingRules.enforceCase, 'table');
           if (caseError) {
             errors.push(caseError);
@@ -131,7 +141,7 @@ export const useValidationStore = create<ValidationState>()(
       },
 
       // 컬럼명 검증
-      validateColumnName: (name: string, namingRules: NamingRules) => {
+      validateColumnName: (name: string, namingRules: NamingRules, tableName?: string, isPrimaryKey?: boolean) => {
         const errors: ValidationError[] = [];
 
         if (!name.trim()) {
@@ -143,6 +153,30 @@ export const useValidationStore = create<ValidationState>()(
           return errors;
         }
 
+        // SQL Server 대문자 강제 검증
+        if (namingRules.enforceUpperCase && name !== name.toUpperCase()) {
+          errors.push({
+            field: 'name',
+            rule: 'sql_server_case',
+            message: '컬럼명은 대문자로 작성해야 합니다.',
+            suggestion: name.toUpperCase(),
+          });
+        }
+
+        // SQL Server 기본키 명명 규칙 검증
+        if (isPrimaryKey && tableName && namingRules.enforceTableColumnNaming) {
+          if (name.toUpperCase() === 'ID' || 
+              name.toUpperCase() === 'SEQ_NO' || 
+              name.toUpperCase() === 'HIST_NO') {
+            errors.push({
+              field: 'name',
+              rule: 'sql_server_pk_naming',
+              message: `기본키에 단독명칭 사용 지양: ${name}`,
+              suggestion: `${tableName}_${name}`.toUpperCase(),
+            });
+          }
+        }
+
         // 패턴 검증
         if (namingRules.columnPattern) {
           const regex = new RegExp(namingRules.columnPattern);
@@ -151,13 +185,13 @@ export const useValidationStore = create<ValidationState>()(
               field: 'name',
               rule: 'pattern',
               message: `컬럼명이 패턴 '${namingRules.columnPattern}'에 맞지 않습니다.`,
-              suggestion: generateColumnNameSuggestion(name, namingRules),
+              suggestion: generateColumnNameSuggestion(name, namingRules, tableName),
             });
           }
         }
 
-        // 케이스 검증
-        if (namingRules.enforceCase) {
+        // 케이스 검증 (SQL Server 대문자 강제가 아닌 경우에만)
+        if (!namingRules.enforceUpperCase && namingRules.enforceCase) {
           const caseError = validateCase(name, namingRules.enforceCase, 'column');
           if (caseError) {
             errors.push(caseError);
@@ -401,7 +435,10 @@ function generateTableNameSuggestion(name: string, namingRules: NamingRules): st
     suggestion = suggestion + namingRules.tableSuffix;
   }
   
-  if (namingRules.enforceCase) {
+  // SQL Server 대문자 강제 적용
+  if (namingRules.enforceUpperCase) {
+    suggestion = suggestion.toUpperCase();
+  } else if (namingRules.enforceCase) {
     switch (namingRules.enforceCase) {
       case 'UPPER':
         suggestion = suggestion.toUpperCase();
@@ -421,10 +458,13 @@ function generateTableNameSuggestion(name: string, namingRules: NamingRules): st
   return suggestion;
 }
 
-function generateColumnNameSuggestion(name: string, namingRules: NamingRules): string {
+function generateColumnNameSuggestion(name: string, namingRules: NamingRules, tableName?: string): string {
   let suggestion = name;
   
-  if (namingRules.enforceCase) {
+  // SQL Server 대문자 강제 적용
+  if (namingRules.enforceUpperCase) {
+    suggestion = suggestion.toUpperCase();
+  } else if (namingRules.enforceCase) {
     switch (namingRules.enforceCase) {
       case 'UPPER':
         suggestion = suggestion.toUpperCase();
@@ -438,6 +478,18 @@ function generateColumnNameSuggestion(name: string, namingRules: NamingRules): s
       case 'SNAKE':
         suggestion = toSnakeCase(suggestion);
         break;
+    }
+  }
+  
+  // 기본키 명명 규칙 적용
+  if (tableName && namingRules.enforceTableColumnNaming) {
+    if (suggestion.toUpperCase() === 'ID' || 
+        suggestion.toUpperCase() === 'SEQ_NO' || 
+        suggestion.toUpperCase() === 'HIST_NO') {
+      suggestion = tableName + '_' + suggestion;
+      if (namingRules.enforceUpperCase) {
+        suggestion = suggestion.toUpperCase();
+      }
     }
   }
   

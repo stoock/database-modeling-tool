@@ -11,6 +11,14 @@ public class NamingRules {
     private String columnPattern;
     private String indexPattern;
     private CaseType enforceCase;
+    
+    // SQL Server 특화 규칙
+    private boolean enforceUpperCase = false;
+    private boolean recommendAuditColumns = false;
+    private boolean requireDescription = false;
+    private boolean enforceTableColumnNaming = false;
+    private boolean enforceConstraintNaming = false;
+    private String abbreviationRules;
 
     // 기본 생성자
     public NamingRules() {
@@ -46,6 +54,11 @@ public class NamingRules {
             return false;
         }
 
+        // SQL Server 대문자 강제 검증
+        if (enforceUpperCase && !tableName.equals(tableName.toUpperCase())) {
+            return false;
+        }
+
         // 케이스 검증
         return validateCase(tableName);
     }
@@ -60,6 +73,11 @@ public class NamingRules {
             return false;
         }
 
+        // SQL Server 대문자 강제 검증
+        if (enforceUpperCase && !columnName.equals(columnName.toUpperCase())) {
+            return false;
+        }
+
         // 케이스 검증
         return validateCase(columnName);
     }
@@ -71,6 +89,11 @@ public class NamingRules {
 
         // 패턴 검증
         if (indexPattern != null && !indexName.matches(indexPattern)) {
+            return false;
+        }
+
+        // SQL Server 대문자 강제 검증
+        if (enforceUpperCase && !indexName.equals(indexName.toUpperCase())) {
             return false;
         }
 
@@ -168,6 +191,43 @@ public class NamingRules {
                    .toLowerCase();
     }
 
+    // SQL Server 특화 검증 메서드
+    public boolean validateAuditColumns(java.util.List<String> columnNames) {
+        if (!recommendAuditColumns) return true;
+        
+        return columnNames.contains("REG_ID") && columnNames.contains("REG_DT") &&
+               columnNames.contains("CHG_ID") && columnNames.contains("CHG_DT");
+    }
+    
+    public boolean validatePrimaryKeyNaming(String tableName, String columnName) {
+        if (!enforceTableColumnNaming) return true;
+        
+        // 단독명칭 체크 (경고용)
+        if (columnName.equalsIgnoreCase("ID") || 
+            columnName.equalsIgnoreCase("SEQ_NO") || 
+            columnName.equalsIgnoreCase("HIST_NO")) {
+            return false;
+        }
+        
+        // 테이블명+컬럼명 조합 권장
+        String expectedPattern = tableName + "_";
+        return columnName.toUpperCase().startsWith(expectedPattern.toUpperCase());
+    }
+    
+    public boolean validateConstraintNaming(String constraintName, String tableName, String columnName) {
+        if (!enforceConstraintNaming) return true;
+        
+        String expectedPrefix = "PK__" + tableName + "__" + columnName;
+        return constraintName.toUpperCase().startsWith(expectedPrefix.toUpperCase());
+    }
+    
+    public String suggestConstraintName(String type, String tableName, String columnName) {
+        if (enforceUpperCase) {
+            return type.toUpperCase() + "__" + tableName.toUpperCase() + "__" + columnName.toUpperCase();
+        }
+        return type + "__" + tableName + "__" + columnName;
+    }
+
     // Getters and Setters
     public String getTablePrefix() {
         return tablePrefix;
@@ -215,6 +275,55 @@ public class NamingRules {
 
     public void setEnforceCase(CaseType enforceCase) {
         this.enforceCase = enforceCase;
+    }
+
+    // SQL Server 특화 규칙 Getters and Setters
+    public boolean isEnforceUpperCase() {
+        return enforceUpperCase;
+    }
+
+    public void setEnforceUpperCase(boolean enforceUpperCase) {
+        this.enforceUpperCase = enforceUpperCase;
+    }
+
+    public boolean isRecommendAuditColumns() {
+        return recommendAuditColumns;
+    }
+
+    public void setRecommendAuditColumns(boolean recommendAuditColumns) {
+        this.recommendAuditColumns = recommendAuditColumns;
+    }
+
+    public boolean isRequireDescription() {
+        return requireDescription;
+    }
+
+    public void setRequireDescription(boolean requireDescription) {
+        this.requireDescription = requireDescription;
+    }
+
+    public boolean isEnforceTableColumnNaming() {
+        return enforceTableColumnNaming;
+    }
+
+    public void setEnforceTableColumnNaming(boolean enforceTableColumnNaming) {
+        this.enforceTableColumnNaming = enforceTableColumnNaming;
+    }
+
+    public boolean isEnforceConstraintNaming() {
+        return enforceConstraintNaming;
+    }
+
+    public void setEnforceConstraintNaming(boolean enforceConstraintNaming) {
+        this.enforceConstraintNaming = enforceConstraintNaming;
+    }
+
+    public String getAbbreviationRules() {
+        return abbreviationRules;
+    }
+
+    public void setAbbreviationRules(String abbreviationRules) {
+        this.abbreviationRules = abbreviationRules;
     }
 
     /**

@@ -51,7 +51,7 @@ export const useRealTimeValidation = () => {
   /**
    * 컬럼명 실시간 검증
    */
-  const useColumnNameValidation = (columnName: string, columnId?: string) => {
+  const useColumnNameValidation = (columnName: string, columnId?: string, tableName?: string, isPrimaryKey?: boolean) => {
     const [errors, setErrors] = useState<ValidationError[]>([]);
     const debouncedColumnName = useDebounce(columnName, 300);
 
@@ -64,13 +64,13 @@ export const useRealTimeValidation = () => {
         return;
       }
 
-      const validationErrors = validateColumnName(debouncedColumnName, currentProject.namingRules);
+      const validationErrors = validateColumnName(debouncedColumnName, currentProject.namingRules, tableName, isPrimaryKey);
       setErrors(validationErrors);
       
       if (columnId) {
         setColumnValidation(columnId, validationErrors);
       }
-    }, [debouncedColumnName, columnId]);
+    }, [debouncedColumnName, columnId, tableName, isPrimaryKey]);
 
     return errors;
   };
@@ -140,15 +140,19 @@ export const useRealTimeValidation = () => {
    */
   const generateNameSuggestion = useCallback((
     currentName: string,
-    type: 'table' | 'column' | 'index'
+    type: 'table' | 'column' | 'index',
+    tableName?: string
   ): string => {
     if (!currentProject?.namingRules) return currentName;
 
     const rules = currentProject.namingRules;
     let suggestion = currentName;
 
-    // 케이스 변환
-    if (rules.enforceCase) {
+    // SQL Server 대문자 강제 적용
+    if (rules.enforceUpperCase) {
+      suggestion = suggestion.toUpperCase();
+    } else if (rules.enforceCase) {
+      // 기존 케이스 변환
       switch (rules.enforceCase) {
         case 'UPPER':
           suggestion = suggestion.toUpperCase();
@@ -175,6 +179,19 @@ export const useRealTimeValidation = () => {
       }
     }
 
+    // 기본키 컬럼 명명 규칙 적용
+    if (type === 'column' && tableName && rules.enforceTableColumnNaming) {
+      if (suggestion.toUpperCase() === 'ID' || 
+          suggestion.toUpperCase() === 'SEQ_NO' || 
+          suggestion.toUpperCase() === 'HIST_NO') {
+        // 단독명칭 → 테이블명+컬럼명 조합으로 제안
+        suggestion = tableName + '_' + suggestion;
+        if (rules.enforceUpperCase) {
+          suggestion = suggestion.toUpperCase();
+        }
+      }
+    }
+
     return suggestion;
   }, [currentProject?.namingRules]);
 
@@ -183,9 +200,10 @@ export const useRealTimeValidation = () => {
    */
   const applyAutoFix = useCallback((
     originalName: string,
-    type: 'table' | 'column' | 'index'
+    type: 'table' | 'column' | 'index',
+    tableName?: string
   ): string => {
-    return generateNameSuggestion(originalName, type);
+    return generateNameSuggestion(originalName, type, tableName);
   }, [generateNameSuggestion]);
 
   return {

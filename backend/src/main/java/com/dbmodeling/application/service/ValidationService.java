@@ -64,6 +64,8 @@ public class ValidationService {
         List<Table> tables = tableRepository.findByProjectId(projectId);
         for (Table table : tables) {
             validateTable(table, namingRules, result);
+            // SQL Server 특화 검증
+            validateSqlServerRules(table, namingRules, result);
         }
         
         return result;
@@ -99,6 +101,12 @@ public class ValidationService {
         
         // 비즈니스 규칙 검증
         validateTableBusinessRules(table, columns, result);
+        
+        // SQL Server 감사 컬럼 검증
+        validateAuditColumns(table, columns, namingRules, result);
+        
+        // SQL Server 기본키 명명 검증
+        validatePrimaryKeyNaming(table, columns, namingRules, result);
     }
     
     /**
@@ -248,6 +256,19 @@ public class ValidationService {
      * @return 검증 결과
      */
     public ValidationError validateName(UUID projectId, String objectType, String name) {
+        return validateName(projectId, objectType, name, null);
+    }
+    
+    /**
+     * 네이밍 규칙 검증 (실시간) - 테이블명 포함
+     * 
+     * @param projectId 프로젝트 ID
+     * @param objectType 객체 타입 (TABLE, COLUMN, INDEX)
+     * @param name 검증할 이름
+     * @param tableName 테이블명 (컬럼 검증 시 사용)
+     * @return 검증 결과
+     */
+    public ValidationError validateName(UUID projectId, String objectType, String name, String tableName) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다: " + projectId));
         
@@ -262,6 +283,13 @@ public class ValidationService {
             );
         }
         
+        // SQL Server 특화 검증 먼저 수행
+        ValidationError sqlServerError = validateSqlServerName(projectId, objectType, name, tableName);
+        if (sqlServerError != null) {
+            return sqlServerError;
+        }
+        
+        // 기본 네이밍 규칙 검증
         boolean isValid = switch (objectType.toUpperCase()) {
             case "TABLE" -> namingRules.validateTableName(name);
             case "COLUMN" -> namingRules.validateColumnName(name);
@@ -273,7 +301,7 @@ public class ValidationService {
             String suggestion = switch (objectType.toUpperCase()) {
                 case "TABLE" -> namingRules.suggestTableName(name);
                 case "COLUMN" -> namingRules.suggestColumnName(name);
-                case "INDEX" -> namingRules.suggestIndexName("Table", name);
+                case "INDEX" -> namingRules.suggestIndexName(tableName != null ? tableName : "Table", name);
                 default -> null;
             };
             
@@ -287,6 +315,153 @@ public class ValidationService {
         }
         
         return null; // 검증 통과
+    }
+    
+    /**
+     * SQL Server 특화 규칙 검증
+     */
+    private void validateSqlServerRules(Table table, NamingRules namingRules, ValidationResult result) {
+        // 테이블명 대문자 강제 검증
+        if (namingRules.isEnforceUpperCase() && !table.getName().equals(table.getName().toUpperCase())) {
+            result.addError(new ValidationError(
+                ValidationError.ErrorType.SQL_SERVER_NAMING,
+                "TABLE",
+                table.getName(),
+                "테이블명은 대문자로 작성해야 합니다",
+                table.getName().toUpperCase()
+            ));
+        }
+        
+        // 테이블 설명 필수 검증
+        if (namingRules.isRequireDescription() && 
+            (table.getDescription() == null || table.getDescription().trim().isEmpty())) {
+            result.addError(new ValidationError(
+                ValidationError.ErrorType.SQL_SERVER_DESCRIPTION,
+                "TABLE",
+                table.getName(),
+                "테이블 설명(Description)이 필수입니다",
+                "의미있는 한글 설명을 추가하세요"
+            ));
+        }
+    }
+    
+    /**
+     * SQL Server 감사 컬럼 검증
+     */
+    private void validateAuditColumns(Table table, List<Column> columns, NamingRules namingRules, ValidationResult result) {
+        if (!namingRules.isRecommendAuditColumns()) return;
+        
+        List<String> columnNames = columns.stream()
+            .map(Column::getName)
+            .map(String::toUpperCase)
+            .toList();
+        
+        // REG_ID, REG_DT, CHG_ID, CHG_DT 확인 (권장사항)
+        String[] auditColumns = {"REG_ID", "REG_DT", "CHG_ID", "CHG_DT"};
+        List<String> missingColumns = new ArrayList<>();
+        
+        for (String auditColumn : auditColumns) {
+            if (!columnNames.contains(auditColumn)) {
+                missingColumns.add(auditColumn);
+            }
+        }
+        
+        if (!missingColumns.isEmpty()) {
+            result.addWarning(new ValidationError(
+                ValidationError.ErrorType.SQL_SERVER_AUDIT,
+                "TABLE",
+                table.getName(),
+                "감사 컬럼 권장: " + String.join(", ", missingColumns),
+                "감사 컬럼 추가를 권장합니다 (REG_ID, REG_DT, CHG_ID, CHG_DT)"
+            ));
+        }
+    }
+    
+    /**
+     * SQL Server 기본키 명명 검증
+     */
+    private void validatePrimaryKeyNaming(Table table, List<Column> columns, NamingRules namingRules, ValidationResult result) {
+        if (!namingRules.isEnforceTableColumnNaming()) return;
+        
+        for (Column column : columns) {
+            if (column.isPrimaryKey()) {
+                String tableName = table.getName();
+                String columnName = column.getName();
+                
+                // 단독명칭 체크 (경고)
+                if (columnName.equalsIgnoreCase("ID") || 
+                    columnName.equalsIgnoreCase("SEQ_NO") || 
+                    columnName.equalsIgnoreCase("HIST_NO")) {
+                    result.addWarning(new ValidationError(
+                        ValidationError.ErrorType.SQL_SERVER_NAMING,
+                        "COLUMN",
+                        columnName,
+                        "기본키에 단독명칭 사용 지양: " + columnName,
+                        "테이블명+컬럼명 조합 권장: " + tableName + "_" + columnName
+                    ));
+                }
+                
+                // 컬럼명 대문자 강제 검증
+                if (namingRules.isEnforceUpperCase() && !columnName.equals(columnName.toUpperCase())) {
+                    result.addError(new ValidationError(
+                        ValidationError.ErrorType.SQL_SERVER_NAMING,
+                        "COLUMN",
+                        columnName,
+                        "컬럼명은 대문자로 작성해야 합니다",
+                        columnName.toUpperCase()
+                    ));
+                }
+                
+                // 컬럼 설명 필수 검증
+                if (namingRules.isRequireDescription() && 
+                    (column.getDescription() == null || column.getDescription().trim().isEmpty())) {
+                    result.addError(new ValidationError(
+                        ValidationError.ErrorType.SQL_SERVER_DESCRIPTION,
+                        "COLUMN",
+                        columnName,
+                        "컬럼 설명(Description)이 필수입니다",
+                        "한글 설명을 추가하세요"
+                    ));
+                }
+            }
+        }
+    }
+    
+    /**
+     * SQL Server 특화 실시간 검증
+     */
+    public ValidationError validateSqlServerName(UUID projectId, String objectType, String name, String tableName) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다: " + projectId));
+        
+        NamingRules namingRules = project.getNamingRules();
+        if (namingRules == null) return null;
+        
+        // 대문자 강제 검증
+        if (namingRules.isEnforceUpperCase() && !name.equals(name.toUpperCase())) {
+            return new ValidationError(
+                ValidationError.ErrorType.SQL_SERVER_NAMING,
+                objectType,
+                name,
+                objectType + " 이름은 대문자로 작성해야 합니다",
+                name.toUpperCase()
+            );
+        }
+        
+        // 기본키 단독명칭 체크 (경고)
+        if ("COLUMN".equals(objectType) && tableName != null && namingRules.isEnforceTableColumnNaming()) {
+            if (name.equalsIgnoreCase("ID") || name.equalsIgnoreCase("SEQ_NO") || name.equalsIgnoreCase("HIST_NO")) {
+                return new ValidationError(
+                    ValidationError.ErrorType.SQL_SERVER_NAMING,
+                    objectType,
+                    name,
+                    "단독명칭 사용 지양: " + name,
+                    tableName + "_" + name + " 형태 권장"
+                );
+            }
+        }
+        
+        return null;
     }
     
     /**
@@ -358,7 +533,10 @@ public class ValidationService {
         public enum ErrorType {
             NAMING_RULE,
             BUSINESS_RULE,
-            DATA_TYPE
+            DATA_TYPE,
+            SQL_SERVER_NAMING,
+            SQL_SERVER_AUDIT,
+            SQL_SERVER_DESCRIPTION
         }
     }
 }

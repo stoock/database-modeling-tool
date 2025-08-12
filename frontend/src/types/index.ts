@@ -136,6 +136,14 @@ export interface NamingRules {
   columnPattern?: string;
   indexPattern?: string;
   enforceCase?: CaseType;
+  
+  // SQL Server 특화 규칙
+  enforceUpperCase?: boolean;
+  recommendAuditColumns?: boolean;
+  requireDescription?: boolean;
+  enforceTableColumnNaming?: boolean;
+  enforceConstraintNaming?: boolean;
+  abbreviationRules?: string;
 }
 
 // 검증 관련 타입

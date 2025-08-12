@@ -63,6 +63,13 @@ class ValidationServiceTest {
         namingRules.setIndexPattern("^IX_.*$"); // IX_ 접두사
         namingRules.setEnforceCase(NamingRules.CaseType.PASCAL);
         
+        // SQL Server 특화 규칙 설정
+        namingRules.setEnforceUpperCase(false);
+        namingRules.setRecommendAuditColumns(false);
+        namingRules.setRequireDescription(false);
+        namingRules.setEnforceTableColumnNaming(false);
+        namingRules.setEnforceConstraintNaming(false);
+        
         // 테스트 프로젝트 설정
         testProject = new Project("Test Project", "테스트 프로젝트");
         testProject.setId(projectId);
@@ -314,5 +321,144 @@ class ValidationServiceTest {
         assertThat(result.getErrors().stream()
             .anyMatch(error -> error.getMessage().contains("중복된 컬럼 이름입니다")))
             .isTrue();
+    }
+    
+    @Test
+    @DisplayName("SQL Server 대문자 강제 검증 - 테이블명")
+    void validateProject_SqlServerUpperCaseTable() {
+        // Given
+        namingRules.setEnforceUpperCase(true);
+        Table lowercaseTable = new Table("user_table", "사용자 테이블");
+        lowercaseTable.setId(UUID.randomUUID());
+        lowercaseTable.setProjectId(projectId);
+        
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(testProject));
+        when(tableRepository.findByProjectId(projectId)).thenReturn(Arrays.asList(lowercaseTable));
+        when(columnRepository.findByTableIdOrderByOrderIndex(lowercaseTable.getId()))
+            .thenReturn(Collections.emptyList());
+        when(indexRepository.findByTableId(lowercaseTable.getId())).thenReturn(Collections.emptyList());
+        
+        // When
+        ValidationResult result = validationService.validateProject(projectId);
+        
+        // Then
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors().stream()
+            .anyMatch(error -> error.getErrorType() == ValidationError.ErrorType.SQL_SERVER_NAMING))
+            .isTrue();
+    }
+    
+    @Test
+    @DisplayName("SQL Server 감사 컬럼 권장 검증")
+    void validateProject_SqlServerAuditColumns() {
+        // Given
+        namingRules.setRecommendAuditColumns(true);
+        
+        // 감사 컬럼이 없는 테이블
+        Column normalColumn = new Column("user_id", MSSQLDataType.BIGINT, 0);
+        normalColumn.setPrimaryKey(true);
+        
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(testProject));
+        when(tableRepository.findByProjectId(projectId)).thenReturn(Arrays.asList(testTable));
+        when(columnRepository.findByTableIdOrderByOrderIndex(tableId))
+            .thenReturn(Arrays.asList(normalColumn));
+        when(indexRepository.findByTableId(tableId)).thenReturn(Collections.emptyList());
+        
+        // When
+        ValidationResult result = validationService.validateProject(projectId);
+        
+        // Then
+        assertThat(result.hasWarnings()).isTrue();
+        assertThat(result.getWarnings().stream()
+            .anyMatch(warning -> warning.getErrorType() == ValidationError.ErrorType.SQL_SERVER_AUDIT))
+            .isTrue();
+    }
+    
+    @Test
+    @DisplayName("SQL Server 기본키 명명 규칙 검증 - 단독명칭 경고")
+    void validateProject_SqlServerPrimaryKeyNaming() {
+        // Given
+        namingRules.setEnforceTableColumnNaming(true);
+        
+        Column idColumn = new Column("ID", MSSQLDataType.BIGINT, 0);
+        idColumn.setPrimaryKey(true); // 단독명칭 사용
+        
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(testProject));
+        when(tableRepository.findByProjectId(projectId)).thenReturn(Arrays.asList(testTable));
+        when(columnRepository.findByTableIdOrderByOrderIndex(tableId))
+            .thenReturn(Arrays.asList(idColumn));
+        when(indexRepository.findByTableId(tableId)).thenReturn(Collections.emptyList());
+        
+        // When
+        ValidationResult result = validationService.validateProject(projectId);
+        
+        // Then
+        assertThat(result.hasWarnings()).isTrue();
+        assertThat(result.getWarnings().stream()
+            .anyMatch(warning -> warning.getErrorType() == ValidationError.ErrorType.SQL_SERVER_NAMING &&
+                                warning.getMessage().contains("단독명칭")))
+            .isTrue();
+    }
+    
+    @Test
+    @DisplayName("SQL Server Description 필수 검증")
+    void validateProject_SqlServerRequireDescription() {
+        // Given
+        namingRules.setRequireDescription(true);
+        
+        // Description이 없는 테이블
+        Table tableWithoutDesc = new Table("TestTable", null);
+        tableWithoutDesc.setId(UUID.randomUUID());
+        tableWithoutDesc.setProjectId(projectId);
+        
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(testProject));
+        when(tableRepository.findByProjectId(projectId)).thenReturn(Arrays.asList(tableWithoutDesc));
+        when(columnRepository.findByTableIdOrderByOrderIndex(tableWithoutDesc.getId()))
+            .thenReturn(Collections.emptyList());
+        when(indexRepository.findByTableId(tableWithoutDesc.getId())).thenReturn(Collections.emptyList());
+        
+        // When
+        ValidationResult result = validationService.validateProject(projectId);
+        
+        // Then
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.getErrors().stream()
+            .anyMatch(error -> error.getErrorType() == ValidationError.ErrorType.SQL_SERVER_DESCRIPTION))
+            .isTrue();
+    }
+    
+    @Test
+    @DisplayName("SQL Server 실시간 검증 - 컬럼명 대문자 강제")
+    void validateSqlServerName_UpperCaseEnforcement() {
+        // Given
+        namingRules.setEnforceUpperCase(true);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(testProject));
+        
+        // When
+        ValidationError result = validationService.validateSqlServerName(
+            projectId, "COLUMN", "user_id", "USER_TABLE");
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrorType()).isEqualTo(ValidationError.ErrorType.SQL_SERVER_NAMING);
+        assertThat(result.getSuggestion()).isEqualTo("USER_ID");
+    }
+    
+    @Test
+    @DisplayName("SQL Server 실시간 검증 - 기본키 단독명칭 경고")
+    void validateSqlServerName_PrimaryKeyNamingWarning() {
+        // Given
+        namingRules.setEnforceTableColumnNaming(true);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(testProject));
+        
+        // When
+        ValidationError result = validationService.validateSqlServerName(
+            projectId, "COLUMN", "ID", "USER_TABLE");
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrorType()).isEqualTo(ValidationError.ErrorType.SQL_SERVER_NAMING);
+        assertThat(result.getMessage()).contains("단독명칭");
+        assertThat(result.getSuggestion()).contains("USER_TABLE_ID");
     }
 }

@@ -20,6 +20,14 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = () => {
   const [indexPattern, setIndexPattern] = useState('');
   const [enforceCase, setEnforceCase] = useState<CaseType | ''>('');
   
+  // SQL Server 특화 규칙 상태
+  const [enforceUpperCase, setEnforceUpperCase] = useState(false);
+  const [recommendAuditColumns, setRecommendAuditColumns] = useState(false);
+  const [requireDescription, setRequireDescription] = useState(false);
+  const [enforceTableColumnNaming, setEnforceTableColumnNaming] = useState(false);
+  const [enforceConstraintNaming, setEnforceConstraintNaming] = useState(false);
+  const [abbreviationRules, setAbbreviationRules] = useState('');
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +42,14 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = () => {
       setColumnPattern(rules.columnPattern || '');
       setIndexPattern(rules.indexPattern || '');
       setEnforceCase(rules.enforceCase || '');
+      
+      // SQL Server 특화 규칙 초기화
+      setEnforceUpperCase(rules.enforceUpperCase || false);
+      setRecommendAuditColumns(rules.recommendAuditColumns || false);
+      setRequireDescription(rules.requireDescription || false);
+      setEnforceTableColumnNaming(rules.enforceTableColumnNaming || false);
+      setEnforceConstraintNaming(rules.enforceConstraintNaming || false);
+      setAbbreviationRules(rules.abbreviationRules || '');
     }
   }, [currentProject]);
   
@@ -76,7 +92,15 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = () => {
         tablePattern: tablePattern || undefined,
         columnPattern: columnPattern || undefined,
         indexPattern: indexPattern || undefined,
-        enforceCase: enforceCase as CaseType || undefined
+        enforceCase: enforceCase as CaseType || undefined,
+        
+        // SQL Server 특화 규칙
+        enforceUpperCase,
+        recommendAuditColumns,
+        requireDescription,
+        enforceTableColumnNaming,
+        enforceConstraintNaming,
+        abbreviationRules: abbreviationRules || undefined
       };
       
       await updateNamingRules(namingRules);
@@ -277,6 +301,118 @@ const NamingRulesPanel: React.FC<NamingRulesProps> = () => {
               </div>
             </div>
           )}
+        </div>
+        
+        {/* SQL Server 특화 규칙 */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium text-gray-700 border-b pb-2">SQL Server 특화 규칙</h3>
+          
+          <div className="space-y-3">
+            {/* 대문자 강제 */}
+            <div className="flex items-center">
+              <input
+                id="enforceUpperCase"
+                type="checkbox"
+                checked={enforceUpperCase}
+                onChange={(e) => setEnforceUpperCase(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="enforceUpperCase" className="ml-3 text-sm font-medium text-gray-700">
+                대문자 강제 적용
+              </label>
+            </div>
+            <p className="ml-7 text-xs text-gray-500">
+              모든 테이블명, 컬럼명을 대문자로 작성하도록 강제합니다
+            </p>
+            
+            {/* 감사 컬럼 권장 */}
+            <div className="flex items-center">
+              <input
+                id="recommendAuditColumns"
+                type="checkbox"
+                checked={recommendAuditColumns}
+                onChange={(e) => setRecommendAuditColumns(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="recommendAuditColumns" className="ml-3 text-sm font-medium text-gray-700">
+                감사 컬럼 권장
+              </label>
+            </div>
+            <p className="ml-7 text-xs text-gray-500">
+              REG_ID, REG_DT, CHG_ID, CHG_DT 컬럼 추가를 권장합니다 (경고)
+            </p>
+            
+            {/* 설명 필수 */}
+            <div className="flex items-center">
+              <input
+                id="requireDescription"
+                type="checkbox"
+                checked={requireDescription}
+                onChange={(e) => setRequireDescription(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="requireDescription" className="ml-3 text-sm font-medium text-gray-700">
+                Description 필수
+              </label>
+            </div>
+            <p className="ml-7 text-xs text-gray-500">
+              모든 테이블과 컬럼에 한글 설명을 필수로 입력하도록 합니다
+            </p>
+            
+            {/* 테이블+컬럼 명명 강제 */}
+            <div className="flex items-center">
+              <input
+                id="enforceTableColumnNaming"
+                type="checkbox"
+                checked={enforceTableColumnNaming}
+                onChange={(e) => setEnforceTableColumnNaming(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="enforceTableColumnNaming" className="ml-3 text-sm font-medium text-gray-700">
+                기본키 명명 규칙 강제
+              </label>
+            </div>
+            <p className="ml-7 text-xs text-gray-500">
+              단독명칭(ID, SEQ_NO) 사용 시 경고, 테이블명+컬럼명 조합을 권장합니다
+            </p>
+            
+            {/* 제약조건 명명 강제 */}
+            <div className="flex items-center">
+              <input
+                id="enforceConstraintNaming"
+                type="checkbox"
+                checked={enforceConstraintNaming}
+                onChange={(e) => setEnforceConstraintNaming(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="enforceConstraintNaming" className="ml-3 text-sm font-medium text-gray-700">
+                제약조건 명명 규칙 강제
+              </label>
+            </div>
+            <p className="ml-7 text-xs text-gray-500">
+              PK__{`테이블명`}__{`컬럼명`} 형태의 제약조건 명명을 강제합니다
+            </p>
+            
+            {/* 약어 규칙 */}
+            <div>
+              <label htmlFor="abbreviationRules" className="block text-sm font-medium text-gray-700">
+                약어 규칙 (선택사항)
+              </label>
+              <div className="mt-1">
+                <textarea
+                  id="abbreviationRules"
+                  value={abbreviationRules}
+                  onChange={(e) => setAbbreviationRules(e.target.value)}
+                  rows={3}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                  placeholder="CUSTOMER=CUST, REQUEST=REQ, SEQUENCE=SEQ"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                프로젝트에서 사용할 약어 규칙을 정의합니다 (형식: 원어=약어, 쉼표로 구분)
+              </p>
+            </div>
+          </div>
         </div>
         
         {/* 저장 버튼 */}
