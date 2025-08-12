@@ -37,9 +37,13 @@ Claude Code AI 개발 어시스턴트 전용 가이드 파일입니다.
 ```bash
 # 백엔드 (Java 21 + Spring Boot)
 cd backend && ./gradlew bootRunDev
+# 백엔드 빌드
+cd backend && ./gradlew build
 
 # 프론트엔드 (React + Vite)
 cd frontend && yarn dev
+# 프론트엔드 빌드
+cd frontend && yarn build
 ```
 
 ### 주요 접속
