@@ -60,4 +60,14 @@ public interface ColumnRepository {
      * 테이블의 다음 순서 인덱스 조회
      */
     Integer findMaxOrderIndexByTableId(UUID tableId);
+    
+    /**
+     * 여러 컬럼 일괄 저장
+     */
+    List<Column> saveAll(List<Column> columns);
+    
+    /**
+     * 여러 컬럼 일괄 삭제
+     */
+    void deleteAllById(List<UUID> ids);
 }

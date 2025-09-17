@@ -3,6 +3,10 @@ package com.dbmodeling.application.service;
 import com.dbmodeling.application.port.in.*;
 import com.dbmodeling.domain.model.Project;
 import com.dbmodeling.domain.repository.ProjectRepository;
+import com.dbmodeling.infrastructure.config.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +32,7 @@ public class ProjectService implements
     }
     
     @Override
+    @CacheEvict(value = CacheConfig.PROJECT_CACHE, allEntries = true)
     public Project createProject(CreateProjectCommand command) {
         // 이름 중복 검사
         if (projectRepository.existsByName(command.name())) {
@@ -42,6 +47,10 @@ public class ProjectService implements
     }
     
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.PROJECT_CACHE, key = "#command.id()"),
+        @CacheEvict(value = CacheConfig.PROJECT_CACHE, allEntries = true)
+    })
     public Project updateProject(UpdateProjectCommand command) {
         // 기존 프로젝트 조회
         Project project = projectRepository.findById(command.id())
@@ -62,6 +71,7 @@ public class ProjectService implements
     
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.PROJECT_CACHE, key = "#id")
     public Project getProjectById(UUID id) {
         return projectRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다: " + id));
@@ -69,11 +79,17 @@ public class ProjectService implements
     
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.PROJECT_CACHE, key = "'all'")
     public List<Project> getAllProjects() {
         return projectRepository.findAll();
     }
     
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.PROJECT_CACHE, key = "#id"),
+        @CacheEvict(value = CacheConfig.PROJECT_CACHE, allEntries = true),
+        @CacheEvict(value = CacheConfig.TABLE_CACHE, allEntries = true)
+    })
     public void deleteProject(UUID id) {
         // 프로젝트 존재 확인
         if (!projectRepository.existsById(id)) {

@@ -178,6 +178,19 @@ public class Column {
     public void setIdentity(Boolean identity) {
         isIdentity = identity;
     }
+    
+    // Service에서 사용하는 getIsXxx 형태 메서드들 추가
+    public Boolean getIsNullable() {
+        return isNullable;
+    }
+    
+    public Boolean getIsPrimaryKey() {
+        return isPrimaryKey;
+    }
+    
+    public Boolean getIsIdentity() {
+        return isIdentity;
+    }
 
     public Integer getIdentitySeed() {
         return identitySeed;
@@ -225,5 +238,13 @@ public class Column {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    /**
+     * 순서 인덱스 업데이트
+     */
+    public void updateOrderIndex(Integer newOrderIndex) {
+        this.orderIndex = newOrderIndex;
+        this.updatedAt = LocalDateTime.now();
     }
 }

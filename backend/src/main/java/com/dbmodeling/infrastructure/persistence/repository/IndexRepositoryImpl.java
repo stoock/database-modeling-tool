@@ -126,4 +126,22 @@ public class IndexRepositoryImpl implements IndexRepository {
     public boolean existsByTableIdAndType(UUID tableId, Index.IndexType type) {
         return jpaRepository.existsByTableIdAndType(tableId, type.name());
     }
+    
+    @Override
+    public List<Index> saveAll(List<Index> indexes) {
+        List<IndexEntity> entities = indexes.stream()
+                .map(mapper::toEntity)
+                .collect(Collectors.toList());
+        
+        List<IndexEntity> savedEntities = jpaRepository.saveAll(entities);
+        
+        return savedEntities.stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public void deleteAllById(List<UUID> ids) {
+        jpaRepository.deleteAllById(ids);
+    }
 }

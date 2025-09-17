@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * 테이블 Entity-Domain 매퍼
  */
-@Component
+@Component("persistenceTableMapper")
 public class TableMapper {
     
     private final ColumnMapper columnMapper;

@@ -1,24 +1,44 @@
 spring:
+  # 테스트 환경 데이터베이스 설정
   datasource:
     url: jdbc:postgresql://localhost:5432/dbmodeling_test
-    username: ${DB_USERNAME:dbmodeling}
-    password: ${DB_PASSWORD:dbmodeling}
-    driver-class-name: org.postgresql.Driver
-    
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+      validation-timeout: 5000
+      
+  # 테스트 환경 JPA 설정
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: false
+        hbm2ddl:
+          auto: create-drop
+        globally_quoted_identifiers: true
+        cache:
+          use_second_level_cache: false
+        
+  # 테스트 환경 Flyway 설정
+  flyway:
+    enabled: false
     
-  # H2 자동 설정 비활성화. 비활성화
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
-    
+# 로깅 설정
 logging:
   level:
-    com.dbmodeling: DEBUG
-    org.hibernate.SQL: DEBUG
+    root: WARN
+    com.dbmodeling: INFO
+    org.hibernate.SQL: INFO
+    
+# 테스트 환경 애플리케이션 설정
+app:
+  cors:
+    allowed-origins: http://localhost:3000, http://localhost:5173
+    allowed-methods: GET, POST, PUT, DELETE, OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true

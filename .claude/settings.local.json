@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(powershell:*)",
+      "Bash(podman:*)",
+      "Bash(file-ops:*)",
+      "Bash(java-mvn:*)",
+      "Bash(where:*)",
+      "Bash(cmd.exe /c:*)",
+      "Bash(export:*)",
+      "Bash(wget:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(node-pkg:*)",
+      "Bash(docker-compose:*)",
+      "Bash(timeout:*)",
+      "Bash(grep:*)",
+      "Bash(echo:*)",
+      "Bash(git:*)",
+      "Bash(gradle:*)",
+      "Bash(claude:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "mcp__playwright__*",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__context7__resolve-library-id",
+      "mcp__terminal__execute_command",
+    ],
+    "deny": []
+  }
+}

@@ -1,6 +1,7 @@
 package com.dbmodeling.domain.service;
 
 import com.dbmodeling.domain.model.*;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
  * 스키마 내보내기 서비스
  * 다양한 형식으로 스키마를 내보내는 기능을 제공
  */
+@Service
 public class SchemaExportService {
     
     private final SqlGeneratorService sqlGeneratorService;
