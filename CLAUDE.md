@@ -39,11 +39,15 @@ Claude Code AI 개발 어시스턴트 전용 가이드 파일입니다.
 cd backend && ./gradlew bootRunDev
 # 백엔드 빌드
 cd backend && ./gradlew build
+# 백엔드 Gradle 데몬 중지
+cd backend && ./gradlew --stop
 
 # 프론트엔드 (React + Vite)
 cd frontend && yarn dev
 # 프론트엔드 빌드
 cd frontend && yarn build
+# 프론트엔드 포트 프로세스 중지
+cd frontend && netstat -ano | findstr ":3000" | % {Stop-Process -Id ($_ -split "\s+")[-1] -Force -ErrorAction SilentlyContinue}
 ```
 
 ### 주요 접속
