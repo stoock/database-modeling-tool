@@ -74,7 +74,8 @@
   - ESC 키 및 배경 클릭으로 닫기
   - _Requirements: 7.1_
 
-- [ ] 5.4 Table 컴포넌트
+- [x] 5.4 Table 컴포넌트
+
   - components/common/Table.tsx: 제네릭 테이블 컴포넌트
   - 컬럼 정의, 행 클릭 이벤트, 로딩 상태
   - _Requirements: 7.1_

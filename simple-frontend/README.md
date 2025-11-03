@@ -57,6 +57,7 @@ src/
 │   │   ├── Button.tsx
 │   │   ├── Input.tsx
 │   │   ├── Modal.tsx
+│   │   ├── Table.tsx
 │   │   ├── LoadingSpinner.tsx
 │   │   └── ErrorMessage.tsx
 │   ├── project/         # 프로젝트 관련 컴포넌트 (예정)
@@ -123,6 +124,7 @@ src/
 - `Button`: 버튼 컴포넌트 (variant, size, loading 지원)
 - `Input`: 입력 필드 컴포넌트 (label, error, validation 지원)
 - `Modal`: 모달 다이얼로그 컴포넌트
+- `Table`: 제네릭 테이블 컴포넌트 (컬럼 정의, 행 클릭, 로딩 상태 지원)
 - `LoadingSpinner`: 로딩 인디케이터
 - `ErrorMessage`: 에러 메시지 표시
 
