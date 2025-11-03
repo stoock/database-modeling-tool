@@ -14,11 +14,12 @@
 ## 🏗️ 아키텍처
 
 ### 기술 스택
-- **백엔드**: Java 21 + Spring Boot 3.2.0 + PostgreSQL
+- **백엔드**: Java 17 + Spring Boot 3.x + PostgreSQL 15+
 - **프론트엔드**: React 19 + TypeScript + Vite + Tailwind CSS
 - **상태 관리**: Zustand
-- **빌드 도구**: Gradle 8.5+ (백엔드), Yarn (프론트엔드)
-- **테스트**: JUnit 5 + Vitest + Playwright
+- **시각화**: React Flow (테이블 관계 다이어그램)
+- **빌드 도구**: Gradle (백엔드), Yarn (프론트엔드)
+- **테스트**: JUnit 5 + Mockito + Vitest + Playwright
 
 ### Clean Architecture 구조 (완전 구현)
 ```
@@ -31,18 +32,20 @@ Infrastructure Layer (데이터 접근)
 Presentation Layer (API 컨트롤러)
 ```
 
-**최근 개선사항 (2024-01-15):**
-- TableController에서 Command 패턴 임시 우회 코드 제거
-- `tableService.createTable(tableMapper.toCommand())` 정상 호출 구조 완성
-- Clean Architecture 의존성 방향 완전 준수
+**아키텍처 특징:**
+- 헥사고날 아키텍처 기반 Clean Architecture 구현
+- 포트-어댑터 패턴으로 의존성 역전 원칙 준수
+- 도메인 주도 설계(DDD)로 비즈니스 로직 중심 구조
+- 계층 간 명확한 관심사 분리
 
 ## 🚀 빠른 시작
 
 ### 필수 요구사항
-- Java 21+
+- Java 17+
 - Node.js 18+
+- Yarn 패키지 매니저
 - Docker & Docker Compose
-- PostgreSQL (Docker로 자동 설치)
+- PostgreSQL 15+ (Docker로 자동 설치)
 
 ### 1. 통합 실행 (권장)
 ```powershell
@@ -54,12 +57,17 @@ Presentation Layer (API 컨트롤러)
 ```
 
 ### 2. 개별 실행
-```bash
-# 백엔드 실행 (포트 8080)
-cd backend
-./gradlew bootRunDev
 
-# 프론트엔드 실행 (포트 3000)
+**백엔드 실행 (포트 8080)**
+```bash
+cd backend
+./gradlew bootRun
+# 또는 Windows에서
+gradlew.bat bootRun
+```
+
+**프론트엔드 실행 (포트 3000)**
+```bash
 cd frontend
 yarn install
 yarn dev
@@ -85,15 +93,25 @@ DELETE /api/projects/{id}     # 프로젝트 삭제
 ### 테이블 관리
 ```http
 GET    /api/projects/{projectId}/tables     # 테이블 목록 조회
-POST   /api/projects/{projectId}/tables     # 테이블 생성 ✅ Clean Architecture 완성
+POST   /api/projects/{projectId}/tables     # 테이블 생성
 PUT    /api/tables/{id}                     # 테이블 수정
 DELETE /api/tables/{id}                     # 테이블 삭제
+GET    /api/tables/{id}                     # 테이블 상세 조회
 ```
 
-**구현 상태:**
-- ✅ `POST /tables`: Command 패턴 정상 구현 완료
-- ✅ DTO → Command → Domain 변환 체인 완성
-- ✅ 에러 처리 및 검증 로직 적용
+### 컬럼 관리
+```http
+POST   /api/tables/{tableId}/columns        # 컬럼 추가
+PUT    /api/columns/{id}                    # 컬럼 수정
+DELETE /api/columns/{id}                    # 컬럼 삭제
+```
+
+### 인덱스 관리
+```http
+POST   /api/tables/{tableId}/indexes        # 인덱스 생성
+PUT    /api/indexes/{id}                    # 인덱스 수정
+DELETE /api/indexes/{id}                    # 인덱스 삭제
+```
 
 ### SQL 생성
 ```http
@@ -149,8 +167,11 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/dbmodeling_test
 ```bash
 cd backend
 ./gradlew test                    # 단위 테스트
-./gradlew integrationTest         # 통합 테스트
 ./gradlew build                   # 전체 빌드 및 테스트
+
+# Windows에서
+gradlew.bat test
+gradlew.bat build
 ```
 
 ### 프론트엔드 테스트
@@ -158,8 +179,8 @@ cd backend
 cd frontend
 yarn test                         # 단위 테스트 (Vitest)
 yarn test:e2e                     # E2E 테스트 (Playwright)
-yarn lint                         # 코드 품질 검사
-yarn type-check                   # TypeScript 타입 검사
+yarn lint                         # ESLint 코드 품질 검사
+yarn build                        # 프로덕션 빌드
 ```
 
 ### 성능 기준
@@ -224,6 +245,18 @@ frontend/src/
 ## 🐛 트러블슈팅
 
 ### 포트 충돌 해결
+**Windows:**
+```powershell
+# 포트 사용 확인
+netstat -ano | findstr :5432
+netstat -ano | findstr :8080
+netstat -ano | findstr :3000
+
+# 프로세스 종료 (PID 확인 후)
+taskkill /PID <프로세스ID> /F
+```
+
+**Linux/Mac:**
 ```bash
 # PostgreSQL 포트 확인
 netstat -tulpn | grep :5432
@@ -237,13 +270,32 @@ sudo systemctl stop postgresql
 # Docker 볼륨 삭제 후 재시작
 docker-compose down -v
 docker-compose up -d
+
+# 또는 스크립트 사용
+.\scripts\env-reset.ps1
 ```
 
-### Gradle 데몬 문제
+### Gradle 빌드 문제
 ```bash
 cd backend
 ./gradlew --stop                 # Gradle 데몬 중지
 ./gradlew clean build            # 클린 빌드
+
+# Windows에서
+gradlew.bat --stop
+gradlew.bat clean build
+```
+
+### Yarn 의존성 문제
+```bash
+cd frontend
+rm -rf node_modules yarn.lock    # 의존성 삭제
+yarn install                     # 재설치
+
+# Windows에서
+rmdir /s /q node_modules
+del yarn.lock
+yarn install
 ```
 
 ## 📚 추가 문서
