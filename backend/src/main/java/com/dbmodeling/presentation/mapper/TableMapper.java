@@ -1,5 +1,6 @@
 package com.dbmodeling.presentation.mapper;
 
+import com.dbmodeling.application.port.in.CreateTableUseCase.CreateTableCommand;
 import com.dbmodeling.domain.model.Column;
 import com.dbmodeling.domain.model.Index;
 import com.dbmodeling.domain.model.Table;
@@ -48,6 +49,19 @@ public class TableMapper {
         table.setPositionX(request.getPositionX() != null ? request.getPositionX() : 0);
         table.setPositionY(request.getPositionY() != null ? request.getPositionY() : 0);
         return table;
+    }
+
+    /**
+     * CreateTableRequest를 CreateTableCommand로 변환
+     */
+    public CreateTableCommand toCommand(java.util.UUID projectId, CreateTableRequest request) {
+        return new CreateTableCommand(
+            projectId,
+            request.getName(),
+            request.getDescription(),
+            request.getPositionX(),
+            request.getPositionY()
+        );
     }
 
     /**

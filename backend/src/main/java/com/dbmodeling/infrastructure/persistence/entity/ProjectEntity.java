@@ -12,6 +12,10 @@ import java.util.UUID;
 
 /**
  * 프로젝트 JPA 엔티티
+ * 
+ * PostgreSQL 호환성을 위해 GenerationType.AUTO 전략을 사용하여 UUID를 생성합니다.
+ * 이는 PostgreSQL의 gen_random_uuid() 함수를 활용하여 데이터베이스 레벨에서
+ * UUID를 생성하므로 성능상 이점이 있습니다.
  */
 @Entity
 @Table(name = "projects")
@@ -19,7 +23,7 @@ import java.util.UUID;
 public class ProjectEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     
     @Column(name = "name", nullable = false, unique = true)

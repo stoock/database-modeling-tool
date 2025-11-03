@@ -17,7 +17,7 @@ import java.util.UUID;
 public class IndexEntity {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     
     @ManyToOne(fetch = FetchType.LAZY)

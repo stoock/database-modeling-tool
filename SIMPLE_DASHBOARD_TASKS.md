@@ -160,6 +160,8 @@
 
 ### 🚧 추가 구현 필요 사항
 - 백엔드 API 연동 (프로젝트, 테이블, 컬럼 CRUD)
+  - ✅ 백엔드 Clean Architecture 완전 구현 완료 (TableController 정상화)
+  - 🔄 프론트엔드 API 연동 작업 필요
 - 실시간 검증 로직 구현
 - 스키마 내보내기 기능 구현
 - 전체 플로우 연동 테스트
@@ -191,5 +193,5 @@
 ## 🔧 기술 스택
 - **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS
 - **상태 관리**: Zustand (기존 stores 재사용)
-- **API**: 기존 백엔드 API 그대로 활용
+- **API**: 기존 백엔드 API 그대로 활용 (Clean Architecture 완전 구현 완료)
 - **라우팅**: React Router (새 경로 `/simple` 추가)

@@ -13,14 +13,16 @@ Claude Code AI 개발 어시스턴트 전용 가이드 파일입니다.
 - 📤 SQL 스크립트 자동 생성
 
 ### 현재 상태
-- ✅ 백엔드: Clean Architecture 4계층 완료
+- ✅ 백엔드: Clean Architecture 4계층 완료 + Command 패턴 정상화
 - ✅ 프론트엔드: 16.3단계 완료 (컬럼 관리)
+- ✅ 데이터베이스: UUID 생성 전략 최적화 (PostgreSQL 호환성 개선)
+- ✅ API 계층: TableController 서비스 호출 구조 완성
 - 🔄 다음: API 연동 및 에러 처리 (17단계)
 
 ## 아키텍처
 
 ### 스택
-**백엔드**: Java 21 + Spring Boot 3.2.0 + PostgreSQL + Clean Architecture  
+**백엔드**: Java 21 + Spring Boot 3.2.0 + PostgreSQL + Clean Architecture (완전 구현)  
 **프론트엔드**: React 19 + TypeScript + Vite + Tailwind CSS + Zustand  
 **빌드**: Gradle 8.5+ (백엔드), Yarn (프론트엔드)  
 **테스트**: JUnit 5 + Vitest + Playwright
@@ -57,11 +59,16 @@ cd frontend && netstat -ano | findstr ":3000" | % {Stop-Process -Id ($_ -split "
 
 ## 구조
 
-### 백엔드 (Clean Architecture)
+### 백엔드 (Clean Architecture - 완전 구현)
 ```
 domain/ → application/ → infrastructure/ → presentation/
 도메인     유스케이스      데이터 접근       API 컨트롤러
 ```
+
+**최근 개선사항:**
+- TableController에서 Command 패턴 임시 우회 코드 제거
+- 정상적인 서비스 계층 호출 구조로 완성
+- Clean Architecture 의존성 방향 준수
 
 ### 프론트엔드 
 ```
