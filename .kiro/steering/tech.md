@@ -25,16 +25,39 @@
 
 ## 주요 명령어
 
+### 통합 실행 (권장)
+```powershell
+# 환경 설정 (PostgreSQL + pgAdmin 시작)
+.\scripts\01-env-setup.ps1
+
+# 애플리케이션 실행 (백엔드 + 프론트엔드)
+.\scripts\02-run-app.ps1
+
+# 헬스 체크
+.\scripts\03-health-check.ps1
+
+# 환경 중지
+.\scripts\env-stop.ps1
+```
+
 ### 프론트엔드 개발
 ```bash
 # 의존성 설치
-yarn install
+cd frontend && yarn install
 
-# 개발 서버 시작
+# 개발 서버 시작 (http://localhost:3000)
 yarn dev
+
+# 간소화 버전 접속 (http://localhost:3000/simple)
 
 # 테스트 실행
 yarn test
+
+# 타입 체크
+yarn type-check
+
+# 린트 검사
+yarn lint
 
 # 프로덕션 빌드
 yarn build
@@ -45,17 +68,35 @@ yarn test:e2e
 
 ### 백엔드 개발
 ```bash
-# 애플리케이션 실행
-./mvnw spring-boot:run
+# 개발 모드 실행 (PostgreSQL 사용)
+cd backend && ./gradlew bootRunDev
 
-# 테스트 실행
-./mvnw test
+# H2 메모리 DB로 실행 (테스트용)
+./gradlew bootRunH2
 
-# 애플리케이션 빌드
-./mvnw clean package
+# 테스트 실행 (단위 테스트만)
+./gradlew test
 
 # 통합 테스트 실행
-./mvnw verify
+./gradlew integrationTest
+
+# 애플리케이션 빌드
+./gradlew build
+
+# Gradle 데몬 중지
+./gradlew --stop
+```
+
+### 데이터베이스 관리
+```bash
+# Flyway 마이그레이션 실행
+cd backend && ./gradlew flywayMigrate
+
+# Flyway 마이그레이션 정보 확인
+./gradlew flywayInfo
+
+# Flyway 마이그레이션 검증
+./gradlew flywayValidate
 ```
 
 ## 데이터베이스 설정
@@ -68,8 +109,12 @@ CREATE DATABASE dbmodeling_test;
 ```
 
 ## 아키텍처 원칙
-- 관심사의 명확한 분리를 통한 클린 아키텍처
-- 비즈니스 로직을 위한 도메인 주도 설계
-- 적절한 HTTP 상태 코드를 사용한 RESTful API 설계
-- 즉각적인 사용자 피드백을 통한 실시간 검증
-- 동시 접근 제어를 위한 낙관적 잠금
+- **Clean Architecture**: 관심사의 명확한 분리 (Domain → Application → Infrastructure → Presentation)
+- **도메인 주도 설계**: 비즈니스 로직을 도메인 계층에 집중
+- **RESTful API**: 적절한 HTTP 상태 코드와 표준 REST 규칙 준수
+- **실시간 검증**: 즉각적인 사용자 피드백으로 오류 사전 방지
+- **낙관적 잠금**: 동시 접근 제어를 통한 데이터 무결성 보장
+- **타입 안정성**: TypeScript와 Java의 강타입 시스템 활용
+- **컴포넌트 재사용**: 공통 컴포넌트 라이브러리를 통한 일관성 유지
+- **상태 관리**: Zustand를 통한 경량 전역 상태 관리
+- **API 캐싱**: 불필요한 네트워크 요청 최소화

@@ -73,10 +73,14 @@
 
 ## 📊 진행률
 - **UI/UX 구조 진행률**: 90% (1~4단계 UI 구조 완료)
-- **전체 기능 진행률**: 30% (UI 구조만 완료, 실제 기능 구현 필요)
+- **전체 기능 진행률**: 35% (UI 구조 완료, 백엔드 API 연동 필요)
 - **현재 상태**: 🔧 **UI/UX 개발 완료** - 백엔드 API 연동 및 실제 기능 구현 필요
+- **백엔드 상태**: ✅ **Clean Architecture 완료** - REST API 준비 완료
 - **실제 소요 시간**: 약 8시간 (UI/UX 구조 개발)
-- **접속 URL**: http://localhost:3001/simple (UI 프로토타입 확인 가능)
+- **접속 URL**: 
+  - 프론트엔드: http://localhost:3000/simple (UI 프로토타입)
+  - 백엔드 API: http://localhost:8080/api
+  - Swagger: http://localhost:8080/api/swagger-ui.html
 
 ## 📝 작업 노트
 ### 🔧 UI/UX 구조 개발 완료 (2024-08-12)
@@ -159,10 +163,27 @@
 8. **개발 환경**: React 19 + TypeScript + Vite + Tailwind CSS
 
 ### 🚧 추가 구현 필요 사항
-- 백엔드 API 연동 (프로젝트, 테이블, 컬럼 CRUD)
-- 실시간 검증 로직 구현
-- 스키마 내보내기 기능 구현
-- 전체 플로우 연동 테스트
+**프론트엔드 (API 연동)**
+- [ ] 프로젝트 관리 API 연동 (생성/조회/수정/삭제)
+- [ ] 테이블 관리 API 연동 (생성/조회/수정/삭제)
+- [ ] 컬럼 관리 API 연동 (생성/조회/수정/삭제/순서변경)
+- [ ] 실시간 검증 API 연동
+- [ ] 스키마 내보내기 API 연동 (SQL/JSON/Markdown/HTML/CSV)
+- [ ] 에러 처리 및 로딩 상태 관리
+- [ ] 토스트 알림 시스템 통합
+
+**통합 테스트**
+- [ ] 전체 플로우 연동 테스트 (프로젝트 생성 → 테이블 추가 → 컬럼 편집 → 스키마 내보내기)
+- [ ] E2E 테스트 작성 (Playwright)
+- [ ] 성능 테스트 및 최적화
+
+**백엔드 (완료)**
+- ✅ Clean Architecture 4계층 구조
+- ✅ REST API 컨트롤러 (Project, Table, Column, Index, Validation, Export)
+- ✅ 도메인 모델 및 비즈니스 로직
+- ✅ PostgreSQL 연동 및 JPA 설정
+- ✅ MSSQL 스키마 생성 엔진
+- ✅ OpenAPI/Swagger 문서화
 
 ## 🎨 레이아웃 설계
 ```
