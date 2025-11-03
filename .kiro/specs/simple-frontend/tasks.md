@@ -1,14 +1,14 @@
 # Implementation Plan
 
-- [ ] 1. 프로젝트 초기 설정 및 기본 구조
+- [x] 1. 프로젝트 초기 설정 및 기본 구조 ✅
   - Vite + React 19 + TypeScript 프로젝트 생성
   - Tailwind CSS 설치 및 설정
   - 필요한 의존성 설치 (zustand, axios, react-router-dom)
-  - 디렉토리 구조 생성 (components, pages, services, stores, types, utils, hooks)
+  - 디렉토리 구조 생성 (components, pages, services, stores, types)
   - 환경 변수 설정 (.env 파일)
   - _Requirements: 7.1, 8.4_
 
-- [ ] 2. TypeScript 타입 정의 작성
+- [x] 2. TypeScript 타입 정의 작성 ✅
   - types/project.ts: Project, ProjectSummary, NamingRules 타입
   - types/table.ts: Table, TableSummary 타입
   - types/column.ts: Column, MSSQLDataType 타입
@@ -16,60 +16,60 @@
   - types/api.ts: ApiResponse, 요청/응답 타입
   - _Requirements: 8.5_
 
-- [ ] 3. API 클라이언트 및 서비스 구현
-- [ ] 3.1 API 클라이언트 기본 설정
+- [x] 3. API 클라이언트 및 서비스 구현 ✅
+- [x] 3.1 API 클라이언트 기본 설정
   - services/api.ts: Axios 인스턴스 생성 및 인터셉터 설정
   - 요청/응답 인터셉터로 로딩 상태 및 에러 처리
   - _Requirements: 8.4_
 
-- [ ] 3.2 프로젝트 서비스 구현
+- [x] 3.2 프로젝트 서비스 구현
   - services/projectService.ts: getAll, getById, create, update, delete 함수
   - _Requirements: 1.1, 1.3, 1.4_
 
-- [ ] 3.3 테이블 서비스 구현
+- [x] 3.3 테이블 서비스 구현
   - services/tableService.ts: getByProjectId, getById, create, update, delete 함수
   - _Requirements: 2.1, 2.2, 2.3, 2.5_
 
-- [ ] 3.4 컬럼 서비스 구현
+- [x] 3.4 컬럼 서비스 구현
   - services/columnService.ts: getByTableId, create, update, delete 함수
   - _Requirements: 3.4, 3.7_
 
-- [ ] 3.5 인덱스 서비스 구현
+- [x] 3.5 인덱스 서비스 구현
   - services/indexService.ts: getByTableId, create, delete 함수
   - _Requirements: 4.4, 4.5_
 
-- [ ] 3.6 내보내기 서비스 구현
+- [x] 3.6 내보내기 서비스 구현
   - services/exportService.ts: preview, download 함수
   - _Requirements: 5.2, 5.3_
 
-- [ ] 3.7 검증 서비스 구현
+- [x] 3.7 검증 서비스 구현
   - services/validationService.ts: validateName, validateProject 함수
   - _Requirements: 6.1, 6.5_
 
-- [ ] 4. Zustand 스토어 구현
-- [ ] 4.1 프로젝트 스토어
+- [x] 4. Zustand 스토어 구현 ✅
+- [x] 4.1 프로젝트 스토어
   - stores/projectStore.ts: 프로젝트 목록, 현재 프로젝트, CRUD 액션
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 4.2 테이블 스토어
+- [x] 4.2 테이블 스토어
   - stores/tableStore.ts: 테이블 목록, 현재 테이블, 컬럼/인덱스 관리 액션
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 4.3 UI 스토어
+- [x] 4.3 UI 스토어
   - stores/uiStore.ts: 모달 상태 관리, 로딩 상태
   - _Requirements: 8.1, 8.2_
 
-- [ ] 5. 공통 컴포넌트 구현
-- [ ] 5.1 Button 컴포넌트
+- [x] 5. 공통 컴포넌트 구현 ✅
+- [x] 5.1 Button 컴포넌트
   - components/common/Button.tsx: variant, size, loading 상태 지원
   - Tailwind CSS 스타일링
   - _Requirements: 7.1_
 
-- [ ] 5.2 Input 컴포넌트
+- [x] 5.2 Input 컴포넌트
   - components/common/Input.tsx: label, error, validation 지원
   - _Requirements: 7.1_
 
-- [ ] 5.3 Modal 컴포넌트
+- [x] 5.3 Modal 컴포넌트
   - components/common/Modal.tsx: 제목, 내용, 푸터 영역
   - ESC 키 및 배경 클릭으로 닫기
   - _Requirements: 7.1_
@@ -79,11 +79,11 @@
   - 컬럼 정의, 행 클릭 이벤트, 로딩 상태
   - _Requirements: 7.1_
 
-- [ ] 5.5 LoadingSpinner 컴포넌트
+- [x] 5.5 LoadingSpinner 컴포넌트
   - components/common/LoadingSpinner.tsx: 로딩 인디케이터
   - _Requirements: 7.3_
 
-- [ ] 5.6 ErrorMessage 컴포넌트
+- [x] 5.6 ErrorMessage 컴포넌트
   - components/common/ErrorMessage.tsx: 에러 메시지 표시
   - _Requirements: 7.4_
 
@@ -98,10 +98,10 @@
   - 이름, 설명 입력 필드
   - _Requirements: 1.2, 1.3_
 
-- [ ] 6.3 ProjectListPage
+- [x] 6.3 ProjectListPage (기본 구현 완료)
   - pages/ProjectListPage.tsx: 프로젝트 목록 페이지
-  - ProjectList 컴포넌트 사용
-  - "새 프로젝트" 버튼으로 모달 열기
+  - 프로젝트 카드 목록 직접 렌더링
+  - "새 프로젝트" 버튼 (모달 연동 예정)
   - _Requirements: 1.1, 1.2_
 
 - [ ] 6.4 ProjectDetailPage
