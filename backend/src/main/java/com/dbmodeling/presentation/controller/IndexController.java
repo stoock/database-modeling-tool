@@ -1,5 +1,6 @@
 package com.dbmodeling.presentation.controller;
 
+import com.dbmodeling.application.port.in.ManageIndexUseCase;
 import com.dbmodeling.application.service.IndexService;
 import com.dbmodeling.domain.model.Index;
 import com.dbmodeling.domain.model.Index.IndexColumn;
@@ -108,11 +109,25 @@ public class IndexController extends BaseController {
     ) {
         try {
             UUID tableUuid = UUID.fromString(tableId);
-            Index index = toIndexEntity(request);
-            index.setTableId(tableUuid);
             
-            // TODO: Command 패턴 임시 우회 - 마이그레이션 후 리팩토링 필요
-            Index createdIndex = index; // 임시 우회
+            // CreateIndexCommand 생성
+            List<ManageIndexUseCase.IndexColumnSpec> columnSpecs = request.getColumns().stream()
+                .map(col -> new ManageIndexUseCase.IndexColumnSpec(
+                    UUID.fromString(col.getColumnId()),
+                    Index.SortOrder.valueOf(col.getOrder())
+                ))
+                .collect(Collectors.toList());
+            
+            var command = new ManageIndexUseCase.CreateIndexCommand(
+                tableUuid,
+                request.getName(),
+                Index.IndexType.valueOf(request.getType()),
+                request.getIsUnique() != null ? request.getIsUnique() : false,
+                columnSpecs
+            );
+            
+            // 인덱스 생성
+            Index createdIndex = indexService.createIndex(command);
             IndexResponse response = toIndexResponse(createdIndex);
             return created(response, "인덱스가 성공적으로 생성되었습니다.");
         } catch (IllegalArgumentException e) {
@@ -142,11 +157,39 @@ public class IndexController extends BaseController {
     ) {
         try {
             UUID indexId = UUID.fromString(id);
+            
+            // 기존 인덱스 조회
             Index existingIndex = indexService.getIndexById(indexId);
             
-            updateIndexEntity(existingIndex, request);
-            // TODO: Command 패턴 임시 우회 - 마이그레이션 후 리팩토링 필요
-            Index updatedIndex = existingIndex; // 임시 우회
+            // UpdateIndexCommand 생성
+            List<ManageIndexUseCase.IndexColumnSpec> columnSpecs;
+            if (request.getColumns() != null) {
+                columnSpecs = request.getColumns().stream()
+                    .map(col -> new ManageIndexUseCase.IndexColumnSpec(
+                        UUID.fromString(col.getColumnId()),
+                        Index.SortOrder.valueOf(col.getOrder())
+                    ))
+                    .collect(Collectors.toList());
+            } else {
+                // columns가 없으면 기존 컬럼 유지
+                columnSpecs = existingIndex.getColumns().stream()
+                    .map(col -> new ManageIndexUseCase.IndexColumnSpec(
+                        col.getColumnId(),
+                        col.getOrder()
+                    ))
+                    .collect(Collectors.toList());
+            }
+            
+            var command = new ManageIndexUseCase.UpdateIndexCommand(
+                indexId,
+                request.getName() != null ? request.getName() : existingIndex.getName(),
+                request.getType() != null ? Index.IndexType.valueOf(request.getType()) : existingIndex.getType(),
+                request.getIsUnique() != null ? request.getIsUnique() : existingIndex.isUnique(),
+                columnSpecs
+            );
+            
+            // 인덱스 업데이트
+            Index updatedIndex = indexService.updateIndex(command);
             
             IndexResponse response = toIndexResponse(updatedIndex);
             return success(response, "인덱스가 성공적으로 수정되었습니다.");
