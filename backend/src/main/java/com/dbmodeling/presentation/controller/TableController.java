@@ -1,5 +1,6 @@
 package com.dbmodeling.presentation.controller;
 
+import com.dbmodeling.application.port.in.CreateTableUseCase;
 import com.dbmodeling.application.service.BatchProcessingService;
 import com.dbmodeling.application.service.TableService;
 import com.dbmodeling.domain.model.Column;
@@ -132,11 +133,18 @@ public class TableController extends BaseController {
     ) {
         try {
             UUID projectUuid = UUID.fromString(projectId);
-            Table table = tableMapper.toEntity(request);
-            table.setProjectId(projectUuid);
             
-            // TODO: Command 패턴 임시 우회 - 마이그레이션 후 리팩토링 필요
-            Table createdTable = table; // 임시 우회
+            // CreateTableCommand 생성
+            var command = new CreateTableUseCase.CreateTableCommand(
+                projectUuid,
+                request.getName(),
+                request.getDescription(),
+                request.getPositionX(),
+                request.getPositionY()
+            );
+            
+            // 테이블 생성
+            Table createdTable = tableService.createTable(command);
             TableResponse response = tableMapper.toResponse(createdTable);
             return created(response, "테이블이 성공적으로 생성되었습니다.");
         } catch (IllegalArgumentException e) {
