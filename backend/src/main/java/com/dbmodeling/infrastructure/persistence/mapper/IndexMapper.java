@@ -2,6 +2,7 @@ package com.dbmodeling.infrastructure.persistence.mapper;
 
 import com.dbmodeling.domain.model.Index;
 import com.dbmodeling.infrastructure.persistence.entity.IndexEntity;
+import com.dbmodeling.infrastructure.persistence.repository.ColumnJpaRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +19,11 @@ import java.util.UUID;
 public class IndexMapper {
     
     private final ObjectMapper objectMapper;
+    private final ColumnJpaRepository columnJpaRepository;
     
-    public IndexMapper(ObjectMapper objectMapper) {
+    public IndexMapper(ObjectMapper objectMapper, ColumnJpaRepository columnJpaRepository) {
         this.objectMapper = objectMapper;
+        this.columnJpaRepository = columnJpaRepository;
     }
     
     /**
@@ -111,12 +114,19 @@ public class IndexMapper {
         
         try {
             List<IndexColumnDto> dtos = objectMapper.readValue(json, new TypeReference<List<IndexColumnDto>>() {});
-            return dtos.stream()
-                    .map(dto -> new Index.IndexColumn(
-                        UUID.fromString(dto.columnId),
-                        Index.SortOrder.valueOf(dto.order.toUpperCase())
-                    ))
-                    .toList();
+            List<Index.IndexColumn> columns = new ArrayList<>();
+            for (IndexColumnDto dto : dtos) {
+                UUID columnId = UUID.fromString(dto.columnId);
+                Index.SortOrder order = Index.SortOrder.valueOf(dto.order.toUpperCase());
+                
+                // Column 이름 조회
+                String columnName = columnJpaRepository.findById(columnId)
+                        .map(columnEntity -> columnEntity.getName())
+                        .orElse(null);
+                
+                columns.add(new Index.IndexColumn(columnId, columnName, order));
+            }
+            return columns;
         } catch (Exception e) {
             // 파싱 실패 시 빈 리스트 반환
             return new ArrayList<>();
