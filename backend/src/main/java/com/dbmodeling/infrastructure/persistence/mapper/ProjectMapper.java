@@ -66,7 +66,8 @@ public class ProjectMapper {
         entity.setNamingRules(serializeNamingRules(domain.getNamingRules()));
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setUpdatedAt(domain.getUpdatedAt());
-        // version은 새 엔티티의 경우 null로 설정 (JPA가 자동 관리)
+        // version은 새 엔티티의 경우 0으로 초기화 (낙관적 잠금)
+        entity.setVersion(0L);
         
         // 테이블은 별도로 저장되므로 여기서는 설정하지 않음
         // 양방향 관계는 테이블 리포지토리에서 처리
