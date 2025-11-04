@@ -33,7 +33,7 @@ public class IndexEntity {
     @Column(name = "is_unique")
     private Boolean isUnique = false;
     
-    @Column(name = "columns", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "columns", length = 5000, nullable = false)
     private String columns;
     
     @CreatedDate

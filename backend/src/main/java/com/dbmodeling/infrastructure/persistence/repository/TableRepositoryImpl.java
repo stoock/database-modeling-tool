@@ -55,7 +55,7 @@ public class TableRepositoryImpl implements TableRepository {
             } else {
                 // ID는 있지만 DB에 없으면 새 엔티티 생성
                 entity = mapper.toEntity(table);
-                entity.setId(null); // 새 엔티티임을 명시
+                // ID를 유지 (도메인에서 생성한 UUID 사용)
                 
                 // 프로젝트 연관관계 설정
                 if (table.getProjectId() != null) {

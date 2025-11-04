@@ -27,7 +27,7 @@ public class ColumnEntity {
     @Column(name = "name", nullable = false)
     private String name;
     
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", length = 10000)
     private String description;
     
     @Column(name = "data_type", nullable = false)
@@ -57,7 +57,7 @@ public class ColumnEntity {
     @Column(name = "identity_increment")
     private Integer identityIncrement = 1;
     
-    @Column(name = "default_value", columnDefinition = "TEXT")
+    @Column(name = "default_value", length = 1000)
     private String defaultValue;
     
     @Column(name = "order_index", nullable = false)
