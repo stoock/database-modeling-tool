@@ -25,10 +25,10 @@ public class ProjectEntity {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
     
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", length = 10000)
     private String description;
     
-    @Column(name = "naming_rules", columnDefinition = "TEXT")
+    @Column(name = "naming_rules", length = 10000)
     private String namingRules;
     
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
