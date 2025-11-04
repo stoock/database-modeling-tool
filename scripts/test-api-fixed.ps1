@@ -183,21 +183,27 @@ $result = Test-Api -Name "Update Index" -Method PUT -Url "$baseUrl/indexes/$inde
 # 5. Validation Tests
 Write-Host "`n5. Validation API Tests" -ForegroundColor Yellow
 
-$result = Test-Api -Name "Validate Project" -Method POST -Url "$baseUrl/projects/$projectId/validate"
+$result = Test-Api -Name "Validate Project" -Method POST -Url "$baseUrl/projects/$projectId/validation/all"
 
 # 6. Export Tests
 Write-Host "`n6. Export API Tests" -ForegroundColor Yellow
 
-$exportOptions = @{
-    includeDropStatements = $false
+$exportSqlOptions = @{
+    format = "SQL"
     includeComments = $true
     includeIndexes = $true
 }
-$result = Test-Api -Name "Export SQL" -Method POST -Url "$baseUrl/projects/$projectId/export/sql" -Body $exportOptions
+$result = Test-Api -Name "Export SQL" -Method POST -Url "$baseUrl/projects/$projectId/export/preview" -Body $exportSqlOptions
 
-$result = Test-Api -Name "Export JSON" -Method POST -Url "$baseUrl/projects/$projectId/export/json"
+$exportJsonOptions = @{
+    format = "JSON"
+}
+$result = Test-Api -Name "Export JSON" -Method POST -Url "$baseUrl/projects/$projectId/export/preview" -Body $exportJsonOptions
 
-$result = Test-Api -Name "Export Markdown" -Method POST -Url "$baseUrl/projects/$projectId/export/markdown"
+$exportMarkdownOptions = @{
+    format = "MARKDOWN"
+}
+$result = Test-Api -Name "Export Markdown" -Method POST -Url "$baseUrl/projects/$projectId/export/preview" -Body $exportMarkdownOptions
 
 # 7. Delete Tests
 Write-Host "`n7. Delete API Tests" -ForegroundColor Yellow
