@@ -59,14 +59,40 @@
 - 경고 메시지 표시
 - 삭제 확인 버튼
 
+### TableDetail
+
+선택된 테이블의 상세 정보를 탭 구조로 표시하는 컴포넌트입니다.
+
+**Props:**
+- `table`: 테이블 객체
+- `onUpdate`: 업데이트 완료 핸들러
+
+**기능:**
+- 테이블 정보 헤더 (이름, 설명, 생성일)
+- 탭 구조 (컬럼, 인덱스)
+- 탭 전환 시 데이터 로딩
+- 로딩 상태 표시
+
+**탭 구조:**
+- **컬럼 탭**: 테이블의 컬럼 목록 및 관리 (Task 9에서 구현 예정)
+- **인덱스 탭**: 테이블의 인덱스 목록 및 관리 (Task 14에서 구현 예정)
+
 ## 사용 예시
 
 ```typescript
-import { TableList } from '@/components/tables';
+import { TableList, TableDetail } from '@/components/tables';
 
 function ProjectDetailPage() {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-  const { tables, fetchTablesByProject } = useTableStore();
+  const { tables, selectedTable, fetchTablesByProject, setSelectedTable } = useTableStore();
+
+  const handleSelectTable = (tableId: string) => {
+    setSelectedTableId(tableId);
+    const table = tables.find(t => t.id === tableId);
+    if (table) {
+      setSelectedTable(table);
+    }
+  };
 
   const handleTableCreated = () => {
     fetchTablesByProject(projectId);
@@ -74,18 +100,30 @@ function ProjectDetailPage() {
 
   const handleTableDeleted = () => {
     setSelectedTableId(null);
+    setSelectedTable(null);
     fetchTablesByProject(projectId);
   };
 
   return (
-    <TableList
-      projectId={projectId}
-      tables={tables}
-      selectedTableId={selectedTableId}
-      onSelectTable={setSelectedTableId}
-      onTableCreated={handleTableCreated}
-      onTableDeleted={handleTableDeleted}
-    />
+    <div className="flex">
+      {/* 좌측: 테이블 목록 */}
+      <TableList
+        projectId={projectId}
+        tables={tables}
+        selectedTableId={selectedTableId}
+        onSelectTable={handleSelectTable}
+        onTableCreated={handleTableCreated}
+        onTableDeleted={handleTableDeleted}
+      />
+      
+      {/* 우측: 테이블 상세 */}
+      {selectedTable && (
+        <TableDetail
+          table={selectedTable}
+          onUpdate={handleTableCreated}
+        />
+      )}
+    </div>
   );
 }
 ```

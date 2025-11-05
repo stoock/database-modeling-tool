@@ -93,21 +93,36 @@
   - Description 테이블명 복사 검증
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 5.11, 5.12, 5.13, 5.14_
 
-- [ ] 8. 테이블 상세 탭 구조
+- [x] 8. 테이블 상세 탭 구조
+
+
+
+
+
   - TableDetail 컴포넌트 작성 (Tabs 사용)
   - 컬럼 탭 구현
   - 인덱스 탭 구현
   - 탭 전환 시 데이터 로딩
   - _Requirements: 2.6_
+-
 
-- [ ] 9. 컬럼 목록 및 관리
+- [x] 9. 컬럼 목록 및 관리
+
+
+
+
   - ColumnList 컴포넌트 작성 (테이블 형태로 표시)
   - 컬럼 정보 표시 (순서, 이름, Description, 타입, NULL, PK, IDENTITY)
   - 드래그 앤 드롭 순서 변경 기능 (react-beautiful-dnd 또는 dnd-kit)
   - 컬럼 편집/삭제 버튼
   - _Requirements: 3.1, 3.14_
+-
 
-- [ ] 10. 컬럼 생성 다이얼로그
+- [x] 10. 컬럼 생성 다이얼로그
+
+
+
+
   - CreateColumnDialog 컴포넌트 작성
   - 기본 필드 (name, description, dataType, nullable, primaryKey)
   - 조건부 필드 (maxLength, precision, scale, identity 관련)
