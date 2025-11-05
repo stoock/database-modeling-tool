@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { useTableStore } from '@/stores/tableStore';
 import { Button } from '@/components/ui/button';
+import { TableList } from '@/components/tables';
 import { ArrowLeft, Download } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   
   const { selectedProject, isLoading, fetchProjectById } = useProjectStore();
-  const { tables, fetchTablesByProject } = useTableStore();
+  const { tables, selectedTable, fetchTablesByProject, setSelectedTable } = useTableStore();
 
   useEffect(() => {
     if (projectId) {
@@ -26,6 +28,28 @@ export default function ProjectDetailPage() {
   const handleExport = () => {
     // TODO: 내보내기 기능 구현 (Task 18)
     console.log('Export schema');
+  };
+
+  const handleSelectTable = (tableId: string) => {
+    setSelectedTableId(tableId);
+    const table = tables.find(t => t.id === tableId);
+    if (table) {
+      setSelectedTable(table);
+    }
+  };
+
+  const handleTableCreated = () => {
+    if (projectId) {
+      fetchTablesByProject(projectId);
+    }
+  };
+
+  const handleTableDeleted = () => {
+    setSelectedTableId(null);
+    setSelectedTable(null);
+    if (projectId) {
+      fetchTablesByProject(projectId);
+    }
   };
 
   if (isLoading) {
@@ -89,51 +113,39 @@ export default function ProjectDetailPage() {
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* 좌측: 테이블 목록 영역 (30%) */}
         <aside className="w-full lg:w-[30%] border-b lg:border-b-0 lg:border-r bg-card overflow-y-auto">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">테이블 목록</h2>
-              <Button size="sm" variant="outline">
-                테이블 추가
-              </Button>
-            </div>
-            
-            {tables.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">
-                  아직 테이블이 없습니다
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  테이블 추가 버튼을 클릭하여 시작하세요
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {tables.map((table) => (
-                  <div
-                    key={table.id}
-                    className="p-3 rounded-lg border bg-background hover:bg-accent cursor-pointer transition-colors"
-                  >
-                    <h3 className="font-medium">{table.name}</h3>
-                    {table.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {table.description}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {projectId && (
+            <TableList
+              projectId={projectId}
+              tables={tables}
+              selectedTableId={selectedTableId}
+              onSelectTable={handleSelectTable}
+              onTableCreated={handleTableCreated}
+              onTableDeleted={handleTableDeleted}
+            />
+          )}
         </aside>
 
         {/* 우측: 테이블 상세 영역 (70%) */}
         <section className="flex-1 overflow-y-auto bg-background">
           <div className="p-4 lg:p-6">
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                테이블을 선택하여 상세 정보를 확인하세요
-              </p>
-            </div>
+            {selectedTable ? (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">{selectedTable.name}</h2>
+                <p className="text-muted-foreground mb-6">{selectedTable.description}</p>
+                {/* TODO: Task 8 - 테이블 상세 탭 구조 구현 */}
+                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                  <p className="text-muted-foreground">
+                    컬럼 및 인덱스 관리 기능은 다음 태스크에서 구현됩니다
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">
+                  테이블을 선택하여 상세 정보를 확인하세요
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </main>
