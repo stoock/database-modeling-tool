@@ -26,7 +26,7 @@ interface TableStore {
   reset: () => void;
 }
 
-export const useTableStore = create<TableStore>((set, get) => ({
+export const useTableStore = create<TableStore>((set) => ({
   tables: [],
   selectedTable: null,
   isLoading: false,
