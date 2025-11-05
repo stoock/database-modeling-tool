@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { useTableStore } from '@/stores/tableStore';
 import { Button } from '@/components/ui/button';
-import { TableList } from '@/components/tables';
+import { TableList, TableDetail } from '@/components/tables';
 import { ArrowLeft, Download } from 'lucide-react';
 
 export default function ProjectDetailPage() {
@@ -129,16 +129,10 @@ export default function ProjectDetailPage() {
         <section className="flex-1 overflow-y-auto bg-background">
           <div className="p-4 lg:p-6">
             {selectedTable ? (
-              <div>
-                <h2 className="text-xl font-semibold mb-4">{selectedTable.name}</h2>
-                <p className="text-muted-foreground mb-6">{selectedTable.description}</p>
-                {/* TODO: Task 8 - 테이블 상세 탭 구조 구현 */}
-                <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                  <p className="text-muted-foreground">
-                    컬럼 및 인덱스 관리 기능은 다음 태스크에서 구현됩니다
-                  </p>
-                </div>
-              </div>
+              <TableDetail
+                table={selectedTable}
+                onUpdate={handleTableCreated}
+              />
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
