@@ -53,6 +53,7 @@
   - _Requirements: 1.2, 2.5, 3.7, 4.7, 5.11, 6.2_
 
 - [ ] 5. 프로젝트 관리 페이지
+
   - ProjectsPage 컴포넌트 작성 (프로젝트 목록 표시)
   - 프로젝트 카드 컴포넌트 작성 (이름, 설명, 생성일 표시)
   - CreateProjectDialog 컴포넌트 작성 (React Hook Form + Zod 검증)
