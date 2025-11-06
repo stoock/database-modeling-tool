@@ -190,7 +190,9 @@
   - useNetworkStatus.test.ts 작성
   - _Requirements: All_
 
-- [ ] 22.3 주요 컴포넌트 테스트 작성
+- [x] 22.3 주요 컴포넌트 테스트 작성
+
+
   - ProjectCard.test.tsx 작성 (렌더링, 클릭, 키보드 네비게이션)
   - CreateProjectDialog.test.tsx 작성 (폼 검증, 제출)
   - TableList.test.tsx 작성 (목록 표시, 선택)
@@ -201,7 +203,13 @@
   - ExportDialog.test.tsx 작성 (SQL 생성, 복사, 다운로드)
   - _Requirements: All_
 
-- [ ] 22.4 통합 테스트 작성
+- [x] 22.4 통합 테스트 작성
+
+
+
+
+
+
   - 프로젝트 생성 → 테이블 생성 → 컬럼 추가 플로우 테스트
   - 검증 실행 → 에러 수정 → 재검증 플로우 테스트
   - 스키마 내보내기 플로우 테스트
