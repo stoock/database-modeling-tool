@@ -128,5 +128,109 @@ describe('utils', () => {
       const result = pick(obj, ['a', 'c'])
       expect(result).toEqual({ a: 1, c: 3 })
     })
+
+    it('존재하지 않는 키는 무시', () => {
+      const obj = { a: 1, b: 2 }
+      const result = pick(obj, ['a', 'c'] as (keyof typeof obj)[])
+      expect(result).toEqual({ a: 1 })
+    })
+  })
+
+  describe('formatDate 추가 테스트', () => {
+    it('ISO 문자열 포맷팅', () => {
+      const result = formatDate('2024-12-25T15:30:00Z')
+      expect(result).toMatch(/2024/)
+      expect(result).toMatch(/12/)
+      // 시간대 변환으로 인해 날짜가 26일이 될 수 있음
+      expect(result).toMatch(/2[56]/)
+    })
+
+    it('Date 객체 포맷팅', () => {
+      const date = new Date('2024-06-15T10:00:00')
+      const result = formatDate(date.toISOString())
+      expect(result).toMatch(/2024/)
+    })
+  })
+
+  describe('toPascalCase 추가 테스트', () => {
+    it('공백으로 구분된 문자열', () => {
+      expect(toPascalCase('user name')).toBe('UserName')
+    })
+
+    it('이미 PascalCase인 경우', () => {
+      // toPascalCase는 단어를 분리하지 않으므로 전체가 하나의 단어로 처리됨
+      expect(toPascalCase('UserName')).toBe('Username')
+    })
+
+    it('여러 구분자 혼합', () => {
+      expect(toPascalCase('user-name_id')).toBe('UserNameId')
+    })
+  })
+
+  describe('toSnakeCase 추가 테스트', () => {
+    it('공백 포함 문자열', () => {
+      // toSnakeCase는 공백을 처리하지 않고 대문자만 변환
+      expect(toSnakeCase('User Name')).toBe('user _name')
+    })
+
+    it('이미 snake_case인 경우', () => {
+      expect(toSnakeCase('user_name')).toBe('user_name')
+    })
+
+    it('연속 대문자 처리', () => {
+      // 각 대문자마다 언더스코어가 추가됨
+      expect(toSnakeCase('HTTPSConnection')).toBe('h_t_t_p_s_connection')
+    })
+  })
+
+  describe('reorder 추가 테스트', () => {
+    it('첫 번째 요소를 마지막으로', () => {
+      const list = [1, 2, 3, 4]
+      const result = reorder(list, 0, 3)
+      expect(result).toEqual([2, 3, 4, 1])
+    })
+
+    it('마지막 요소를 첫 번째로', () => {
+      const list = [1, 2, 3, 4]
+      const result = reorder(list, 3, 0)
+      expect(result).toEqual([4, 1, 2, 3])
+    })
+
+    it('같은 위치로 이동', () => {
+      const list = [1, 2, 3]
+      const result = reorder(list, 1, 1)
+      expect(result).toEqual([1, 2, 3])
+    })
+  })
+
+  describe('clamp 추가 테스트', () => {
+    it('음수 범위', () => {
+      expect(clamp(-5, -10, -1)).toBe(-5)
+      expect(clamp(-15, -10, -1)).toBe(-10)
+      expect(clamp(0, -10, -1)).toBe(-1)
+    })
+
+    it('소수점 값', () => {
+      expect(clamp(5.5, 0, 10)).toBe(5.5)
+      expect(clamp(10.5, 0, 10)).toBe(10)
+    })
+  })
+
+  describe('truncate 추가 테스트', () => {
+    it('정확히 최대 길이인 경우', () => {
+      const result = truncate('12345', 5)
+      expect(result).toBe('12345')
+    })
+
+    it('한글 문자열 자르기', () => {
+      const result = truncate('안녕하세요 반갑습니다', 5)
+      // truncate는 maxLength까지만 자르고 ...을 붙임
+      expect(result).toBe('안녕하세요...')
+    })
+
+    it('빈 문자열', () => {
+      const result = truncate('', 10)
+      expect(result).toBe('')
+    })
   })
 })

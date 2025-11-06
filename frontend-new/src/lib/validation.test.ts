@@ -73,6 +73,16 @@ describe('validation', () => {
       const result = validateTableDescription('사용자 정보', 'USER')
       expect(result.isValid).toBe(true)
     })
+
+    it('한글명과 상세설명 형식 유효함', () => {
+      const result = validateTableDescription('사용자 || 시스템 사용자 정보', 'USER')
+      expect(result.isValid).toBe(true)
+    })
+
+    it('공백만 있는 Description은 유효하지 않음', () => {
+      const result = validateTableDescription('   ', 'USER')
+      expect(result.isValid).toBe(false)
+    })
   })
 
   describe('validateDataTypeProperties', () => {
@@ -86,6 +96,11 @@ describe('validation', () => {
       expect(result.isValid).toBe(true)
     })
 
+    it('NVARCHAR는 길이 필수', () => {
+      const result = validateDataTypeProperties('NVARCHAR')
+      expect(result.isValid).toBe(false)
+    })
+
     it('DECIMAL은 precision 필수', () => {
       const result = validateDataTypeProperties('DECIMAL')
       expect(result.isValid).toBe(false)
@@ -93,6 +108,21 @@ describe('validation', () => {
 
     it('DECIMAL에 precision, scale 지정 시 유효함', () => {
       const result = validateDataTypeProperties('DECIMAL', undefined, 18, 2)
+      expect(result.isValid).toBe(true)
+    })
+
+    it('NUMERIC에 precision만 지정해도 유효함', () => {
+      const result = validateDataTypeProperties('NUMERIC', undefined, 10)
+      expect(result.isValid).toBe(true)
+    })
+
+    it('INT는 추가 속성 불필요', () => {
+      const result = validateDataTypeProperties('INT')
+      expect(result.isValid).toBe(true)
+    })
+
+    it('DATETIME은 추가 속성 불필요', () => {
+      const result = validateDataTypeProperties('DATETIME')
       expect(result.isValid).toBe(true)
     })
   })
@@ -107,6 +137,21 @@ describe('validation', () => {
       const result = validateIndexName('IDX__USER__NAME', 'CLUSTERED', false, 'USER')
       expect(result.isValid).toBe(false)
     })
+
+    it('올바른 PK 인덱스명', () => {
+      const result = validateIndexName('PK__USER__USER_ID', 'CLUSTERED', true, 'USER')
+      expect(result.isValid).toBe(true)
+    })
+
+    it('올바른 클러스터드 인덱스명', () => {
+      const result = validateIndexName('CIDX__USER__NAME', 'CLUSTERED', false, 'USER')
+      expect(result.isValid).toBe(true)
+    })
+
+    it('올바른 논클러스터드 인덱스명', () => {
+      const result = validateIndexName('IDX__USER__EMAIL', 'NONCLUSTERED', false, 'USER')
+      expect(result.isValid).toBe(true)
+    })
   })
 
   describe('generateIndexName', () => {
@@ -118,6 +163,21 @@ describe('validation', () => {
     it('일반 인덱스명 생성', () => {
       const name = generateIndexName('USER', ['NAME', 'EMAIL'], 'NONCLUSTERED', false)
       expect(name).toBe('IDX__USER__NAME__EMAIL')
+    })
+
+    it('클러스터드 인덱스명 생성', () => {
+      const name = generateIndexName('ORDER', ['ORDER_DATE'], 'CLUSTERED', false)
+      expect(name).toBe('CIDX__ORDER__ORDER_DATE')
+    })
+
+    it('단일 컬럼 인덱스명 생성', () => {
+      const name = generateIndexName('PRODUCT', ['CATEGORY_ID'], 'NONCLUSTERED', false)
+      expect(name).toBe('IDX__PRODUCT__CATEGORY_ID')
+    })
+
+    it('복합 인덱스명 생성', () => {
+      const name = generateIndexName('ORDER_ITEM', ['ORDER_ID', 'PRODUCT_ID', 'STATUS'], 'NONCLUSTERED', false)
+      expect(name).toBe('IDX__ORDER_ITEM__ORDER_ID__PRODUCT_ID__STATUS')
     })
   })
 

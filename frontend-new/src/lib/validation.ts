@@ -20,8 +20,8 @@ export function validateUpperCase(name: string): ValidationResult {
   // PascalCase 패턴 (예: User, OrderItem)
   const pascalCasePattern = /^[A-Z][a-zA-Z0-9]*$/;
   
-  // UPPER_SNAKE_CASE 패턴 (예: USER_ID, ORDER_ITEM)
-  const upperSnakeCasePattern = /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$/;
+  // UPPER_SNAKE_CASE 패턴 (예: USER_ID, ORDER_ITEM, PK__USER__ID - 이중 언더스코어 허용)
+  const upperSnakeCasePattern = /^[A-Z][A-Z0-9]*(_+[A-Z0-9]+)*$/;
 
   if (pascalCasePattern.test(name) || upperSnakeCasePattern.test(name)) {
     return {

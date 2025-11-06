@@ -168,14 +168,22 @@
   - 코드 스플리팅 (React.lazy)
   - _Requirements: 8.3, 8.4, 8.5, 8.7_
 
-- [ ] 22. 테스트 작성
-- [ ] 22.1 유틸리티 함수 단위 테스트 확장
+- [-] 22. 테스트 작성
+
+
+
+- [x] 22.1 유틸리티 함수 단위 테스트 확장
+
+
   - validation.test.ts 추가 테스트 케이스 작성
   - utils.test.ts 추가 테스트 케이스 작성
   - errorHandler.test.ts 추가 테스트 케이스 작성
   - _Requirements: All_
 
-- [ ] 22.2 커스텀 훅 테스트 작성
+- [x] 22.2 커스텀 훅 테스트 작성
+
+
+
   - useAsyncError.test.ts 작성
   - useFocusManagement.test.ts 작성
   - useKeyboardShortcuts.test.ts 작성
