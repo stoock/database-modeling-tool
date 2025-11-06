@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { Plus, Trash2, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,7 +16,7 @@ interface TableListProps {
   onTableDeleted: () => void;
 }
 
-export function TableList({
+function TableListComponent({
   projectId,
   tables,
   selectedTableId,
@@ -30,19 +30,18 @@ export function TableList({
 
   const { deleteTable, isLoading } = useTableStore();
 
-  const handleCreateTable = async () => {
-    // CreateTableDialog에서 폼 데이터를 받아 처리
-    // 실제 API 호출은 여기서 수행
+  // 이벤트 핸들러를 useCallback으로 메모이제이션
+  const handleCreateTable = useCallback(() => {
     onTableCreated();
-  };
+  }, [onTableCreated]);
 
-  const handleDeleteClick = (table: Table, e: React.MouseEvent) => {
-    e.stopPropagation(); // 테이블 선택 이벤트 방지
+  const handleDeleteClick = useCallback((table: Table, e: React.MouseEvent) => {
+    e.stopPropagation();
     setTableToDelete(table);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!tableToDelete) return;
 
     try {
@@ -51,7 +50,14 @@ export function TableList({
     } catch (error) {
       console.error('테이블 삭제 실패:', error);
     }
-  };
+  }, [tableToDelete, deleteTable, onTableDeleted]);
+
+  const handleOpenCreateDialog = useCallback(() => {
+    setCreateDialogOpen(true);
+  }, []);
+
+  // 테이블 개수를 useMemo로 캐싱
+  const tableCount = useMemo(() => tables.length, [tables.length]);
 
   return (
     <div className="h-full flex flex-col">
@@ -64,7 +70,7 @@ export function TableList({
           </h2>
           <Button
             size="sm"
-            onClick={() => setCreateDialogOpen(true)}
+            onClick={handleOpenCreateDialog}
             disabled={isLoading}
           >
             <Plus className="h-4 w-4 mr-1" />
@@ -72,13 +78,13 @@ export function TableList({
           </Button>
         </div>
         <p className="text-sm text-gray-500">
-          총 {tables.length}개의 테이블
+          총 {tableCount}개의 테이블
         </p>
       </div>
 
       {/* 테이블 목록 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-        {tables.length === 0 ? (
+        {tableCount === 0 ? (
           <div className="text-center py-12">
             <TableIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <p className="text-sm text-gray-500 mb-4">
@@ -87,7 +93,7 @@ export function TableList({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setCreateDialogOpen(true)}
+              onClick={handleOpenCreateDialog}
             >
               <Plus className="h-4 w-4 mr-1" />
               첫 테이블 만들기
@@ -95,40 +101,14 @@ export function TableList({
           </div>
         ) : (
           tables.map((table) => (
-            <Card
+            <TableCard
               key={table.id}
-              className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                selectedTableId === table.id
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-300'
-              }`}
-              onClick={() => onSelectTable(table.id)}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-sm truncate">
-                    {table.name}
-                  </h3>
-                  {table.description && (
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                      {table.description}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-2">
-                    생성일: {new Date(table.createdAt).toLocaleDateString('ko-KR')}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={(e) => handleDeleteClick(table, e)}
-                  disabled={isLoading}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </Card>
+              table={table}
+              isSelected={selectedTableId === table.id}
+              onSelect={onSelectTable}
+              onDelete={handleDeleteClick}
+              isLoading={isLoading}
+            />
           ))
         )}
       </div>
@@ -150,3 +130,68 @@ export function TableList({
     </div>
   );
 }
+
+// 개별 테이블 카드 컴포넌트 - React.memo로 최적화
+interface TableCardProps {
+  table: Table;
+  isSelected: boolean;
+  onSelect: (tableId: string) => void;
+  onDelete: (table: Table, e: React.MouseEvent) => void;
+  isLoading: boolean;
+}
+
+const TableCard = memo(({ table, isSelected, onSelect, onDelete, isLoading }: TableCardProps) => {
+  const handleClick = useCallback(() => {
+    onSelect(table.id);
+  }, [onSelect, table.id]);
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    onDelete(table, e);
+  }, [onDelete, table]);
+
+  const formattedDate = useMemo(() => 
+    new Date(table.createdAt).toLocaleDateString('ko-KR'),
+    [table.createdAt]
+  );
+
+  return (
+    <Card
+      className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+        isSelected
+          ? 'border-blue-500 bg-blue-50 shadow-md'
+          : 'border-gray-200 hover:border-blue-300'
+      }`}
+      onClick={handleClick}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-sm truncate">
+            {table.name}
+          </h3>
+          {table.description && (
+            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+              {table.description}
+            </p>
+          )}
+          <p className="text-xs text-gray-400 mt-2">
+            생성일: {formattedDate}
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+          onClick={handleDeleteClick}
+          disabled={isLoading}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
+});
+
+TableCard.displayName = 'TableCard';
+
+// React.memo로 불필요한 리렌더링 방지
+export const TableList = memo(TableListComponent);

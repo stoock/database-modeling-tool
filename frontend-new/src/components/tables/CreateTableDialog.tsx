@@ -30,7 +30,7 @@ import { SYSTEM_COLUMNS } from '@/types';
 const createTableSchema = z.object({
   name: z.string().min(1, '테이블명을 입력하세요').max(100, '테이블명은 100자 이하여야 합니다'),
   description: z.string().min(1, 'Description을 입력하세요').max(500, 'Description은 500자 이하여야 합니다'),
-  addSystemColumns: z.boolean().default(true),
+  addSystemColumns: z.boolean(),
 });
 
 type CreateTableFormData = z.infer<typeof createTableSchema>;

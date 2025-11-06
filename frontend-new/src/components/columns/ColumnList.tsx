@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo, useEffect, memo } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -32,7 +32,7 @@ interface ColumnListProps {
   onDeleteColumn: (column: Column) => void;
 }
 
-export function ColumnList({
+function ColumnListComponent({
   tableId,
   tableName,
   columns,
@@ -46,11 +46,11 @@ export function ColumnList({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // 컬럼이 변경되면 로컬 상태 업데이트
-  useState(() => {
+  useEffect(() => {
     setLocalColumns(columns);
-  });
+  }, [columns]);
 
-  // 드래그 앤 드롭 센서 설정
+  // 드래그 앤 드롭 센서 설정 - useMemo로 캐싱
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -58,8 +58,8 @@ export function ColumnList({
     })
   );
 
-  // 드래그 종료 핸들러
-  const handleDragEnd = async (event: DragEndEvent) => {
+  // 드래그 종료 핸들러를 useCallback으로 메모이제이션
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
@@ -82,7 +82,7 @@ export function ColumnList({
     try {
       const columnIds = newColumns.map((col) => col.id);
       await reorderColumns(tableId, { columnIds });
-      onColumnUpdated(); // 부모 컴포넌트에 알림
+      onColumnUpdated();
     } catch (error) {
       // 에러 발생 시 원래 순서로 복원
       setLocalColumns(columns);
@@ -90,28 +90,38 @@ export function ColumnList({
     } finally {
       setIsReordering(false);
     }
-  };
+  }, [localColumns, tableId, columns, onColumnUpdated]);
 
-  // orderIndex로 정렬된 컬럼 목록
-  const sortedColumns = [...localColumns].sort((a, b) => a.orderIndex - b.orderIndex);
+  // orderIndex로 정렬된 컬럼 목록을 useMemo로 캐싱
+  const sortedColumns = useMemo(() => 
+    [...localColumns].sort((a, b) => a.orderIndex - b.orderIndex),
+    [localColumns]
+  );
 
-  // 다음 orderIndex 계산
-  const nextOrderIndex = sortedColumns.length > 0
-    ? Math.max(...sortedColumns.map(col => col.orderIndex)) + 1
-    : 0;
+  // 다음 orderIndex 계산을 useMemo로 캐싱
+  const nextOrderIndex = useMemo(() => 
+    sortedColumns.length > 0
+      ? Math.max(...sortedColumns.map(col => col.orderIndex)) + 1
+      : 0,
+    [sortedColumns]
+  );
 
-  // 컬럼 생성 성공 핸들러
-  const handleColumnCreated = () => {
+  // 이벤트 핸들러를 useCallback으로 메모이제이션
+  const handleColumnCreated = useCallback(() => {
     onColumnCreated();
     setIsCreateDialogOpen(false);
-  };
+  }, [onColumnCreated]);
+
+  const handleOpenCreateDialog = useCallback(() => {
+    setIsCreateDialogOpen(true);
+  }, []);
 
   return (
     <div className="space-y-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">컬럼 목록</h3>
-        <Button onClick={() => setIsCreateDialogOpen(true)} size="sm">
+        <Button onClick={handleOpenCreateDialog} size="sm">
           <Plus className="h-4 w-4 mr-2" />
           컬럼 추가
         </Button>
@@ -121,7 +131,7 @@ export function ColumnList({
       {sortedColumns.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <p className="text-gray-500 mb-4">컬럼이 없습니다</p>
-          <Button onClick={() => setIsCreateDialogOpen(true)} variant="outline">
+          <Button onClick={handleOpenCreateDialog} variant="outline">
             <Plus className="h-4 w-4 mr-2" />
             첫 번째 컬럼 추가
           </Button>
@@ -211,3 +221,6 @@ export function ColumnList({
     </div>
   );
 }
+
+// React.memo로 불필요한 리렌더링 방지
+export const ColumnList = memo(ColumnListComponent);

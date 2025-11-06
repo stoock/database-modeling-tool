@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useProjectStore } from '@/stores/projectStore';
 import { useState } from 'react';
+import { useFocusTrap, useFocusRestore } from '@/hooks/useFocusManagement';
+import { useEscapeKey } from '@/hooks/useKeyboardShortcuts';
 
 // Zod 검증 스키마
 const createProjectSchema = z.object({
@@ -42,6 +44,17 @@ export default function CreateProjectDialog({
 }: CreateProjectDialogProps) {
   const { createProject } = useProjectStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 포커스 관리
+  const focusTrapRef = useFocusTrap(open);
+  useFocusRestore(open);
+  
+  // Escape 키로 닫기
+  useEscapeKey(() => {
+    if (open && !isSubmitting) {
+      handleClose();
+    }
+  }, open);
 
   const {
     register,
@@ -80,20 +93,25 @@ export default function CreateProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent 
+        className="sm:max-w-[500px]"
+        ref={focusTrapRef as React.RefObject<HTMLDivElement>}
+        aria-labelledby="create-project-title"
+        aria-describedby="create-project-description"
+      >
         <DialogHeader>
-          <DialogTitle>새 프로젝트 생성</DialogTitle>
-          <DialogDescription>
+          <DialogTitle id="create-project-title">새 프로젝트 생성</DialogTitle>
+          <DialogDescription id="create-project-description">
             새로운 데이터베이스 모델링 프로젝트를 생성합니다.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} aria-label="프로젝트 생성 폼">
           <div className="grid gap-4 py-4">
             {/* 프로젝트명 */}
             <div className="grid gap-2">
               <Label htmlFor="name">
-                프로젝트명 <span className="text-red-500">*</span>
+                프로젝트명 <span className="text-red-500" aria-label="필수">*</span>
               </Label>
               <Input
                 id="name"
@@ -101,9 +119,11 @@ export default function CreateProjectDialog({
                 {...register('name')}
                 aria-invalid={errors.name ? 'true' : 'false'}
                 aria-describedby={errors.name ? 'name-error' : undefined}
+                aria-required="true"
+                autoFocus
               />
               {errors.name && (
-                <p id="name-error" className="text-sm text-red-500">
+                <p id="name-error" className="text-sm text-red-500" role="alert">
                   {errors.name.message}
                 </p>
               )}
@@ -111,7 +131,7 @@ export default function CreateProjectDialog({
 
             {/* 설명 */}
             <div className="grid gap-2">
-              <Label htmlFor="description">설명</Label>
+              <Label htmlFor="description">설명 (선택사항)</Label>
               <Input
                 id="description"
                 placeholder="프로젝트에 대한 간단한 설명을 입력하세요"
@@ -120,7 +140,7 @@ export default function CreateProjectDialog({
                 aria-describedby={errors.description ? 'description-error' : undefined}
               />
               {errors.description && (
-                <p id="description-error" className="text-sm text-red-500">
+                <p id="description-error" className="text-sm text-red-500" role="alert">
                   {errors.description.message}
                 </p>
               )}
@@ -133,10 +153,15 @@ export default function CreateProjectDialog({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
+              aria-label="프로젝트 생성 취소"
             >
               취소
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              aria-label={isSubmitting ? '프로젝트 생성 중' : '프로젝트 생성'}
+            >
               {isSubmitting ? '생성 중...' : '생성'}
             </Button>
           </DialogFooter>

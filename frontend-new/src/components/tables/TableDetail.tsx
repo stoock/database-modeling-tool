@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Columns3, List } from 'lucide-react';
@@ -12,7 +12,7 @@ interface TableDetailProps {
   onUpdate: () => void;
 }
 
-export function TableDetail({ table, onUpdate }: TableDetailProps) {
+function TableDetailComponent({ table, onUpdate }: TableDetailProps) {
   const [activeTab, setActiveTab] = useState<'columns' | 'indexes'>('columns');
   const [columns, setColumns] = useState<Column[]>([]);
   const [indexes, setIndexes] = useState<Index[]>([]);
@@ -27,16 +27,8 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingColumn, setDeletingColumn] = useState<Column | null>(null);
 
-  // 탭 전환 시 데이터 로딩
-  useEffect(() => {
-    if (activeTab === 'columns') {
-      loadColumns();
-    } else if (activeTab === 'indexes') {
-      loadIndexes();
-    }
-  }, [activeTab, table.id]);
-
-  const loadColumns = async () => {
+  // 데이터 로딩 함수를 useCallback으로 메모이제이션
+  const loadColumns = useCallback(async () => {
     setIsLoadingColumns(true);
     try {
       const data = await getColumns(table.id);
@@ -46,9 +38,9 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
     } finally {
       setIsLoadingColumns(false);
     }
-  };
+  }, [table.id]);
 
-  const loadIndexes = async () => {
+  const loadIndexes = useCallback(async () => {
     setIsLoadingIndexes(true);
     try {
       const data = await getIndexes(table.id);
@@ -58,65 +50,78 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
     } finally {
       setIsLoadingIndexes(false);
     }
-  };
+  }, [table.id]);
 
-  // 컬럼 생성 핸들러
-  const handleColumnCreated = () => {
+  // 탭 전환 시 데이터 로딩
+  useEffect(() => {
+    if (activeTab === 'columns') {
+      loadColumns();
+    } else if (activeTab === 'indexes') {
+      loadIndexes();
+    }
+  }, [activeTab, loadColumns, loadIndexes]);
+
+  // 이벤트 핸들러를 useCallback으로 메모이제이션
+  const handleColumnCreated = useCallback(() => {
     loadColumns();
     onUpdate();
-  };
+  }, [loadColumns, onUpdate]);
 
-  // 컬럼 수정 핸들러
-  const handleColumnUpdated = () => {
+  const handleColumnUpdated = useCallback(() => {
     loadColumns();
     onUpdate();
-  };
+  }, [loadColumns, onUpdate]);
 
-  // 컬럼 삭제 핸들러
-  const handleColumnDeleted = () => {
+  const handleColumnDeleted = useCallback(() => {
     loadColumns();
     onUpdate();
-  };
+  }, [loadColumns, onUpdate]);
 
-  // 컬럼 편집 핸들러
-  const handleEditColumn = (column: Column) => {
+  const handleEditColumn = useCallback((column: Column) => {
     setEditingColumn(column);
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  // 컬럼 편집 성공 핸들러
-  const handleEditSuccess = () => {
+  const handleEditSuccess = useCallback(() => {
     loadColumns();
     onUpdate();
     setIsEditDialogOpen(false);
     setEditingColumn(null);
-  };
+  }, [loadColumns, onUpdate]);
 
-  // 컬럼 삭제 핸들러
-  const handleDeleteColumn = (column: Column) => {
+  const handleDeleteColumn = useCallback((column: Column) => {
     setDeletingColumn(column);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  // 컬럼 삭제 성공 핸들러
-  const handleDeleteSuccess = () => {
+  const handleDeleteSuccess = useCallback(() => {
     loadColumns();
     onUpdate();
     setIsDeleteDialogOpen(false);
     setDeletingColumn(null);
-  };
+  }, [loadColumns, onUpdate]);
 
-  // 인덱스 생성 핸들러
-  const handleIndexCreated = () => {
+  const handleIndexCreated = useCallback(() => {
     loadIndexes();
     onUpdate();
-  };
+  }, [loadIndexes, onUpdate]);
 
-  // 인덱스 삭제 핸들러
-  const handleIndexDeleted = () => {
+  const handleIndexDeleted = useCallback(() => {
     loadIndexes();
     onUpdate();
-  };
+  }, [loadIndexes, onUpdate]);
+
+  // 포맷된 날짜를 useMemo로 캐싱
+  const formattedDate = useMemo(() => 
+    new Date(table.createdAt).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    [table.createdAt]
+  );
 
   return (
     <div className="space-y-4">
@@ -129,13 +134,7 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
           </p>
         )}
         <p className="text-xs text-muted-foreground mt-2">
-          생성일: {new Date(table.createdAt).toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
+          생성일: {formattedDate}
         </p>
       </div>
 
@@ -222,3 +221,6 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
     </div>
   );
 }
+
+// React.memo로 불필요한 리렌더링 방지
+export const TableDetail = memo(TableDetailComponent);

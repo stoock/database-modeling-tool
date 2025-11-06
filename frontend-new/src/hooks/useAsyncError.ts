@@ -61,7 +61,8 @@ export function useAsyncWrapper() {
     ) => {
       return async (...args: Parameters<T>): Promise<ReturnType<T> | undefined> => {
         try {
-          return await asyncFn(...args);
+          const result = await asyncFn(...args);
+          return result as ReturnType<T>;
         } catch (error) {
           // 커스텀 에러 핸들러가 있으면 실행
           if (options?.onError) {

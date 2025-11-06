@@ -4,17 +4,19 @@ import type { ApiError } from '@/types';
 /**
  * 에러 타입 정의
  */
-export enum ErrorType {
-  NETWORK = 'NETWORK',
-  VALIDATION = 'VALIDATION',
-  NOT_FOUND = 'NOT_FOUND',
-  CONFLICT = 'CONFLICT',
-  SERVER = 'SERVER',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
-  TIMEOUT = 'TIMEOUT',
-  UNKNOWN = 'UNKNOWN',
-}
+export const ErrorType = {
+  NETWORK: 'NETWORK',
+  VALIDATION: 'VALIDATION',
+  NOT_FOUND: 'NOT_FOUND',
+  CONFLICT: 'CONFLICT',
+  SERVER: 'SERVER',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN',
+  TIMEOUT: 'TIMEOUT',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type ErrorType = typeof ErrorType[keyof typeof ErrorType];
 
 /**
  * 에러 정보 인터페이스
@@ -229,11 +231,12 @@ export function formatValidationErrors(details?: Record<string, string[]>): stri
  * 에러 재시도 가능 여부 확인
  */
 export function isRetryableError(errorInfo: ErrorInfo): boolean {
-  return [
+  const retryableTypes: ErrorType[] = [
     ErrorType.NETWORK,
     ErrorType.TIMEOUT,
     ErrorType.SERVER,
-  ].includes(errorInfo.type);
+  ];
+  return retryableTypes.includes(errorInfo.type);
 }
 
 /**
