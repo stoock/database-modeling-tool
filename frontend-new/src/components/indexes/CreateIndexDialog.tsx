@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertCircle, CheckCircle2, GripVertical, Sparkles, X } from 'lucide-react';
+import { GripVertical, Sparkles, X } from 'lucide-react';
+import { ValidationBadge } from '@/components/validation/ValidationBadge';
 import { createIndex } from '@/lib/api';
 import { validateIndexName, generateIndexName } from '@/lib/validation';
 import type { Column, CreateIndexRequest } from '@/types';
@@ -234,27 +235,7 @@ export function CreateIndexDialog({
                   : ''
               }
             />
-            {nameValidation && (
-              <div
-                className={`flex items-start gap-2 text-sm ${
-                  nameValidation.isValid ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {nameValidation.isValid ? (
-                  <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                ) : (
-                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                )}
-                <div>
-                  <p>{nameValidation.message}</p>
-                  {nameValidation.suggestion && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {nameValidation.suggestion}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            <ValidationBadge result={nameValidation} />
           </div>
 
           {/* 인덱스 타입 */}
