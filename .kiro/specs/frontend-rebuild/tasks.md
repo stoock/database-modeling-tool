@@ -265,7 +265,11 @@
   - 코드 스플리팅 (React.lazy)
   - _Requirements: 8.3, 8.4, 8.5, 8.7_
 
-- [ ] 22. 테스트 작성
+- [x] 22. 테스트 작성
+
+
+
+
   - 유틸리티 함수 단위 테스트 (Vitest)
   - 주요 컴포넌트 테스트 (React Testing Library)
   - API 클라이언트 테스트 (Mock)
