@@ -275,7 +275,7 @@
   - API 클라이언트 테스트 (Mock)
   - _Requirements: All_
 
-- [ ] 23. 문서화 및 README
+- [x] 23. 문서화 및 README
   - frontend-new/README.md 작성
   - 설치 및 실행 방법
   - 프로젝트 구조 설명
