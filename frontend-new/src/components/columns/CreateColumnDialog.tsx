@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { ValidationBadge } from '@/components/validation/ValidationBadge';
 import { createColumn } from '@/lib/api';
 import {
   validateColumnName,
@@ -241,26 +242,7 @@ export function CreateColumnDialog({
     }
   };
 
-  // 검증 배지 컴포넌트
-  const ValidationBadge = ({ validation }: { validation: ValidationResult | null }) => {
-    if (!validation) return null;
 
-    return (
-      <div className={`flex items-start gap-2 mt-1 text-xs ${validation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-        {validation.isValid ? (
-          <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        ) : (
-          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        )}
-        <div className="flex-1">
-          <p>{validation.message}</p>
-          {validation.suggestion && (
-            <p className="text-gray-500 mt-0.5">{validation.suggestion}</p>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -285,7 +267,7 @@ export function CreateColumnDialog({
               placeholder="예: USER_ID, REG_DT"
               required
             />
-            <ValidationBadge validation={nameValidation} />
+            <ValidationBadge result={nameValidation} />
             <p className="text-xs text-gray-500">
               대문자 형식을 사용하세요 (예: USER_ID, ORDER_ITEM_NO)
             </p>
@@ -303,7 +285,7 @@ export function CreateColumnDialog({
               placeholder="예: 사용자ID, 처리결과코드 || 0:성공, -100:실패"
               required
             />
-            <ValidationBadge validation={descriptionValidation} />
+            <ValidationBadge result={descriptionValidation} />
             <p className="text-xs text-gray-500">
               한글명 또는 "한글명 || 상세설명" 형식을 권장합니다
             </p>
@@ -395,7 +377,7 @@ export function CreateColumnDialog({
 
           {/* 데이터 타입 검증 */}
           {dataTypeValidation && !dataTypeValidation.isValid && (
-            <ValidationBadge validation={dataTypeValidation} />
+            <ValidationBadge result={dataTypeValidation} />
           )}
 
           {/* 제약조건 */}
