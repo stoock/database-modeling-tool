@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -78,8 +78,8 @@ export function EditColumnDialog({
   const [dataTypeValidation, setDataTypeValidation] = useState<ValidationResult | null>(null);
 
   // 디바운스 타이머
-  const [nameDebounceTimer, setNameDebounceTimer] = useState<number | null>(null);
-  const [descriptionDebounceTimer, setDescriptionDebounceTimer] = useState<number | null>(null);
+  const nameDebounceTimer = useRef<number | null>(null);
+  const descriptionDebounceTimer = useRef<number | null>(null);
 
   // 다이얼로그가 열릴 때 기존 컬럼 값으로 초기화
   useEffect(() => {
@@ -104,8 +104,8 @@ export function EditColumnDialog({
 
   // 컬럼명 실시간 검증 (500ms 디바운스)
   useEffect(() => {
-    if (nameDebounceTimer) {
-      clearTimeout(nameDebounceTimer);
+    if (nameDebounceTimer.current) {
+      clearTimeout(nameDebounceTimer.current);
     }
 
     if (name.trim() === '') {
@@ -113,7 +113,7 @@ export function EditColumnDialog({
       return;
     }
 
-    const timer = setTimeout(() => {
+    nameDebounceTimer.current = window.setTimeout(() => {
       if (primaryKey) {
         const result = validatePrimaryKeyColumnName(name, tableName);
         setNameValidation(result);
@@ -123,17 +123,15 @@ export function EditColumnDialog({
       }
     }, 500);
 
-    setNameDebounceTimer(timer);
-
     return () => {
-      if (timer) clearTimeout(timer);
+      if (nameDebounceTimer.current) clearTimeout(nameDebounceTimer.current);
     };
   }, [name, primaryKey, tableName]);
 
   // Description 실시간 검증 (500ms 디바운스)
   useEffect(() => {
-    if (descriptionDebounceTimer) {
-      clearTimeout(descriptionDebounceTimer);
+    if (descriptionDebounceTimer.current) {
+      clearTimeout(descriptionDebounceTimer.current);
     }
 
     if (description.trim() === '') {
@@ -141,15 +139,13 @@ export function EditColumnDialog({
       return;
     }
 
-    const timer = setTimeout(() => {
+    descriptionDebounceTimer.current = window.setTimeout(() => {
       const result = validateColumnDescription(description, name);
       setDescriptionValidation(result);
     }, 500);
 
-    setDescriptionDebounceTimer(timer);
-
     return () => {
-      if (timer) clearTimeout(timer);
+      if (descriptionDebounceTimer.current) clearTimeout(descriptionDebounceTimer.current);
     };
   }, [description, name]);
 
