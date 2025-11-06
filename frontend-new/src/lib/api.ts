@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { useToastStore } from '@/stores/toastStore';
+import { parseAxiosError, logError, getUserFriendlyMessage } from '@/lib/errorHandler';
 import type {
   Project,
   Table,
@@ -49,43 +50,17 @@ apiClient.interceptors.response.use(
   (error: AxiosError<ApiError>) => {
     const toastStore = useToastStore.getState();
     
-    let message = '오류가 발생했습니다';
+    // 에러 파싱
+    const errorInfo = parseAxiosError(error);
     
-    if (error.response) {
-      // 서버 응답이 있는 경우
-      const status = error.response.status;
-      const errorData = error.response.data;
-      
-      if (errorData?.error?.message) {
-        message = errorData.error.message;
-      } else {
-        switch (status) {
-          case 400:
-            message = '잘못된 요청입니다';
-            break;
-          case 404:
-            message = '요청한 리소스를 찾을 수 없습니다';
-            break;
-          case 409:
-            message = '중복된 데이터가 존재합니다';
-            break;
-          case 500:
-            message = '서버 오류가 발생했습니다';
-            break;
-          default:
-            message = `오류가 발생했습니다 (${status})`;
-        }
-      }
-    } else if (error.request) {
-      // 요청은 보냈지만 응답이 없는 경우
-      message = '서버에 연결할 수 없습니다';
-    } else {
-      // 요청 설정 중 오류 발생
-      message = error.message || '요청 처리 중 오류가 발생했습니다';
-    }
+    // 에러 로깅 (개발 환경)
+    logError(errorInfo);
+    
+    // 사용자 친화적 메시지 생성
+    const message = getUserFriendlyMessage(errorInfo);
     
     // 토스트 메시지 표시
-    toastStore.error('오류', message);
+    toastStore.error(errorInfo.title, message);
     
     return Promise.reject(error);
   }

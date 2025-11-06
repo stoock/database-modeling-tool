@@ -4,12 +4,14 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useTableStore } from '@/stores/tableStore';
 import { Button } from '@/components/ui/button';
 import { TableList, TableDetail } from '@/components/tables';
+import { ExportDialog } from '@/components/export';
 import { ArrowLeft, Download } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   
   const { selectedProject, isLoading, fetchProjectById } = useProjectStore();
   const { tables, selectedTable, fetchTablesByProject, setSelectedTable } = useTableStore();
@@ -26,8 +28,7 @@ export default function ProjectDetailPage() {
   };
 
   const handleExport = () => {
-    // TODO: 내보내기 기능 구현 (Task 18)
-    console.log('Export schema');
+    setExportDialogOpen(true);
   };
 
   const handleSelectTable = (tableId: string) => {
@@ -143,6 +144,16 @@ export default function ProjectDetailPage() {
           </div>
         </section>
       </main>
+
+      {/* SQL 스키마 내보내기 다이얼로그 */}
+      {projectId && selectedProject && (
+        <ExportDialog
+          projectId={projectId}
+          projectName={selectedProject.name}
+          open={exportDialogOpen}
+          onOpenChange={setExportDialogOpen}
+        />
+      )}
     </div>
   );
 }
