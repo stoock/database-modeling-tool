@@ -3,8 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Columns3, List } from 'lucide-react';
 import { ColumnList, EditColumnDialog, DeleteColumnDialog } from '@/components/columns';
-import { getColumns } from '@/lib/api';
-import type { Table, Column } from '@/types';
+import { IndexList } from '@/components/indexes';
+import { getColumns, getIndexes } from '@/lib/api';
+import type { Table, Column, Index } from '@/types';
 
 interface TableDetailProps {
   table: Table;
@@ -14,6 +15,7 @@ interface TableDetailProps {
 export function TableDetail({ table, onUpdate }: TableDetailProps) {
   const [activeTab, setActiveTab] = useState<'columns' | 'indexes'>('columns');
   const [columns, setColumns] = useState<Column[]>([]);
+  const [indexes, setIndexes] = useState<Index[]>([]);
   const [isLoadingColumns, setIsLoadingColumns] = useState(false);
   const [isLoadingIndexes, setIsLoadingIndexes] = useState(false);
   
@@ -49,9 +51,8 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
   const loadIndexes = async () => {
     setIsLoadingIndexes(true);
     try {
-      // TODO: Task 14 - 인덱스 목록 API 호출
-      // await fetchIndexes(table.id);
-      console.log('인덱스 데이터 로딩:', table.id);
+      const data = await getIndexes(table.id);
+      setIndexes(data);
     } catch (error) {
       console.error('인덱스 로딩 실패:', error);
     } finally {
@@ -103,6 +104,18 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
     onUpdate();
     setIsDeleteDialogOpen(false);
     setDeletingColumn(null);
+  };
+
+  // 인덱스 생성 핸들러
+  const handleIndexCreated = () => {
+    loadIndexes();
+    onUpdate();
+  };
+
+  // 인덱스 삭제 핸들러
+  const handleIndexDeleted = () => {
+    loadIndexes();
+    onUpdate();
   };
 
   return (
@@ -175,15 +188,14 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
                 <p className="text-sm text-muted-foreground">인덱스 목록을 불러오는 중...</p>
               </div>
             ) : (
-              <div className="text-center py-12">
-                <List className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  인덱스 관리 기능은 다음 태스크에서 구현됩니다
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Task 14: 인덱스 목록 및 관리
-                </p>
-              </div>
+              <IndexList
+                tableId={table.id}
+                tableName={table.name}
+                indexes={indexes}
+                columns={columns}
+                onIndexCreated={handleIndexCreated}
+                onIndexDeleted={handleIndexDeleted}
+              />
             )}
           </Card>
         </TabsContent>
