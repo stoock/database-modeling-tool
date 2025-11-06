@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ValidationBadge } from '@/components/validation/ValidationBadge';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTableStore } from '@/stores/tableStore';
@@ -21,12 +22,15 @@ import {
   validateTableDescription,
   type ValidationResult,
 } from '@/lib/validation';
-import type { CreateTableRequest } from '@/types';
+import { createColumn } from '@/lib/api';
+import type { CreateTableRequest, CreateColumnRequest } from '@/types';
+import { SYSTEM_COLUMNS } from '@/types';
 
 // Zod 스키마
 const createTableSchema = z.object({
   name: z.string().min(1, '테이블명을 입력하세요').max(100, '테이블명은 100자 이하여야 합니다'),
   description: z.string().min(1, 'Description을 입력하세요').max(500, 'Description은 500자 이하여야 합니다'),
+  addSystemColumns: z.boolean().default(true),
 });
 
 type CreateTableFormData = z.infer<typeof createTableSchema>;
@@ -55,17 +59,20 @@ export function CreateTableDialog({
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CreateTableFormData>({
     resolver: zodResolver(createTableSchema),
     defaultValues: {
       name: '',
       description: '',
+      addSystemColumns: true,
     },
   });
 
   const watchName = watch('name');
   const watchDescription = watch('description');
+  const watchAddSystemColumns = watch('addSystemColumns');
 
   // 500ms 디바운스
   const debouncedName = useDebounce(watchName, 500);
@@ -115,9 +122,33 @@ export function CreateTableDialog({
         projectId,
         name: data.name,
         description: data.description,
+        addSystemColumns: data.addSystemColumns,
       };
 
-      await createTable(requestData);
+      const newTable = await createTable(requestData);
+
+      // 시스템 속성 컬럼 자동 추가
+      if (data.addSystemColumns && newTable.id) {
+        // 시스템 컬럼을 순차적으로 생성
+        for (let i = 0; i < SYSTEM_COLUMNS.length; i++) {
+          const sysCol = SYSTEM_COLUMNS[i];
+          const columnRequest: CreateColumnRequest = {
+            tableId: newTable.id,
+            name: sysCol.name,
+            description: sysCol.description,
+            dataType: sysCol.dataType,
+            maxLength: sysCol.dataType === 'VARCHAR' ? 25 : undefined,
+            nullable: sysCol.nullable,
+            primaryKey: false,
+            identity: false,
+            defaultValue: sysCol.defaultValue,
+            orderIndex: i,
+          };
+          
+          await createColumn(columnRequest);
+        }
+      }
+
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -171,6 +202,33 @@ export function CreateTableDialog({
             <p className="text-xs text-gray-500">
               테이블명을 그대로 복사하지 말고 의미 있는 한글 설명을 입력하세요
             </p>
+          </div>
+
+          <div className="flex items-start space-x-2 rounded-md border p-4">
+            <Checkbox
+              id="addSystemColumns"
+              checked={watchAddSystemColumns}
+              onCheckedChange={(checked) => setValue('addSystemColumns', checked as boolean)}
+            />
+            <div className="flex-1 space-y-1">
+              <Label
+                htmlFor="addSystemColumns"
+                className="text-sm font-medium leading-none cursor-pointer"
+              >
+                시스템 속성 컬럼 자동 추가
+              </Label>
+              <p className="text-xs text-gray-500">
+                REG_ID, REG_DT, CHG_ID, CHG_DT 컬럼을 자동으로 추가합니다
+              </p>
+              {watchAddSystemColumns && (
+                <div className="mt-2 text-xs text-gray-600 space-y-1">
+                  <div>• REG_ID (VARCHAR(25), NOT NULL) - 등록자ID</div>
+                  <div>• REG_DT (DATETIME, NOT NULL, DEFAULT GETDATE()) - 등록일시</div>
+                  <div>• CHG_ID (VARCHAR(25), NULL) - 수정자ID</div>
+                  <div>• CHG_DT (DATETIME, NULL) - 수정일시</div>
+                </div>
+              )}
+            </div>
           </div>
 
           <DialogFooter>

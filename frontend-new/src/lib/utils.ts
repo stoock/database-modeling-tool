@@ -89,7 +89,7 @@ export function toSnakeCase(str: string): string {
 }
 
 // 디바운스 유틸리티
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {

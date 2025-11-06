@@ -54,8 +54,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     try {
       const response = await apiClient.get<Project[]>('/projects');
       set({ projects: response.data, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '프로젝트 목록을 불러오는데 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '프로젝트 목록을 불러오는데 실패했습니다'
+        : '프로젝트 목록을 불러오는데 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -66,8 +68,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     try {
       const response = await apiClient.get<Project>(`/projects/${id}`);
       set({ selectedProject: response.data, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '프로젝트를 불러오는데 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '프로젝트를 불러오는데 실패했습니다'
+        : '프로젝트를 불러오는데 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -86,8 +90,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       }));
       
       return newProject;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '프로젝트 생성에 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '프로젝트 생성에 실패했습니다'
+        : '프로젝트 생성에 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -107,8 +113,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       }));
       
       return updatedProject;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '프로젝트 수정에 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '프로젝트 수정에 실패했습니다'
+        : '프로젝트 수정에 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -130,8 +138,10 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
       if (get().selectedProject?.id === id) {
         useTableStore.getState().reset();
       }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '프로젝트 삭제에 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '프로젝트 삭제에 실패했습니다'
+        : '프로젝트 삭제에 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }

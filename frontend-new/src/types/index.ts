@@ -141,6 +141,7 @@ export interface CreateTableRequest {
   description: string;
   positionX?: number;
   positionY?: number;
+  addSystemColumns?: boolean;
 }
 
 export interface UpdateTableRequest {
