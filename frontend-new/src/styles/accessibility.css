@@ -1,0 +1,273 @@
+/**
+ * 접근성 스타일
+ * WCAG 2.1 AA 준수
+ */
+
+/* 스크린 리더 전용 텍스트 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 포커스 가능하지만 보이지 않는 요소 */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* 키보드 네비게이션 시에만 포커스 링 표시 */
+body:not(.keyboard-navigation) *:focus {
+  outline: none;
+}
+
+body.keyboard-navigation *:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+  
+  button,
+  input,
+  select,
+  textarea {
+    border-width: 2px !important;
+  }
+}
+
+/* 애니메이션 감소 모드 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 포커스 표시 개선 */
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 버튼 포커스 */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* 입력 필드 포커스 */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 0;
+  border-color: #2563eb;
+}
+
+/* 비활성화된 요소 */
+:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 링크 스타일 */
+a {
+  text-decoration: underline;
+  text-decoration-skip-ink: auto;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* 스킵 링크 (메인 콘텐츠로 바로가기) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* 에러 메시지 스타일 */
+[role="alert"],
+.error-message {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* 성공 메시지 스타일 */
+.success-message {
+  color: #16a34a;
+  font-weight: 500;
+}
+
+/* 경고 메시지 스타일 */
+.warning-message {
+  color: #ca8a04;
+  font-weight: 500;
+}
+
+/* 정보 메시지 스타일 */
+.info-message {
+  color: #0284c7;
+  font-weight: 500;
+}
+
+/* 라이브 리전 */
+[aria-live] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* 대화상자 오버레이 */
+[role="dialog"] {
+  position: fixed;
+  z-index: 50;
+}
+
+/* 툴팁 */
+[role="tooltip"] {
+  position: absolute;
+  z-index: 100;
+  padding: 4px 8px;
+  background: #1f2937;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* 프로그레스 바 */
+[role="progressbar"] {
+  overflow: hidden;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+}
+
+/* 탭 패널 */
+[role="tabpanel"] {
+  padding: 1rem;
+}
+
+[role="tabpanel"]:focus {
+  outline: none;
+}
+
+/* 메뉴 */
+[role="menu"] {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+[role="menuitem"] {
+  cursor: pointer;
+  padding: 8px 16px;
+}
+
+[role="menuitem"]:hover,
+[role="menuitem"]:focus {
+  background-color: #f3f4f6;
+}
+
+/* 체크박스와 라디오 버튼 크기 */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+}
+
+/* 터치 타겟 최소 크기 (44x44px) */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* 작은 버튼의 경우 패딩으로 터치 영역 확보 */
+button.btn-sm,
+a.btn-sm {
+  padding: 12px 16px;
+}
+
+/* 색상 대비 개선 */
+.text-muted {
+  color: #64748b; /* slate-500 - WCAG AA 준수 */
+}
+
+.text-primary {
+  color: #2563eb; /* blue-600 - WCAG AA 준수 */
+}
+
+.text-success {
+  color: #16a34a; /* green-600 - WCAG AA 준수 */
+}
+
+.text-warning {
+  color: #ca8a04; /* yellow-600 - WCAG AA 준수 */
+}
+
+.text-error {
+  color: #dc2626; /* red-600 - WCAG AA 준수 */
+}
+
+/* 다크 모드 색상 대비 */
+@media (prefers-color-scheme: dark) {
+  .text-muted {
+    color: #cbd5e1; /* slate-300 */
+  }
+  
+  .text-primary {
+    color: #93c5fd; /* blue-300 */
+  }
+  
+  .text-success {
+    color: #86efac; /* green-300 */
+  }
+  
+  .text-warning {
+    color: #fde047; /* yellow-300 */
+  }
+  
+  .text-error {
+    color: #fca5a5; /* red-300 */
+  }
+}

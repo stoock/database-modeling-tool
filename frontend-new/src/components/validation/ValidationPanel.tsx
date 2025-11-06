@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,13 +10,13 @@ interface ValidationPanelProps {
   onNavigateToEntity?: (entityType: 'TABLE' | 'COLUMN' | 'INDEX', entityId: string) => void;
 }
 
-export function ValidationPanel({ projectId, onNavigateToEntity }: ValidationPanelProps) {
+function ValidationPanelComponent({ projectId, onNavigateToEntity }: ValidationPanelProps) {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['errors', 'warnings']));
 
-  // 검증 실행
-  const handleValidate = async () => {
+  // 검증 실행을 useCallback으로 메모이제이션
+  const handleValidate = useCallback(async () => {
     setIsValidating(true);
     try {
       const result = await validateProject(projectId);
@@ -26,10 +26,10 @@ export function ValidationPanel({ projectId, onNavigateToEntity }: ValidationPan
     } finally {
       setIsValidating(false);
     }
-  };
+  }, [projectId]);
 
-  // 섹션 토글
-  const toggleSection = (section: string) => {
+  // 섹션 토글을 useCallback으로 메모이제이션
+  const toggleSection = useCallback((section: string) => {
     setExpandedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(section)) {
@@ -39,17 +39,29 @@ export function ValidationPanel({ projectId, onNavigateToEntity }: ValidationPan
       }
       return newSet;
     });
-  };
+  }, []);
 
-  // 엔티티로 이동
-  const handleNavigate = (entityType: 'TABLE' | 'COLUMN' | 'INDEX', entityId: string) => {
+  // 엔티티로 이동을 useCallback으로 메모이제이션
+  const handleNavigate = useCallback((entityType: 'TABLE' | 'COLUMN' | 'INDEX', entityId: string) => {
     if (onNavigateToEntity) {
       onNavigateToEntity(entityType, entityId);
     }
-  };
+  }, [onNavigateToEntity]);
 
-  // 준수율 계산
-  const calculateComplianceRate = (): number => {
+  // 엔티티별 그룹화를 useCallback으로 메모이제이션
+  const groupByEntity = useCallback((items: ValidationError[]): Record<string, ValidationError[]> => {
+    return items.reduce((acc, item) => {
+      const key = `${item.entity}-${item.entityId}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, ValidationError[]>);
+  }, []);
+
+  // 준수율 계산을 useMemo로 캐싱
+  const complianceRate = useMemo((): number => {
     if (!validationResult) return 0;
     const totalIssues = validationResult.errors.length + validationResult.warnings.length;
     if (totalIssues === 0) return 100;
@@ -61,23 +73,18 @@ export function ValidationPanel({ projectId, onNavigateToEntity }: ValidationPan
     const maxWeight = totalIssues * errorWeight;
     
     return Math.max(0, Math.round((1 - totalWeight / maxWeight) * 100));
-  };
+  }, [validationResult]);
 
-  // 엔티티별 그룹화
-  const groupByEntity = (items: ValidationError[]): Record<string, ValidationError[]> => {
-    return items.reduce((acc, item) => {
-      const key = `${item.entity}-${item.entityId}`;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(item);
-      return acc;
-    }, {} as Record<string, ValidationError[]>);
-  };
+  // 에러 및 경고 그룹을 useMemo로 캐싱
+  const errorGroups = useMemo(() => 
+    validationResult ? groupByEntity(validationResult.errors) : {},
+    [validationResult, groupByEntity]
+  );
 
-  const complianceRate = calculateComplianceRate();
-  const errorGroups = validationResult ? groupByEntity(validationResult.errors) : {};
-  const warningGroups = validationResult ? groupByEntity(validationResult.warnings) : {};
+  const warningGroups = useMemo(() => 
+    validationResult ? groupByEntity(validationResult.warnings) : {},
+    [validationResult, groupByEntity]
+  );
 
   return (
     <Card className="p-6">
@@ -328,3 +335,6 @@ export function ValidationPanel({ projectId, onNavigateToEntity }: ValidationPan
     </Card>
   );
 }
+
+// React.memo로 불필요한 리렌더링 방지
+export const ValidationPanel = memo(ValidationPanelComponent);
