@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Columns3, List } from 'lucide-react';
-import { ColumnList } from '@/components/columns';
+import { ColumnList, EditColumnDialog, DeleteColumnDialog } from '@/components/columns';
 import { getColumns } from '@/lib/api';
 import type { Table, Column } from '@/types';
 
@@ -16,6 +16,14 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [isLoadingColumns, setIsLoadingColumns] = useState(false);
   const [isLoadingIndexes, setIsLoadingIndexes] = useState(false);
+  
+  // 컬럼 편집 다이얼로그 상태
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<Column | null>(null);
+  
+  // 컬럼 삭제 다이얼로그 상태
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingColumn, setDeletingColumn] = useState<Column | null>(null);
 
   // 탭 전환 시 데이터 로딩
   useEffect(() => {
@@ -71,14 +79,30 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
 
   // 컬럼 편집 핸들러
   const handleEditColumn = (column: Column) => {
-    // TODO: Task 12 - EditColumnDialog 열기
-    console.log('컬럼 편집:', column);
+    setEditingColumn(column);
+    setIsEditDialogOpen(true);
+  };
+
+  // 컬럼 편집 성공 핸들러
+  const handleEditSuccess = () => {
+    loadColumns();
+    onUpdate();
+    setIsEditDialogOpen(false);
+    setEditingColumn(null);
   };
 
   // 컬럼 삭제 핸들러
   const handleDeleteColumn = (column: Column) => {
-    // TODO: Task 13 - DeleteColumnDialog 열기
-    console.log('컬럼 삭제:', column);
+    setDeletingColumn(column);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // 컬럼 삭제 성공 핸들러
+  const handleDeleteSuccess = () => {
+    loadColumns();
+    onUpdate();
+    setIsDeleteDialogOpen(false);
+    setDeletingColumn(null);
   };
 
   return (
@@ -164,6 +188,25 @@ export function TableDetail({ table, onUpdate }: TableDetailProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* 컬럼 편집 다이얼로그 */}
+      {editingColumn && (
+        <EditColumnDialog
+          column={editingColumn}
+          tableName={table.name}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* 컬럼 삭제 다이얼로그 */}
+      <DeleteColumnDialog
+        column={deletingColumn}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 }

@@ -47,8 +47,10 @@ export const useTableStore = create<TableStore>((set) => ({
     try {
       const response = await apiClient.get<Table[]>(`/projects/${projectId}/tables`);
       set({ tables: response.data, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '테이블 목록을 불러오는데 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '테이블 목록을 불러오는데 실패했습니다'
+        : '테이블 목록을 불러오는데 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -59,8 +61,10 @@ export const useTableStore = create<TableStore>((set) => ({
     try {
       const response = await apiClient.get<Table>(`/tables/${id}`);
       set({ selectedTable: response.data, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '테이블을 불러오는데 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '테이블을 불러오는데 실패했습니다'
+        : '테이블을 불러오는데 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -79,8 +83,10 @@ export const useTableStore = create<TableStore>((set) => ({
       }));
       
       return newTable;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '테이블 생성에 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '테이블 생성에 실패했습니다'
+        : '테이블 생성에 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -100,8 +106,10 @@ export const useTableStore = create<TableStore>((set) => ({
       }));
       
       return updatedTable;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '테이블 수정에 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '테이블 수정에 실패했습니다'
+        : '테이블 수정에 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -118,8 +126,10 @@ export const useTableStore = create<TableStore>((set) => ({
         selectedTable: state.selectedTable?.id === id ? null : state.selectedTable,
         isLoading: false,
       }));
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || '테이블 삭제에 실패했습니다';
+    } catch (error: unknown) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || '테이블 삭제에 실패했습니다'
+        : '테이블 삭제에 실패했습니다';
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
