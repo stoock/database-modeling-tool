@@ -208,9 +208,16 @@ export interface ExportOptions {
 }
 
 export interface ExportResult {
-  sql: string;
-  format: 'SQL' | 'JSON' | 'MARKDOWN';
-  timestamp: string;
+  format: string;
+  content: string;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  generatedAt: string;
+  tableCount: number;
+  indexCount: number;
+  // 하위 호환성을 위한 별칭
+  sql?: string;
 }
 
 // Validation Types
