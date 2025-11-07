@@ -23,14 +23,7 @@ spring:
         
   # 개발 환경 Flyway 설정  
   flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration
-    validate-on-migrate: true
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/dbmodeling_dev}
-    user: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    clean-disabled: false
+    enabled: false
     
 # 로깅 설정
 logging:
