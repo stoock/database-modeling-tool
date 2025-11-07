@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 // 코드 스플리팅 - React.lazy로 페이지 컴포넌트 지연 로딩
 const ProjectsPage = lazy(() => import('@/pages/ProjectsPage'));
 const ProjectDetailPage = lazy(() => import('@/pages/ProjectDetailPage'));
+const ERDPage = lazy(() => import('@/pages/ERDPage'));
 
 // 로딩 컴포넌트
 function PageLoader() {
@@ -37,6 +38,7 @@ function App() {
               <Route path="/" element={<Navigate to="/projects" replace />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
+              <Route path="/projects/:projectId/erd" element={<ERDPage />} />
             </Routes>
           </Suspense>
           <Toaster />
