@@ -61,42 +61,42 @@ function TableListComponent({
 
   return (
     <div className="h-full flex flex-col">
-      {/* 헤더 */}
-      <div className="p-4 border-b bg-white">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <TableIcon className="h-5 w-5" />
-            테이블 목록
-          </h2>
+      {/* 헤더 - 슬림 버전 */}
+      <div className="p-3 border-b bg-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TableIcon className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">
+              테이블 ({tableCount})
+            </span>
+          </div>
           <Button
             size="sm"
             onClick={handleOpenCreateDialog}
             disabled={isLoading}
+            className="h-7 px-2"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            추가
+            <Plus className="h-3 w-3" />
           </Button>
         </div>
-        <p className="text-sm text-gray-500">
-          총 {tableCount}개의 테이블
-        </p>
       </div>
 
-      {/* 테이블 목록 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      {/* 테이블 목록 - 슬림 버전 */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {tableCount === 0 ? (
-          <div className="text-center py-12">
-            <TableIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-500 mb-4">
-              아직 테이블이 없습니다
+          <div className="text-center py-8">
+            <TableIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+            <p className="text-xs text-gray-500 mb-3">
+              테이블이 없습니다
             </p>
             <Button
               size="sm"
               variant="outline"
               onClick={handleOpenCreateDialog}
+              className="h-7 text-xs"
             >
-              <Plus className="h-4 w-4 mr-1" />
-              첫 테이블 만들기
+              <Plus className="h-3 w-3 mr-1" />
+              추가
             </Button>
           </div>
         ) : (
@@ -155,39 +155,39 @@ const TableCard = memo(({ table, isSelected, onSelect, onDelete, isLoading }: Ta
   );
 
   return (
-    <Card
-      className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+    <div
+      className={`px-3 py-2 cursor-pointer transition-all rounded-md ${
         isSelected
-          ? 'border-blue-500 bg-blue-50 shadow-md'
-          : 'border-gray-200 hover:border-blue-300'
+          ? 'bg-blue-50 border-l-2 border-blue-500'
+          : 'hover:bg-gray-50'
       }`}
       onClick={handleClick}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm truncate">
-            {table.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            <TableIcon className="h-3 w-3 text-gray-400 flex-shrink-0" />
+            <h3 className="font-medium text-sm truncate">
+              {table.name}
+            </h3>
+          </div>
           {table.description && (
-            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+            <p className="text-xs text-gray-500 mt-0.5 ml-5 truncate">
               {table.description}
             </p>
           )}
-          <p className="text-xs text-gray-400 mt-2">
-            생성일: {formattedDate}
-          </p>
         </div>
         <Button
           size="sm"
           variant="ghost"
-          className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+          className="h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 flex-shrink-0"
           onClick={handleDeleteClick}
           disabled={isLoading}
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3 w-3" />
         </Button>
       </div>
-    </Card>
+    </div>
   );
 });
 

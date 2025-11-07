@@ -57,9 +57,23 @@ function TableDetailComponent({ table, onUpdate }: TableDetailProps) {
     if (activeTab === 'columns') {
       loadColumns();
     } else if (activeTab === 'indexes') {
+      // 인덱스 탭에서는 인덱스와 컬럼 모두 로드
+      loadColumns();
       loadIndexes();
     }
   }, [activeTab, loadColumns, loadIndexes]);
+
+  // 테이블이 변경되면 데이터 초기화 및 재로드
+  useEffect(() => {
+    setColumns([]);
+    setIndexes([]);
+    if (activeTab === 'columns') {
+      loadColumns();
+    } else if (activeTab === 'indexes') {
+      loadColumns();
+      loadIndexes();
+    }
+  }, [table.id]); // table.id가 변경될 때마다 실행
 
   // 이벤트 핸들러를 useCallback으로 메모이제이션
   const handleColumnCreated = useCallback(() => {
