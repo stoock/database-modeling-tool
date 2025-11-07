@@ -45,6 +45,10 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터 - 에러 처리 및 토스트 표시
 apiClient.interceptors.response.use(
   (response) => {
+    // 백엔드 응답이 { success: true, data: ... } 형태인 경우 data 필드 추출
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      response.data = response.data.data;
+    }
     return response;
   },
   (error: AxiosError<ApiError>) => {

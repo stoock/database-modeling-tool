@@ -178,7 +178,7 @@ export function CreateColumnDialog({
     if (!supportsIdentity(dataType)) {
       setIdentity(false);
     }
-  }, [dataType]);
+  }, [dataType, maxLength, precision, scale]);
 
   // PK 변경 시 nullable 자동 설정
   useEffect(() => {

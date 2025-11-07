@@ -3,9 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import ProjectsPage from '@/pages/ProjectsPage'
-import ProjectDetailPage from '@/pages/ProjectDetailPage'
 import * as api from '@/lib/api'
-import type { Project, Table, Column } from '@/types'
+import type { Project, Table, Column, MSSQLDataType } from '@/types'
 
 vi.mock('@/lib/api', () => ({
   getProjects: vi.fn(),

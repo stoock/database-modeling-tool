@@ -14,7 +14,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 vi.mock('@/components/validation/ValidationBadge', () => ({
-  ValidationBadge: ({ result }: { result: any }) => 
+  ValidationBadge: ({ result }: { result: { message?: string } | null }) => 
     result ? <div data-testid="validation-badge">{result.message}</div> : null,
 }))
 
@@ -76,7 +76,19 @@ describe('CreateTableDialog', () => {
   it('테이블 생성 성공 (시스템 컬럼 포함)', async () => {
     const user = userEvent.setup()
     mockCreateTable.mockResolvedValue({ id: 'table1', name: 'USER' })
-    vi.mocked(api.createColumn).mockResolvedValue({} as any)
+    vi.mocked(api.createColumn).mockResolvedValue({
+      id: 'col1',
+      tableId: 'table1',
+      name: 'CREATED_AT',
+      description: '생성일시',
+      dataType: 'DATETIME',
+      nullable: false,
+      primaryKey: false,
+      identity: false,
+      orderIndex: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
 
     render(
       <CreateTableDialog
