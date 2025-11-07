@@ -9,7 +9,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 vi.mock('@/components/validation/ValidationBadge', () => ({
-  ValidationBadge: ({ result }: { result: any }) => 
+  ValidationBadge: ({ result }: { result: { message?: string } | null }) => 
     result ? <div data-testid="validation-badge">{result.message}</div> : null,
 }))
 
@@ -107,8 +107,17 @@ describe('CreateColumnDialog', () => {
     const user = userEvent.setup()
     vi.mocked(api.createColumn).mockResolvedValue({
       id: 'col1',
+      tableId: 'table1',
       name: 'USER_ID',
-    } as any)
+      description: '사용자ID',
+      dataType: 'BIGINT',
+      nullable: false,
+      primaryKey: true,
+      identity: false,
+      orderIndex: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
 
     render(
       <CreateColumnDialog

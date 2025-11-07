@@ -5,7 +5,6 @@ import { CreateTableDialog } from '@/components/tables/CreateTableDialog'
 import { CreateColumnDialog } from '@/components/columns/CreateColumnDialog'
 import { useTableStore } from '@/stores/tableStore'
 import * as validation from '@/lib/validation'
-import type { Table } from '@/types'
 
 vi.mock('@/stores/tableStore', () => ({
   useTableStore: vi.fn(),
@@ -137,15 +136,6 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
   it('컬럼명 검증: 소문자 → 대문자 수정', async () => {
     const user = userEvent.setup()
 
-    const mockTable: Table = {
-      id: 'table1',
-      projectId: 'proj1',
-      name: 'USER',
-      description: '사용자',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
     render(
       <CreateColumnDialog
         tableId="table1"
@@ -153,6 +143,7 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
         open={true}
         onOpenChange={mockOnOpenChange}
         onSuccess={mockOnSuccess}
+        nextOrderIndex={0}
       />
     )
 
@@ -187,6 +178,7 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
         open={true}
         onOpenChange={mockOnOpenChange}
         onSuccess={mockOnSuccess}
+        nextOrderIndex={0}
       />
     )
 
@@ -201,7 +193,7 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
 
     // 3. 디바운스 후 검증 실패 확인
     await waitFor(() => {
-      const result = validation.validatePrimaryKeyName('ID', 'USER')
+      const result = validation.validatePrimaryKeyColumnName('ID', 'USER')
       expect(result.isValid).toBe(false)
       expect(result.message).toContain('테이블명')
     }, { timeout: 1000 })
@@ -212,7 +204,7 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
 
     // 5. 검증 성공 확인
     await waitFor(() => {
-      const result = validation.validatePrimaryKeyName('USER_ID', 'USER')
+      const result = validation.validatePrimaryKeyColumnName('USER_ID', 'USER')
       expect(result.isValid).toBe(true)
     }, { timeout: 1000 })
   })
@@ -227,6 +219,7 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
         open={true}
         onOpenChange={mockOnOpenChange}
         onSuccess={mockOnSuccess}
+        nextOrderIndex={0}
       />
     )
 
@@ -270,6 +263,7 @@ describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
         open={true}
         onOpenChange={mockOnOpenChange}
         onSuccess={mockOnSuccess}
+        nextOrderIndex={0}
       />
     )
 

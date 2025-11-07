@@ -15,7 +15,7 @@ vi.mock('@dnd-kit/core', () => ({
 vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   verticalListSortingStrategy: {},
-  arrayMove: (arr: any[], from: number, to: number) => {
+  arrayMove: <T,>(arr: T[], from: number, to: number): T[] => {
     const newArr = [...arr]
     const [item] = newArr.splice(from, 1)
     newArr.splice(to, 0, item)
@@ -24,7 +24,7 @@ vi.mock('@dnd-kit/sortable', () => ({
 }))
 
 vi.mock('./SortableRow', () => ({
-  SortableRow: ({ column, onEdit, onDelete }: any) => (
+  SortableRow: ({ column, onEdit, onDelete }: { column: Column; onEdit: (col: Column) => void; onDelete: (col: Column) => void }) => (
     <div data-testid={`column-${column.id}`}>
       <span>{column.name}</span>
       <button onClick={() => onEdit(column)}>Edit</button>

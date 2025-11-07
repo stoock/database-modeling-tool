@@ -7,6 +7,7 @@ import {
   formatValidationErrors,
   isRetryableError,
   getUserFriendlyMessage,
+  type ApiError,
 } from './errorHandler'
 
 describe('errorHandler', () => {
@@ -24,7 +25,7 @@ describe('errorHandler', () => {
         },
         request: {},
         message: 'Request failed',
-      } as AxiosError<any>
+      } as AxiosError<ApiError>
 
       const result = parseAxiosError(axiosError)
 
@@ -43,7 +44,7 @@ describe('errorHandler', () => {
         },
         request: {},
         message: 'Not found',
-      } as AxiosError<any>
+      } as AxiosError<ApiError>
 
       const result = parseAxiosError(axiosError)
 
@@ -56,7 +57,7 @@ describe('errorHandler', () => {
       const axiosError = {
         request: {},
         message: 'Network Error',
-      } as AxiosError<any>
+      } as AxiosError<ApiError>
 
       const result = parseAxiosError(axiosError)
 
@@ -67,7 +68,7 @@ describe('errorHandler', () => {
     it('요청 설정 에러 처리', () => {
       const axiosError = {
         message: 'Invalid config',
-      } as AxiosError<any>
+      } as AxiosError<ApiError>
 
       const result = parseAxiosError(axiosError)
 
@@ -84,7 +85,9 @@ describe('errorHandler', () => {
         data: {},
         statusText: 'Internal Server Error',
         headers: {},
-        config: {} as any,
+        config: {
+          headers: {} as never,
+        },
       }
 
       const result = parseError(axiosError)
