@@ -73,6 +73,43 @@ public class ExportController extends BaseController {
     }
 
     @Operation(
+        summary = "SQL 스크립트 생성",
+        description = "프로젝트의 MSSQL DDL 스크립트를 생성합니다."
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "생성 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping(ApiConstants.PROJECTS_PATH + "/{projectId}" + ApiConstants.EXPORT_PATH + "/sql")
+    public ResponseEntity<ApiResponse<ExportResponse>> generateSql(
+        @Parameter(description = "프로젝트 ID", required = true)
+        @PathVariable String projectId,
+        @Parameter(description = "내보내기 옵션")
+        @Valid @RequestBody(required = false) ExportRequest request
+    ) {
+        try {
+            UUID projectUuid = UUID.fromString(projectId);
+            Project project = projectRepository.findById(projectUuid)
+                .orElseThrow(() -> new ResourceNotFoundException("프로젝트", projectId));
+            
+            if (request == null) {
+                request = new ExportRequest();
+                request.setFormat("SQL");
+            }
+            
+            ExportResponse response = generateExportResponse(project, request);
+            return success(response, "SQL 스크립트가 성공적으로 생성되었습니다.");
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("프로젝트를 찾을 수 없습니다")) {
+                throw new ResourceNotFoundException("프로젝트", projectId);
+            }
+            throw new ResourceNotFoundException("유효하지 않은 프로젝트 ID입니다: " + projectId);
+        }
+    }
+
+    @Operation(
         summary = "스키마 다운로드",
         description = "프로젝트의 MSSQL 스키마를 파일로 다운로드합니다."
     )
@@ -167,10 +204,20 @@ public class ExportController extends BaseController {
         
         switch (request.getFormat().toUpperCase()) {
             case "SQL":
+                // ExportRequest를 SchemaGenerationOptions로 변환
+                com.dbmodeling.domain.model.SchemaGenerationOptions options = 
+                    new com.dbmodeling.domain.model.SchemaGenerationOptions();
+                options.setIncludeDropStatements(request.isIncludeDropStatements());
+                options.setIncludeComments(request.isIncludeComments());
+                options.setIncludeIndexes(request.isIncludeIndexes());
+                options.setIncludeConstraints(request.isIncludeConstraints());
+                options.setIncludeExistenceChecks(false);
+                options.setGenerateBatchScript(false);
+                
                 if (request.isIncludeValidation()) {
                     content = exportService.generateSqlScriptWithValidation(projectId);
                 } else {
-                    content = exportService.generateSqlScript(projectId);
+                    content = exportService.generateSqlScript(projectId, options);
                 }
                 fileName = project.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_schema.sql";
                 contentType = ApiConstants.CONTENT_TYPE_SQL;

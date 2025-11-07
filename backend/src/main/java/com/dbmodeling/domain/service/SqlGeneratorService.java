@@ -70,19 +70,27 @@ public class SqlGeneratorService {
             }
         }
 
-        // 모든 테이블의 CREATE TABLE 문 생성
-        for (Table table : project.getTables()) {
-            if (options.isIncludeExistenceChecks()) {
-                sql.append(generateExistenceCheckSql(table));
-            } else {
-                sql.append(generateCreateTableSql(table));
+        // 테이블별로 그룹화하여 생성
+        for (int i = 0; i < project.getTables().size(); i++) {
+            Table table = project.getTables().get(i);
+            
+            // 테이블 구분선
+            if (options.isIncludeComments()) {
+                sql.append("-- ").append("=".repeat(80)).append("\n");
+                sql.append("-- 테이블: ").append(table.getName());
+                if (table.getDescription() != null && !table.getDescription().trim().isEmpty()) {
+                    sql.append(" - ").append(table.getDescription());
+                }
+                sql.append("\n");
+                sql.append("-- ").append("=".repeat(80)).append("\n\n");
             }
+            
+            // 1. CREATE TABLE 문
+            sql.append(generateCreateTableSql(table));
             sql.append("\n");
-        }
-
-        // 제약조건 생성 (요청된 경우)
-        if (options.isIncludeConstraints()) {
-            for (Table table : project.getTables()) {
+            
+            // 2. 제약조건 (요청된 경우)
+            if (options.isIncludeConstraints()) {
                 String constraintSql = generateConstraintsSql(table);
                 if (!constraintSql.trim().isEmpty()) {
                     if (options.isIncludeComments()) {
@@ -92,16 +100,32 @@ public class SqlGeneratorService {
                     sql.append("\n");
                 }
             }
-        }
-
-        // 모든 인덱스 생성문 생성 (요청된 경우)
-        if (options.isIncludeIndexes()) {
-            for (Table table : project.getTables()) {
+            
+            // 3. 인덱스 (요청된 경우)
+            if (options.isIncludeIndexes()) {
                 String indexSql = generateIndexesSql(table);
                 if (!indexSql.trim().isEmpty()) {
+                    if (options.isIncludeComments()) {
+                        sql.append("-- ").append(table.getName()).append(" 테이블 인덱스\n");
+                    }
                     sql.append(indexSql);
                     sql.append("\n");
                 }
+            }
+            
+            // 4. MS_Description (요청된 경우)
+            if (options.isIncludeComments()) {
+                String descriptionSql = generateMsDescriptionSql(table);
+                if (!descriptionSql.trim().isEmpty()) {
+                    sql.append("-- ").append(table.getName()).append(" 테이블 및 컬럼 설명\n");
+                    sql.append(descriptionSql);
+                    sql.append("\n");
+                }
+            }
+            
+            // 테이블 간 구분을 위한 빈 줄
+            if (i < project.getTables().size() - 1) {
+                sql.append("\n");
             }
         }
 
@@ -115,19 +139,47 @@ public class SqlGeneratorService {
     }
 
     /**
+     * MS_Description 확장 속성 추가 스크립트 생성
+     */
+    private String generateMsDescriptionSql(Table table) {
+        StringBuilder sql = new StringBuilder();
+        
+        sql.append("/*\n");
+        
+        // 테이블 설명
+        if (table.getDescription() != null && !table.getDescription().trim().isEmpty()) {
+            sql.append("EXEC sp_addextendedproperty @name = N'MS_Description', @value = N'")
+               .append(table.getDescription().replace("'", "''"))
+               .append("', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'")
+               .append(table.getName())
+               .append("';\n");
+        }
+        
+        // 컬럼 설명
+        for (Column column : table.getColumns()) {
+            if (column.getDescription() != null && !column.getDescription().trim().isEmpty()) {
+                sql.append("EXEC sp_addextendedproperty @name = N'MS_Description', @value = N'")
+                   .append(column.getDescription().replace("'", "''"))
+                   .append("', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'")
+                   .append(table.getName())
+                   .append("', @level2type = N'COLUMN', @level2name = N'")
+                   .append(column.getName())
+                   .append("';\n");
+            }
+        }
+        
+        sql.append("*/\n");
+        
+        return sql.toString();
+    }
+
+    /**
      * 단일 테이블의 CREATE TABLE 문 생성
      */
     public String generateCreateTableSql(Table table) {
         StringBuilder sql = new StringBuilder();
         
-        // 테이블 주석
-        sql.append("-- 테이블: ").append(table.getName());
-        if (table.getDescription() != null && !table.getDescription().trim().isEmpty()) {
-            sql.append(" - ").append(table.getDescription());
-        }
-        sql.append("\n");
-        
-        sql.append("CREATE TABLE [").append(table.getName()).append("] (\n");
+        sql.append("CREATE TABLE [dbo].[").append(table.getName()).append("] (\n");
         
         // 컬럼 정의
         List<String> columnDefinitions = table.getColumns().stream()
@@ -156,38 +208,35 @@ public class SqlGeneratorService {
         StringBuilder definition = new StringBuilder();
         
         // 들여쓰기
-        definition.append("    ");
+        definition.append("\t");
         
-        // 컬럼명
-        definition.append("[").append(column.getName()).append("] ");
+        // 컬럼명 (20자 고정 폭)
+        String columnName = "[" + column.getName() + "]";
+        definition.append(String.format("%-20s", columnName));
+        definition.append("\t");
         
-        // 데이터 타입
-        definition.append(typeMapper.mapToSqlType(column));
+        // 데이터 타입 (20자 고정 폭)
+        String dataType = typeMapper.mapToSqlType(column);
         
         // IDENTITY 설정
         if (column.isIdentity()) {
-            definition.append(" IDENTITY(")
-                    .append(column.getIdentitySeed() != null ? column.getIdentitySeed() : 1)
-                    .append(",")
-                    .append(column.getIdentityIncrement() != null ? column.getIdentityIncrement() : 1)
-                    .append(")");
+            dataType += " IDENTITY(" +
+                    (column.getIdentitySeed() != null ? column.getIdentitySeed() : 1) +
+                    "," +
+                    (column.getIdentityIncrement() != null ? column.getIdentityIncrement() : 1) +
+                    ")";
         }
         
+        definition.append(String.format("%-30s", dataType));
+        definition.append("\t");
+        
         // NULL 허용 여부
-        if (column.isNullable()) {
-            definition.append(" NULL");
-        } else {
-            definition.append(" NOT NULL");
-        }
+        String nullability = column.isNullable() ? "NULL" : "NOT NULL";
+        definition.append(nullability);
         
         // 기본값
         if (column.getDefaultValue() != null && !column.getDefaultValue().trim().isEmpty()) {
             definition.append(" DEFAULT ").append(column.getDefaultValue());
-        }
-        
-        // 컬럼 주석 (인라인 주석으로 추가)
-        if (column.getDescription() != null && !column.getDescription().trim().isEmpty()) {
-            definition.append(" -- ").append(column.getDescription());
         }
         
         return definition.toString();
@@ -255,7 +304,7 @@ public class SqlGeneratorService {
         sql.append(index.getType().getSqlName()).append(" ");
         
         sql.append("INDEX [").append(index.getName()).append("] ");
-        sql.append("ON [").append(table.getName()).append("] (");
+        sql.append("ON [dbo].[").append(table.getName()).append("] (");
         
         // 인덱스 컬럼 목록
         String columnList = index.getColumns().stream()
@@ -321,19 +370,19 @@ public class SqlGeneratorService {
             switch (column.getDataType()) {
                 case BIT -> {
                     // BIT 타입은 0 또는 1만 허용
-                    constraint.append("ALTER TABLE [").append(tableName).append("] ")
+                    constraint.append("ALTER TABLE [dbo].[").append(tableName).append("] ")
                              .append("ADD CONSTRAINT [CK_").append(tableName).append("_").append(column.getName()).append("] ")
                              .append("CHECK ([").append(column.getName()).append("] IN (0, 1));");
                 }
                 case TINYINT -> {
                     // TINYINT는 0-255 범위
-                    constraint.append("ALTER TABLE [").append(tableName).append("] ")
+                    constraint.append("ALTER TABLE [dbo].[").append(tableName).append("] ")
                              .append("ADD CONSTRAINT [CK_").append(tableName).append("_").append(column.getName()).append("] ")
                              .append("CHECK ([").append(column.getName()).append("] >= 0 AND [").append(column.getName()).append("] <= 255);");
                 }
                 case SMALLINT -> {
                     // SMALLINT는 -32768 ~ 32767 범위
-                    constraint.append("ALTER TABLE [").append(tableName).append("] ")
+                    constraint.append("ALTER TABLE [dbo].[").append(tableName).append("] ")
                              .append("ADD CONSTRAINT [CK_").append(tableName).append("_").append(column.getName()).append("] ")
                              .append("CHECK ([").append(column.getName()).append("] >= -32768 AND [").append(column.getName()).append("] <= 32767);");
                 }
@@ -349,7 +398,7 @@ public class SqlGeneratorService {
     private String generateUniqueConstraint(String tableName, Index index) {
         StringBuilder constraint = new StringBuilder();
         
-        constraint.append("ALTER TABLE [").append(tableName).append("] ")
+        constraint.append("ALTER TABLE [dbo].[").append(tableName).append("] ")
                  .append("ADD CONSTRAINT [UQ_").append(tableName).append("_").append(index.getName().replace("IX_", "")).append("] ")
                  .append("UNIQUE (");
         
@@ -371,13 +420,20 @@ public class SqlGeneratorService {
     public String generateDropTableSql(Table table) {
         StringBuilder sql = new StringBuilder();
         
+        // 테이블 주석
+        sql.append("-- 테이블: ").append(table.getName());
+        if (table.getDescription() != null && !table.getDescription().trim().isEmpty()) {
+            sql.append(" - ").append(table.getDescription());
+        }
+        sql.append(" 삭제\n");
+        
         // 인덱스 먼저 삭제
         for (Index index : table.getIndexes()) {
-            sql.append("DROP INDEX [").append(index.getName()).append("] ON [").append(table.getName()).append("];\n");
+            sql.append("DROP INDEX IF EXISTS [").append(index.getName()).append("] ON [dbo].[").append(table.getName()).append("];\n");
         }
         
         // 테이블 삭제
-        sql.append("DROP TABLE [").append(table.getName()).append("];\n");
+        sql.append("DROP TABLE IF EXISTS [dbo].[").append(table.getName()).append("];\n");
         
         return sql.toString();
     }
