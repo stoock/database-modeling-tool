@@ -59,13 +59,13 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto p-6" id="main-content">
-        {/* 헤더 */}
+        {/* 헤더 - 모던한 디자인 */}
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">프로젝트 목록</h1>
-            <p className="mt-2 text-muted-foreground">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">프로젝트</h1>
+            <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">
               데이터베이스 모델링 프로젝트를 관리합니다
             </p>
             <p className="sr-only">
@@ -74,7 +74,8 @@ export default function ProjectsPage() {
           </div>
           <Button
             onClick={() => setCreateDialogOpen(true)}
-            className="gap-2"
+            size="sm"
+            className="gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/20"
             aria-label="새 프로젝트 생성 (단축키: Ctrl+N)"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
