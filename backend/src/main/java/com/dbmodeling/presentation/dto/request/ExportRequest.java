@@ -25,18 +25,22 @@ public class ExportRequest {
     @Schema(description = "주석 포함 여부", example = "true")
     private Boolean includeComments = true;
     
+    @Schema(description = "DROP 문 포함 여부", example = "false")
+    private Boolean includeDropStatements = false;
+    
     @Schema(description = "유효성 검사 포함 여부", example = "true")
     private Boolean includeValidation = false;
     
     public ExportRequest() {}
     
     public ExportRequest(String format, Boolean includeTables, Boolean includeIndexes, 
-                        Boolean includeConstraints, Boolean includeComments, Boolean includeValidation) {
+                        Boolean includeConstraints, Boolean includeComments, Boolean includeDropStatements, Boolean includeValidation) {
         this.format = format;
         this.includeTables = includeTables;
         this.includeIndexes = includeIndexes;
         this.includeConstraints = includeConstraints;
         this.includeComments = includeComments;
+        this.includeDropStatements = includeDropStatements;
         this.includeValidation = includeValidation;
     }
     
@@ -61,12 +65,20 @@ public class ExportRequest {
         return includeIndexes;
     }
     
+    public Boolean isIncludeIndexes() {
+        return includeIndexes != null && includeIndexes;
+    }
+    
     public void setIncludeIndexes(Boolean includeIndexes) {
         this.includeIndexes = includeIndexes;
     }
     
     public Boolean getIncludeConstraints() {
         return includeConstraints;
+    }
+    
+    public Boolean isIncludeConstraints() {
+        return includeConstraints != null && includeConstraints;
     }
     
     public void setIncludeConstraints(Boolean includeConstraints) {
@@ -77,12 +89,28 @@ public class ExportRequest {
         return includeComments;
     }
     
+    public Boolean isIncludeComments() {
+        return includeComments != null && includeComments;
+    }
+    
     public void setIncludeComments(Boolean includeComments) {
         this.includeComments = includeComments;
     }
     
     public Boolean getIncludeValidation() {
         return includeValidation;
+    }
+    
+    public Boolean getIncludeDropStatements() {
+        return includeDropStatements;
+    }
+    
+    public Boolean isIncludeDropStatements() {
+        return includeDropStatements != null && includeDropStatements;
+    }
+    
+    public void setIncludeDropStatements(Boolean includeDropStatements) {
+        this.includeDropStatements = includeDropStatements;
     }
     
     public Boolean isIncludeValidation() {

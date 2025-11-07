@@ -74,6 +74,20 @@ public class ExportService {
     }
     
     /**
+     * SQL 스크립트 생성 (옵션 지정)
+     * 
+     * @param projectId 프로젝트 ID
+     * @param options 생성 옵션
+     * @return SQL 스크립트
+     */
+    public String generateSqlScript(UUID projectId, com.dbmodeling.domain.model.SchemaGenerationOptions options) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다: " + projectId));
+        
+        return sqlGeneratorService.generateProjectSql(project, options);
+    }
+    
+    /**
      * 검증과 함께 SQL 스크립트 생성
      * 
      * @param projectId 프로젝트 ID
