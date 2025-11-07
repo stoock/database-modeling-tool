@@ -204,30 +204,48 @@ export function CreateTableDialog({
             </p>
           </div>
 
-          <div className="flex items-start space-x-2 rounded-md border p-4">
-            <Checkbox
-              id="addSystemColumns"
-              checked={watchAddSystemColumns}
-              onCheckedChange={(checked) => setValue('addSystemColumns', checked as boolean)}
-            />
-            <div className="flex-1 space-y-1">
-              <Label
-                htmlFor="addSystemColumns"
-                className="text-sm font-medium leading-none cursor-pointer"
-              >
-                시스템 속성 컬럼 자동 추가
-              </Label>
-              <p className="text-xs text-gray-500">
-                REG_ID, REG_DT, CHG_ID, CHG_DT 컬럼을 자동으로 추가합니다
-              </p>
-              {watchAddSystemColumns && (
-                <div className="mt-2 text-xs text-gray-600 space-y-1">
-                  <div>• REG_ID (VARCHAR(25), NOT NULL) - 등록자ID</div>
-                  <div>• REG_DT (DATETIME, NOT NULL, DEFAULT GETDATE()) - 등록일시</div>
-                  <div>• CHG_ID (VARCHAR(25), NULL) - 수정자ID</div>
-                  <div>• CHG_DT (DATETIME, NULL) - 수정일시</div>
-                </div>
-              )}
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-3">
+            <div className="flex items-start gap-2.5">
+              <Checkbox
+                id="addSystemColumns"
+                checked={watchAddSystemColumns}
+                onCheckedChange={(checked) => setValue('addSystemColumns', checked as boolean)}
+                className="mt-0.5"
+              />
+              <div className="flex-1 space-y-1.5">
+                <Label
+                  htmlFor="addSystemColumns"
+                  className="text-sm font-medium leading-tight cursor-pointer"
+                >
+                  시스템 속성 컬럼 자동 추가
+                </Label>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  REG_ID, REG_DT, CHG_ID, CHG_DT 컬럼을 자동으로 추가합니다
+                </p>
+                {watchAddSystemColumns && (
+                  <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">추가될 컬럼:</p>
+                    <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-slate-400">•</span>
+                        <span><span className="font-mono font-medium">REG_ID</span> (VARCHAR(25), NOT NULL) - 등록자ID</span>
+                      </div>
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-slate-400">•</span>
+                        <span><span className="font-mono font-medium">REG_DT</span> (DATETIME, NOT NULL, DEFAULT GETDATE()) - 등록일시</span>
+                      </div>
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-slate-400">•</span>
+                        <span><span className="font-mono font-medium">CHG_ID</span> (VARCHAR(25), NULL) - 수정자ID</span>
+                      </div>
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-slate-400">•</span>
+                        <span><span className="font-mono font-medium">CHG_DT</span> (DATETIME, NULL) - 수정일시</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

@@ -125,28 +125,38 @@ export function IndexList({
                     포함 컬럼:
                   </CardDescription>
                   <div className="space-y-1">
-                    {index.columns.map((indexColumn, idx) => (
-                      <div
-                        key={`${indexColumn.columnId}-${idx}`}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
-                          {idx + 1}
-                        </span>
-                        <span className="font-mono text-sm">
-                          {getColumnName(indexColumn.columnId)}
-                        </span>
-                        <span
-                          className={`text-xs px-1.5 py-0.5 rounded ${
-                            indexColumn.order === 'ASC'
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'bg-purple-50 text-purple-700'
-                          }`}
+                    {index.columns.map((indexColumn, idx) => {
+                      const column = columns.find(c => c.id === indexColumn.columnId);
+                      return (
+                        <div
+                          key={`${indexColumn.columnId}-${idx}`}
+                          className="flex items-center gap-2 text-sm"
                         >
-                          {indexColumn.order}
-                        </span>
-                      </div>
-                    ))}
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                            {idx + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <span className="font-mono text-sm font-medium">
+                              {column?.name || indexColumn.columnId}
+                            </span>
+                            {column?.description && (
+                              <span className="text-xs text-gray-500 ml-2">
+                                ({column.description})
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
+                              indexColumn.order === 'ASC'
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'bg-purple-50 text-purple-700'
+                            }`}
+                          >
+                            {indexColumn.order}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

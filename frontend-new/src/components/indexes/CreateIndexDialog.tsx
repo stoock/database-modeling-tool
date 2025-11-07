@@ -297,9 +297,12 @@ export function CreateIndexDialog({
                   ) : (
                     availableColumns.map((column) => (
                       <SelectItem key={column.id} value={column.id}>
-                        {column.name}
+                        <span className="font-mono">{column.name}</span>
                         {column.primaryKey && (
                           <span className="ml-2 text-xs text-blue-600">(PK)</span>
+                        )}
+                        {column.description && (
+                          <span className="ml-2 text-xs text-slate-500">- {column.description}</span>
                         )}
                       </SelectItem>
                     ))
@@ -357,8 +360,15 @@ export function CreateIndexDialog({
                     </div>
 
                     {/* 컬럼명 */}
-                    <div className="flex-1 font-mono text-sm">
-                      {selectedColumn.columnName}
+                    <div className="flex-1">
+                      <div className="font-mono text-sm font-medium text-slate-900 dark:text-slate-100">
+                        {selectedColumn.columnName}
+                      </div>
+                      {columns.find(c => c.id === selectedColumn.columnId)?.description && (
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          {columns.find(c => c.id === selectedColumn.columnId)?.description}
+                        </div>
+                      )}
                     </div>
 
                     {/* 정렬 순서 */}

@@ -47,7 +47,7 @@ export function ExportDialog({
     setIsGenerating(true);
     try {
       const result = await exportToSql(projectId, options);
-      setSqlScript(result.sql);
+      setSqlScript(result.content || result.sql || '');
     } catch (err) {
       error('SQL 생성 실패', 'SQL 스크립트 생성 중 오류가 발생했습니다');
       console.error('SQL generation error:', err);
