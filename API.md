@@ -7,13 +7,14 @@ MSSQL 데이터베이스 모델링 도구 REST API 명세
 1. [개요](#개요)
 2. [인증](#인증)
 3. [공통 응답 형식](#공통-응답-형식)
-4. [프로젝트 API](#프로젝트-api)
-5. [테이블 API](#테이블-api)
-6. [컬럼 API](#컬럼-api)
-7. [인덱스 API](#인덱스-api)
-8. [검증 API](#검증-api)
-9. [내보내기 API](#내보내기-api)
-10. [에러 코드](#에러-코드)
+4. [헬스 체크 API](#헬스-체크-api)
+5. [프로젝트 API](#프로젝트-api)
+6. [테이블 API](#테이블-api)
+7. [컬럼 API](#컬럼-api)
+8. [인덱스 API](#인덱스-api)
+9. [검증 API](#검증-api)
+10. [내보내기 API](#내보내기-api)
+11. [에러 코드](#에러-코드)
 
 ## 개요
 
@@ -58,6 +59,58 @@ application/json
   "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
+
+## 헬스 체크 API
+
+### 시스템 상태 확인
+```http
+GET /api/health
+```
+
+API 서버와 데이터베이스 연결 상태를 확인합니다.
+
+**응답 예시 (정상)**
+```json
+{
+  "status": "UP",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "service": "Database Modeling Tool API",
+  "version": "1.0.0",
+  "database": "UP"
+}
+```
+
+**응답 예시 (데이터베이스 연결 실패)**
+```json
+{
+  "status": "DEGRADED",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "service": "Database Modeling Tool API",
+  "version": "1.0.0",
+  "database": "DOWN",
+  "message": "PostgreSQL 데이터베이스에 연결할 수 없습니다. Docker 컨테이너가 실행 중인지 확인하세요.",
+  "hint": "실행 명령: docker-compose up -d 또는 .\\scripts\\01-env-setup.ps1"
+}
+```
+
+**HTTP 상태 코드**
+- `200 OK`: 모든 시스템이 정상 작동 중
+- `503 Service Unavailable`: 데이터베이스 연결 실패 등 일부 시스템 장애
+
+**사용 예시**
+```bash
+# cURL
+curl http://localhost:8080/api/health
+
+# PowerShell
+Invoke-RestMethod -Uri "http://localhost:8080/api/health" -Method Get
+```
+
+**헬스 체크 활용**
+- 배포 후 시스템 상태 확인
+- 모니터링 시스템 연동
+- 로드 밸런서 헬스 체크
+- 개발 환경 설정 검증
 
 ## 프로젝트 API
 
@@ -591,16 +644,55 @@ POST /api/projects/{projectId}/export/csv
 | 코드 | 메시지 | 설명 |
 |------|--------|------|
 | 400 | BAD_REQUEST | 잘못된 요청 형식 |
+| 401 | UNAUTHORIZED | 인증 필요 (향후 구현) |
+| 403 | FORBIDDEN | 접근 거부 (향후 구현) |
 | 404 | NOT_FOUND | 리소스를 찾을 수 없음 |
 | 409 | CONFLICT | 리소스 충돌 (중복 등) |
 | 422 | UNPROCESSABLE_ENTITY | 검증 실패 |
+
+**검증 실패 응답 예시 (422)**
+
+```json
+{
+  "error": {
+    "message": "입력 데이터가 유효하지 않습니다",
+    "code": "VALIDATION_ERROR",
+    "details": {
+      "name": ["이름은 필수입니다", "이름은 255자를 초과할 수 없습니다"],
+      "email": ["유효한 이메일 주소를 입력하세요"]
+    }
+  },
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
 
 ### 5xx 서버 에러
 
 | 코드 | 메시지 | 설명 |
 |------|--------|------|
 | 500 | INTERNAL_SERVER_ERROR | 서버 내부 오류 |
-| 503 | SERVICE_UNAVAILABLE | 서비스 일시 중단 |
+| 502 | BAD_GATEWAY | 게이트웨이 오류 |
+| 503 | SERVICE_UNAVAILABLE | 데이터베이스 연결 실패 등 서비스 이용 불가 |
+| 504 | GATEWAY_TIMEOUT | 요청 시간 초과 |
+
+**503 Service Unavailable 상세**
+
+데이터베이스 연결 실패 시 다음과 같은 응답을 반환합니다:
+
+```json
+{
+  "status": "DEGRADED",
+  "database": "DOWN",
+  "message": "PostgreSQL 데이터베이스에 연결할 수 없습니다. Docker 컨테이너가 실행 중인지 확인하세요.",
+  "hint": "실행 명령: docker-compose up -d 또는 .\\scripts\\01-env-setup.ps1"
+}
+```
+
+프론트엔드에서는 사용자에게 다음과 같은 메시지를 표시합니다:
+```
+서비스 이용 불가
+데이터베이스 연결에 실패했습니다. PostgreSQL이 실행 중인지 확인해주세요.
+```
 
 ### 비즈니스 에러 코드
 
@@ -655,6 +747,19 @@ curl -X POST http://localhost:8080/api/tables/{tableId}/columns \
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8080/api';
+
+// 헬스 체크
+const checkHealth = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/health`);
+    console.log('시스템 상태:', response.data.status);
+    console.log('데이터베이스:', response.data.database);
+    return response.data;
+  } catch (error) {
+    console.error('헬스 체크 실패:', error.response?.data);
+    throw error;
+  }
+};
 
 // 프로젝트 생성
 const createProject = async () => {

@@ -7,7 +7,10 @@ spring:
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
+      connection-timeout: 5000
+      validation-timeout: 3000
       leak-detection-threshold: 30000
+      initialization-fail-timeout: -1
       
   # 개발 환경 JPA 설정
   jpa:
