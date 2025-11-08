@@ -105,13 +105,20 @@ VITE_API_BASE_URL=http://localhost:8080/api
 
 상세 문서는 [docs](./docs/) 폴더를 참조하세요:
 
-- [컴포넌트 가이드](./docs/COMPONENTS.md)
-- [상태 관리](./docs/STATE_MANAGEMENT.md)
-- [API 클라이언트](./docs/API.md)
-- [검증 시스템](./docs/VALIDATION.md)
-- [접근성 가이드](./docs/ACCESSIBILITY.md)
-- [성능 최적화](./docs/PERFORMANCE_OPTIMIZATION.md)
-- [에러 처리](./docs/ERROR_HANDLING_ARCHITECTURE.md)
+### 핵심 문서
+- [컴포넌트 가이드](./docs/COMPONENTS.md) - 주요 컴포넌트 사용법
+- [상태 관리](./docs/STATE_MANAGEMENT.md) - Zustand 스토어
+- [API 클라이언트](./docs/API.md) - 백엔드 API 호출
+- [검증 시스템](./docs/VALIDATION.md) - 명명 규칙 검증
+
+### 참조 문서
+- [유틸리티](./docs/LIB.md) - 공통 함수
+- [타입 정의](./docs/TYPES.md) - TypeScript 타입
+
+### 가이드
+- [접근성](./docs/guides/ACCESSIBILITY.md)
+- [성능 최적화](./docs/guides/PERFORMANCE_OPTIMIZATION.md)
+- [에러 처리](./docs/guides/ERROR_HANDLING_ARCHITECTURE.md)
 
 ## 🌐 브라우저 호환성
 
