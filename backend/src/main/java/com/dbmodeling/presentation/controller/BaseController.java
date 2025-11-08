@@ -2,6 +2,8 @@ package com.dbmodeling.presentation.controller;
 
 import com.dbmodeling.presentation.dto.response.ApiResponse;
 import com.dbmodeling.presentation.dto.response.PageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,8 @@ import org.springframework.http.ResponseEntity;
  * 모든 컨트롤러에서 공통으로 사용하는 응답 생성 메서드를 제공합니다.
  */
 public abstract class BaseController {
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 성공 응답 생성 (데이터 포함)

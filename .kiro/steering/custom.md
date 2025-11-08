@@ -99,7 +99,6 @@ inclusion: always
   - JUnit 5: 단위 테스트 프레임워크
   - Mockito: 모킹 라이브러리
   - Spring Boot Test: 통합 테스트
-  - H2: 인메모리 테스트 데이터베이스
 - **프론트엔드 테스팅**:
   - Vitest: 단위 테스트 프레임워크 (Jest 대체)
   - React Testing Library: 컴포넌트 테스트

@@ -71,9 +71,6 @@ yarn test:e2e
 # 개발 모드 실행 (PostgreSQL 사용)
 cd backend && ./gradlew bootRunDev
 
-# H2 메모리 DB로 실행 (테스트용)
-./gradlew bootRunH2
-
 # 테스트 실행 (단위 테스트만)
 ./gradlew test
 

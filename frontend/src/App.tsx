@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import { NetworkStatus } from '@/components/common/NetworkStatus';
 import { KeyboardShortcutsHelp } from '@/components/common/KeyboardShortcutsHelp';
+import { useServerHealth } from '@/hooks/useServerHealth';
 import { Loader2 } from 'lucide-react';
 
 // 코드 스플리팅 - React.lazy로 페이지 컴포넌트 지연 로딩
@@ -24,6 +25,13 @@ function PageLoader() {
 }
 
 function App() {
+  // 서버 헬스 체크 (1분마다)
+  useServerHealth({
+    enabled: true,
+    interval: 60000,
+    showToast: true,
+  });
+
   return (
     <ErrorBoundary>
       <BrowserRouter>

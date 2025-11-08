@@ -73,9 +73,6 @@ cd backend
 
 # PostgreSQL 사용 (개발 환경)
 ./gradlew bootRunDev
-
-# H2 인메모리 DB 사용 (테스트용)
-./gradlew bootRunH2
 ```
 
 #### 프론트엔드 실행
@@ -89,8 +86,26 @@ yarn dev
 
 - **프론트엔드**: http://localhost:3001
 - **백엔드 API**: http://localhost:8080/api
+- **헬스 체크**: http://localhost:8080/api/health
 - **Swagger UI**: http://localhost:8080/api/swagger-ui.html
 - **pgAdmin**: http://localhost:5050 (admin@admin.com / admin)
+
+### 문제 해결
+
+**데이터베이스 연결 오류**
+
+프론트엔드에서 "데이터베이스 연결에 실패했습니다" 메시지가 표시되면:
+1. PostgreSQL 컨테이너 실행 확인: `docker ps`
+2. 컨테이너 시작: `docker-compose up -d` 또는 `.\scripts\01-env-setup.ps1`
+3. 헬스 체크: `.\scripts\03-health-check.ps1`
+
+**백엔드 서버 연결 오류**
+
+"백엔드 서버에 연결할 수 없습니다" 메시지가 표시되면:
+1. 백엔드 서버 실행 확인: `cd backend && ./gradlew bootRunDev`
+2. 포트 8080이 사용 중인지 확인: `netstat -ano | findstr :8080`
+
+자세한 내용은 [DATABASE_CONNECTION_ERROR.md](docs/DATABASE_CONNECTION_ERROR.md)를 참조하세요.
 
 ## 📁 프로젝트 구조
 

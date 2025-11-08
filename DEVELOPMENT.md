@@ -287,7 +287,6 @@ const MAX_TABLE_COUNT = 100;
 # 백엔드 실행
 cd backend
 ./gradlew bootRunDev          # PostgreSQL 사용
-./gradlew bootRunH2           # H2 인메모리 DB 사용
 
 # 백엔드 테스트
 ./gradlew test                # 단위 테스트
@@ -524,6 +523,61 @@ rm -rf dist
 yarn build
 ```
 
+### 헬스 체크
+
+#### API 서버 상태 확인
+```bash
+# 헬스 체크 엔드포인트 호출
+curl http://localhost:8080/api/health
+
+# PowerShell
+Invoke-RestMethod -Uri "http://localhost:8080/api/health" -Method Get
+
+# 또는 통합 스크립트 사용
+.\scripts\03-health-check.ps1
+```
+
+**정상 응답 (200 OK)**
+```json
+{
+  "status": "UP",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "service": "Database Modeling Tool API",
+  "version": "1.0.0",
+  "database": "UP"
+}
+```
+
+**데이터베이스 연결 실패 (503 Service Unavailable)**
+```json
+{
+  "status": "DEGRADED",
+  "database": "DOWN",
+  "message": "PostgreSQL 데이터베이스에 연결할 수 없습니다. Docker 컨테이너가 실행 중인지 확인하세요.",
+  "hint": "실행 명령: docker-compose up -d 또는 .\\scripts\\01-env-setup.ps1"
+}
+```
+
+**프론트엔드 에러 메시지**
+
+프론트엔드에서는 503 에러를 받으면 사용자에게 명확한 안내를 표시합니다:
+```
+서비스 이용 불가
+데이터베이스 연결에 실패했습니다. PostgreSQL이 실행 중인지 확인해주세요.
+```
+
+네트워크 연결 실패 시 (백엔드 서버 미실행):
+```
+서버 연결 실패
+백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (http://localhost:8080)
+```
+
+**문제 해결**
+1. Docker 컨테이너 상태 확인: `docker ps`
+2. PostgreSQL 컨테이너 시작: `docker-compose up -d`
+3. 또는 통합 스크립트 실행: `.\scripts\01-env-setup.ps1`
+4. 백엔드 서버 실행 확인: `cd backend && ./gradlew bootRunDev`
+
 ### 통합 문제
 
 #### CORS 오류
@@ -557,6 +611,18 @@ try {
   throw error;
 }
 ```
+
+**에러 처리 시스템**
+
+프론트엔드는 중앙 집중식 에러 핸들러(`frontend/src/lib/errorHandler.ts`)를 통해 모든 API 에러를 처리합니다:
+
+- **503 Service Unavailable**: 데이터베이스 연결 실패 → PostgreSQL 실행 안내
+- **네트워크 에러**: 백엔드 서버 연결 실패 → 서버 실행 안내
+- **400/422**: 검증 실패 → 상세 필드별 오류 표시
+- **404**: 리소스 없음 → 리소스 확인 안내
+- **500**: 서버 오류 → 재시도 안내
+
+모든 에러는 토스트 메시지로 사용자에게 표시되며, 재시도 가능한 에러의 경우 자동으로 안내 메시지가 추가됩니다.
 
 ## 성능 최적화
 

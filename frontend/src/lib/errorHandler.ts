@@ -76,7 +76,7 @@ const STATUS_CODE_MESSAGES: Record<number, { title: string; message: string; typ
   },
   503: {
     title: '서비스 이용 불가',
-    message: '서비스를 일시적으로 사용할 수 없습니다',
+    message: '데이터베이스 연결에 실패했습니다. PostgreSQL이 실행 중인지 확인해주세요.',
     type: ErrorType.SERVER,
   },
   504: {
@@ -139,8 +139,8 @@ export function parseAxiosError(error: AxiosError<ApiError>): ErrorInfo {
   if (error.request) {
     return {
       type: ErrorType.NETWORK,
-      title: '네트워크 오류',
-      message: '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요',
+      title: '서버 연결 실패',
+      message: '백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (http://localhost:8080)',
       originalError: error,
     };
   }
