@@ -639,6 +639,8 @@ POST /api/projects/{projectId}/export/csv
 
 ## 에러 코드
 
+프론트엔드는 중앙 집중식 에러 핸들러(`frontend/src/lib/errorHandler.ts`)를 통해 모든 API 에러를 처리하며, 사용자에게 명확한 피드백을 제공합니다. 자세한 내용은 [ERROR_HANDLING.md](docs/ERROR_HANDLING.md)를 참조하세요.
+
 ### 4xx 클라이언트 에러
 
 | 코드 | 메시지 | 설명 |
