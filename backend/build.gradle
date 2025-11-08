@@ -89,6 +89,9 @@ task bootRunDev(type: org.springframework.boot.gradle.tasks.run.BootRun) {
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = 'com.dbmodeling.DatabaseModelingToolApplication'
 	systemProperty 'spring.profiles.active', 'dev'
+	systemProperty 'file.encoding', 'UTF-8'
+	systemProperty 'sun.jnu.encoding', 'UTF-8'
+	jvmArgs = ['-Dfile.encoding=UTF-8', '-Dsun.jnu.encoding=UTF-8']
 }
 
 // JaCoCo Configuration

@@ -26,6 +26,7 @@ MSSQL 데이터베이스 스키마의 직관적인 설계와 관리를 가능하
 - **ORM**: Spring Data JPA + Hibernate
 - **빌드 도구**: Gradle 8.5+
 - **API 문서**: OpenAPI/Swagger
+- **성능 모니터링**: AOP 기반 실행 시간 측정 (Controller/Service/Repository)
 - **테스팅**: JUnit 5 + Mockito + Spring Boot Test
 
 ### 프론트엔드
@@ -97,6 +98,25 @@ yarn dev
 프론트엔드에서 "데이터베이스 연결에 실패했습니다" 메시지가 표시되면:
 1. PostgreSQL 컨테이너 실행 확인: `docker ps`
 2. 컨테이너 시작: `docker-compose up -d` 또는 `.\scripts\01-env-setup.ps1`
+
+**Windows에서 한글 로그 깨짐 문제**
+
+백엔드 실행 시 한글이 깨져 보이는 경우, 콘솔 인코딩을 UTF-8로 변경하세요:
+
+```powershell
+# 콘솔 인코딩을 UTF-8로 변경
+chcp 65001
+
+# 환경 변수 설정
+$env:JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
+$env:GRADLE_OPTS = "-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
+
+# 백엔드 실행
+cd backend
+./gradlew bootRunDev
+```
+
+**근본 원인**: Windows 콘솔의 기본 코드 페이지가 949(EUC-KR)로 설정되어 있어 UTF-8로 인코딩된 한글이 깨져 보입니다. 위 방법으로 콘솔을 UTF-8(코드 페이지 65001)로 변경하면 한글이 정상적으로 표시됩니다.
 3. 헬스 체크: `.\scripts\03-health-check.ps1`
 
 **백엔드 서버 연결 오류**
@@ -225,6 +245,22 @@ yarn lint
 ```
 
 ## 🔧 개발 가이드
+
+### 성능 모니터링
+
+백엔드는 AOP 기반 성능 모니터링을 제공합니다:
+
+- **Controller 계층**: API 응답 시간 측정
+- **Service 계층**: 비즈니스 로직 실행 시간 측정
+- **Repository 계층**: 데이터베이스 쿼리 실행 시간 측정
+- **느린 쿼리 감지**: 500ms 이상 실행 시 경고 로그 출력
+
+**로그 예시**
+```
+DEBUG - API completed: ProjectController.getAllProjects() - 45ms
+WARN  - Slow API detected: TableController.getTableDetails() - 523ms
+WARN  - Slow database query detected: ProjectRepository.findAllWithTables() - 612ms
+```
 
 ### 명명 규칙
 - **Java 클래스**: PascalCase (예: `ProjectService`)
