@@ -130,7 +130,7 @@ try {
             $healthScore += 10
         } else {
             Write-Host "   ⚠️ PostgreSQL 컨테이너 중지됨" -ForegroundColor Yellow
-            $issues += "PostgreSQL 컨테이너가 실행되지 않았습니다 (.\scripts\start-dev.ps1 실행 필요)"
+            $issues += "PostgreSQL 컨테이너가 실행되지 않았습니다 (.\scripts\01-env-setup.ps1 실행 필요)"
         }
     } catch {
         Write-Host "   ⚠️ 컨테이너 상태 확인 불가" -ForegroundColor Yellow

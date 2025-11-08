@@ -17,39 +17,13 @@ if ($confirm -ne "yes") {
 
 Write-Host "🛑 모든 관련 컨테이너를 중지하고 제거합니다..." -ForegroundColor Red
 
-# 컨테이너 중지 및 제거
-$containers = @("dbmodeling-postgres-dev", "dbmodeling-pgadmin-dev")
-foreach ($container in $containers) {
-    try {
-        Write-Host "   중지 중: $container" -ForegroundColor Gray
-        podman stop $container 2>$null
-        
-        Write-Host "   제거 중: $container" -ForegroundColor Gray
-        podman rm $container 2>$null
-    } catch {
-        Write-Host "   ⚠️  $container 처리 중 오류 (이미 제거되었을 수 있음)" -ForegroundColor Yellow
-    }
-}
-
-# 볼륨 제거
-Write-Host "💾 데이터 볼륨을 제거합니다..." -ForegroundColor Red
-$volumes = @("dbmodeling-postgres-data", "dbmodeling-pgadmin-data")
-foreach ($volume in $volumes) {
-    try {
-        Write-Host "   제거 중: $volume" -ForegroundColor Gray
-        podman volume rm $volume 2>$null
-    } catch {
-        Write-Host "   ⚠️  $volume 제거 중 오류 (이미 제거되었을 수 있음)" -ForegroundColor Yellow
-    }
-}
-
-# 네트워크 제거
-Write-Host "🌐 네트워크를 제거합니다..." -ForegroundColor Red
+# Podman Compose로 모든 리소스 제거
 try {
-    podman network rm dbmodeling-network 2>$null
-    Write-Host "   ✅ 네트워크 제거 완료" -ForegroundColor Green
+    Write-Host "   컨테이너 중지 및 제거 중..." -ForegroundColor Gray
+    & podman compose down -v 2>$null
+    Write-Host "✅ 컨테이너 및 볼륨 제거 완료" -ForegroundColor Green
 } catch {
-    Write-Host "   ⚠️  네트워크 제거 중 오류 (이미 제거되었을 수 있음)" -ForegroundColor Yellow
+    Write-Host "⚠️  리소스 제거 중 오류 발생" -ForegroundColor Yellow
 }
 
 # 사용하지 않는 이미지 정리 (선택사항)
@@ -68,7 +42,7 @@ Write-Host ""
 Write-Host "🎉 개발 환경 초기화 완료!" -ForegroundColor Green
 Write-Host ""
 Write-Host "🚀 다음 단계:" -ForegroundColor White
-Write-Host "   개발 환경을 다시 시작하려면: .\scripts\start-dev.ps1" -ForegroundColor Yellow
+Write-Host "   개발 환경을 다시 시작하려면: .\scripts\01-env-setup.ps1" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "📊 현재 상태 확인:" -ForegroundColor White
 Write-Host "   - 컨테이너: podman ps -a" -ForegroundColor Gray

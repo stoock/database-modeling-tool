@@ -26,102 +26,21 @@ try {
     exit 1
 }
 
-# 환경 변수 로드
-if (Test-Path ".env.dev") {
-    Write-Host "📋 개발 환경 변수를 로드합니다..." -ForegroundColor Yellow
-    Get-Content ".env.dev" | ForEach-Object {
-        if ($_ -match "^([^#][^=]+)=(.*)$") {
-            [Environment]::SetEnvironmentVariable($matches[1], $matches[2], "Process")
-        }
-    }
-} else {
-    Write-Host "⚠️ .env.dev 파일이 없습니다. 기본 설정을 사용합니다." -ForegroundColor Yellow
-}
-
-# Podman 네트워크 생성 (존재하지 않는 경우)
-Write-Host "🌐 Podman 네트워크를 확인합니다..." -ForegroundColor Cyan
+# Podman Compose로 컨테이너 시작
+Write-Host "🐘 Podman Compose로 PostgreSQL + pgAdmin을 시작합니다..." -ForegroundColor Cyan
 try {
-    $networkList = & podman network ls --format "{{.Name}}" 2>$null
-    $networkExists = $networkList | Select-String -Pattern "dbmodeling-network" -Quiet
+    & podman compose up -d 2>$null
     
-    if (-not $networkExists) {
-        Write-Host "   네트워크 생성 중..." -ForegroundColor Gray
-        & podman network create dbmodeling-network 2>$null
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ 네트워크 'dbmodeling-network' 생성 완료" -ForegroundColor Green
-        } else {
-            Write-Host "⚠️ 네트워크 생성 실패, 기본 네트워크 사용" -ForegroundColor Yellow
-        }
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ 컨테이너 시작 완료" -ForegroundColor Green
     } else {
-        Write-Host "✅ 네트워크 'dbmodeling-network' 이미 존재" -ForegroundColor Green
+        Write-Host "❌ 컨테이너 시작 실패" -ForegroundColor Red
+        Write-Host "   수동으로 확인하세요: podman compose logs" -ForegroundColor Yellow
+        exit 1
     }
 } catch {
-    Write-Host "⚠️ 네트워크 확인 실패, 기본 네트워크 사용" -ForegroundColor Yellow
-}
-
-# PostgreSQL 컨테이너 시작
-Write-Host "🐘 PostgreSQL 컨테이너를 시작합니다..." -ForegroundColor Cyan
-try {
-    $runningContainers = & podman ps --format "{{.Names}}" 2>$null
-    $postgresRunning = $runningContainers | Select-String -Pattern "dbmodeling-postgres-dev" -Quiet
-    
-    if (-not $postgresRunning) {
-        Write-Host "   PostgreSQL 이미지를 다운로드하고 컨테이너를 시작합니다..." -ForegroundColor Gray
-        
-        # 네트워크 옵션을 조건부로 추가
-        $networkOption = ""
-        if ($networkExists) {
-            $networkOption = "--network dbmodeling-network"
-        }
-        
-        $podmanCmd = "podman run -d --name dbmodeling-postgres-dev $networkOption -p 5432:5432 -e POSTGRES_DB=dbmodeling_dev -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_INITDB_ARGS=`"--encoding=UTF-8 --locale=C`" -v dbmodeling-postgres-data:/var/lib/postgresql/data postgres:15-alpine"
-        
-        Invoke-Expression $podmanCmd 2>$null
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ PostgreSQL 컨테이너 시작 완료" -ForegroundColor Green
-        } else {
-            Write-Host "❌ PostgreSQL 컨테이너 시작 실패" -ForegroundColor Red
-            Write-Host "   수동으로 확인하세요: podman logs dbmodeling-postgres-dev" -ForegroundColor Yellow
-            exit 1
-        }
-    } else {
-        Write-Host "✅ PostgreSQL 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
-    }
-} catch {
-    Write-Host "❌ PostgreSQL 컨테이너 시작 중 오류 발생: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "❌ Podman Compose 실행 중 오류 발생: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
-}
-
-# pgAdmin 컨테이너 시작
-Write-Host "🔧 pgAdmin 컨테이너를 시작합니다..." -ForegroundColor Cyan
-try {
-    $runningContainers = & podman ps --format "{{.Names}}" 2>$null
-    $pgadminRunning = $runningContainers | Select-String -Pattern "dbmodeling-pgadmin-dev" -Quiet
-    
-    if (-not $pgadminRunning) {
-        Write-Host "   pgAdmin 이미지를 다운로드하고 컨테이너를 시작합니다..." -ForegroundColor Gray
-        
-        # 네트워크 옵션을 조건부로 추가
-        $networkOption = ""
-        if ($networkExists) {
-            $networkOption = "--network dbmodeling-network"
-        }
-        
-        $podmanCmd = "podman run -d --name dbmodeling-pgadmin-dev $networkOption -p 5050:80 -e PGADMIN_DEFAULT_EMAIL=admin@dbmodeling.com -e PGADMIN_DEFAULT_PASSWORD=admin123 -e PGADMIN_CONFIG_SERVER_MODE=False -v dbmodeling-pgadmin-data:/var/lib/pgadmin dpage/pgadmin4:latest"
-        
-        Invoke-Expression $podmanCmd 2>$null
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ pgAdmin 컨테이너 시작 완료" -ForegroundColor Green
-        } else {
-            Write-Host "⚠️ pgAdmin 컨테이너 시작 실패 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
-        }
-    } else {
-        Write-Host "✅ pgAdmin 컨테이너가 이미 실행 중입니다" -ForegroundColor Green
-    }
-} catch {
-    Write-Host "⚠️ pgAdmin 컨테이너 시작 중 오류 발생 (선택사항이므로 계속 진행)" -ForegroundColor Yellow
 }
 
 # 데이터베이스 연결 대기
@@ -132,7 +51,7 @@ $counter = 0
 do {
     if ($counter -ge $timeout) {
         Write-Host "❌ 데이터베이스 연결 시간 초과" -ForegroundColor Red
-        Write-Host "   컨테이너 로그를 확인하세요: podman logs dbmodeling-postgres-dev" -ForegroundColor Yellow
+        Write-Host "   컨테이너 로그를 확인하세요: podman compose logs postgres-dev" -ForegroundColor Yellow
         exit 1
     }
     
@@ -149,19 +68,6 @@ do {
 } while (-not $isReady)
 
 Write-Host "✅ 데이터베이스가 준비되었습니다!" -ForegroundColor Green
-
-# 테스트 데이터베이스도 생성
-Write-Host "🧪 테스트 데이터베이스를 생성합니다..." -ForegroundColor Cyan
-try {
-    $null = & podman exec dbmodeling-postgres-dev psql -U postgres -c "CREATE DATABASE dbmodeling_test;" 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "✅ 테스트 데이터베이스 생성 완료" -ForegroundColor Green
-    } else {
-        Write-Host "ℹ️ 테스트 데이터베이스가 이미 존재합니다" -ForegroundColor Yellow
-    }
-} catch {
-    Write-Host "ℹ️ 테스트 데이터베이스 생성 중 오류 (이미 존재할 수 있음)" -ForegroundColor Yellow
-}
 
 # 백엔드 디렉토리 확인
 if (-not (Test-Path "backend")) {
@@ -275,7 +181,8 @@ Write-Host ""
 Write-Host "🎉 개발 환경 설정이 완료되었습니다!" -ForegroundColor Green
 Write-Host ""
 Write-Host "📍 접속 정보:" -ForegroundColor White
-Write-Host "   - PostgreSQL: localhost:5432 (postgres/postgres)" -ForegroundColor Cyan
+Write-Host "   - PostgreSQL (개발): localhost:5432 (postgres/postgres)" -ForegroundColor Cyan
+Write-Host "   - PostgreSQL (테스트): localhost:5433 (postgres/postgres)" -ForegroundColor Cyan
 Write-Host "   - pgAdmin: http://localhost:5050 (admin@dbmodeling.com / admin123)" -ForegroundColor Cyan
 Write-Host "   - 개발 DB: dbmodeling_dev" -ForegroundColor Cyan
 Write-Host "   - 테스트 DB: dbmodeling_test" -ForegroundColor Cyan
@@ -289,8 +196,8 @@ Write-Host "   - 백엔드만: cd backend && .\gradlew.bat bootRunDev" -Foregrou
 Write-Host "   - 프론트엔드만: cd frontend && yarn dev" -ForegroundColor Gray
 Write-Host ""
 Write-Host "🛠️ 유용한 명령어:" -ForegroundColor White
-Write-Host "   - 컨테이너 상태 확인: podman ps" -ForegroundColor Gray
-Write-Host "   - 컨테이너 로그 확인: podman logs dbmodeling-postgres-dev" -ForegroundColor Gray
-Write-Host "   - 컨테이너 중지: podman stop dbmodeling-postgres-dev dbmodeling-pgadmin-dev" -ForegroundColor Gray
-Write-Host "   - 컨테이너 제거: podman rm dbmodeling-postgres-dev dbmodeling-pgadmin-dev" -ForegroundColor Gray
+Write-Host "   - 컨테이너 상태 확인: podman compose ps" -ForegroundColor Gray
+Write-Host "   - 컨테이너 로그 확인: podman compose logs postgres-dev" -ForegroundColor Gray
+Write-Host "   - 컨테이너 중지: podman compose stop" -ForegroundColor Gray
+Write-Host "   - 컨테이너 제거: podman compose down" -ForegroundColor Gray
 Write-Host ""

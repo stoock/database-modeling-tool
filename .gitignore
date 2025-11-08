@@ -25,6 +25,9 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+backend/.gradle/
+backend/build/
+backend/target/
 
 # Spring Boot
 *.log
@@ -60,6 +63,7 @@ yarn-error.log*
 # Frontend build
 frontend/dist/
 frontend/build/
+frontend/.backup/
 *.tsbuildinfo
 
 # Environment variables
@@ -68,6 +72,8 @@ frontend/build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.dev
+.env.test
 
 # Database
 *.db
@@ -130,4 +136,18 @@ dist
 tmp/
 temp/
 
+# IDE and AI assistant configs
 settings/mcp.json
+
+# Test results
+TEST_RESULTS.md
+frontend/test-results.txt
+
+# Deprecated/unused folders
+simple-frontend/
+
+# Deprecated scripts (removed)
+scripts/test-api-fixed.ps1
+scripts/test-backend.ps1
+scripts/test-build.ps1
+scripts/run-backend-h2.ps1

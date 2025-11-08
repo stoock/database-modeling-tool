@@ -57,6 +57,12 @@ MSSQL 데이터베이스 스키마의 직관적인 설계와 관리를 가능하
 
 # 3. 헬스 체크
 .\scripts\03-health-check.ps1
+
+# 환경 중지
+.\scripts\env-stop.ps1
+
+# 환경 초기화 (데이터 삭제)
+.\scripts\env-reset.ps1
 ```
 
 ### 개별 실행
@@ -64,7 +70,12 @@ MSSQL 데이터베이스 스키마의 직관적인 설계와 관리를 가능하
 #### 백엔드 실행
 ```bash
 cd backend
+
+# PostgreSQL 사용 (개발 환경)
 ./gradlew bootRunDev
+
+# H2 인메모리 DB 사용 (테스트용)
+./gradlew bootRunH2
 ```
 
 #### 프론트엔드 실행
@@ -76,7 +87,7 @@ yarn dev
 
 ### 접속 URL
 
-- **프론트엔드**: http://localhost:3000
+- **프론트엔드**: http://localhost:3001
 - **백엔드 API**: http://localhost:8080/api
 - **Swagger UI**: http://localhost:8080/api/swagger-ui.html
 - **pgAdmin**: http://localhost:5050 (admin@admin.com / admin)
