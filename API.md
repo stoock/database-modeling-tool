@@ -14,7 +14,8 @@ MSSQL 데이터베이스 모델링 도구 REST API 명세
 8. [인덱스 API](#인덱스-api)
 9. [검증 API](#검증-api)
 10. [내보내기 API](#내보내기-api)
-11. [에러 코드](#에러-코드)
+11. [성능 모니터링](#성능-모니터링)
+12. [에러 코드](#에러-코드)
 
 ## 개요
 
@@ -637,6 +638,76 @@ POST /api/projects/{projectId}/export/csv
 }
 ```
 
+## 성능 모니터링
+
+백엔드는 AOP(Aspect-Oriented Programming) 기반 성능 모니터링을 제공합니다.
+
+### 모니터링 대상
+
+**Controller 계층**
+- 모든 REST API 엔드포인트의 응답 시간 측정
+- 패턴: `com.dbmodeling.presentation.controller.*.*`
+
+**Service 계층**
+- 비즈니스 로직 실행 시간 측정
+- 패턴: `com.dbmodeling.application.service.*.*`
+
+**Repository 계층**
+- 데이터베이스 쿼리 실행 시간 측정
+- 패턴: `com.dbmodeling.infrastructure.persistence.repository.*.*`
+
+### 느린 쿼리 감지
+
+**임계값**: 500ms
+
+500ms 이상 실행되는 메서드는 자동으로 경고 로그를 출력합니다.
+
+**로그 예시**
+```
+# 정상 실행 (DEBUG 레벨)
+DEBUG - API completed: ProjectController.getAllProjects() - 45ms
+
+# 느린 API 감지 (WARN 레벨)
+WARN  - Slow API detected: TableController.getTableDetails() - 523ms
+
+# 느린 서비스 호출 감지 (WARN 레벨)
+WARN  - Slow service call detected: ProjectService.getProjectWithTables() - 612ms
+
+# 느린 데이터베이스 쿼리 감지 (WARN 레벨)
+WARN  - Slow database query detected: ProjectRepository.findAllWithTables() - 734ms
+```
+
+### 메트릭 수집
+
+각 메서드별로 다음 메트릭이 자동 수집됩니다:
+
+- **총 호출 횟수** (totalCalls)
+- **성공 호출 횟수** (successCalls)
+- **실패 호출 횟수** (failureCalls)
+- **성공률** (successRate)
+- **평균 실행 시간** (averageTime)
+- **최소 실행 시간** (minTime)
+- **최대 실행 시간** (maxTime)
+- **마지막 호출 시간** (lastCallTime)
+
+### 성능 최적화 가이드
+
+**500ms 이상 소요되는 경우 확인 사항**
+
+1. **N+1 쿼리 문제**: `@EntityGraph` 또는 `JOIN FETCH` 사용
+2. **불필요한 데이터 조회**: 필요한 필드만 선택적으로 조회
+3. **인덱스 누락**: 자주 조회되는 컬럼에 인덱스 추가
+4. **대량 데이터 처리**: 페이지네이션 또는 배치 처리 적용
+5. **복잡한 비즈니스 로직**: 캐싱 또는 비동기 처리 고려
+
+**로그 레벨 설정**
+```yaml
+# application-dev.yml
+logging:
+  level:
+    com.dbmodeling.infrastructure.config.PerformanceMonitoringConfig: DEBUG
+```
+
 ## 에러 코드
 
 프론트엔드는 중앙 집중식 에러 핸들러(`frontend/src/lib/errorHandler.ts`)를 통해 모든 API 에러를 처리하며, 사용자에게 명확한 피드백을 제공합니다. 자세한 내용은 [ERROR_HANDLING.md](docs/ERROR_HANDLING.md)를 참조하세요.
@@ -801,13 +872,18 @@ const createColumn = async (tableId) => {
 
 ## 변경 이력
 
+### v1.0.1 (2024-11-09)
+- 성능 모니터링 로그 메시지 영문화 (코드 일관성 개선)
+- 성능 모니터링 문서 추가
+
 ### v1.0.0 (2024-01-01)
 - 초기 API 릴리스
 - 프로젝트, 테이블, 컬럼, 인덱스 CRUD
 - 검증 및 내보내기 기능
+- AOP 기반 성능 모니터링 시스템
 
 ---
 
-**API 문서 버전**: 1.0.0  
-**최종 업데이트**: 2024-01-01  
+**API 문서 버전**: 1.0.1  
+**최종 업데이트**: 2024-11-09  
 **Swagger UI**: http://localhost:8080/api/swagger-ui.html
