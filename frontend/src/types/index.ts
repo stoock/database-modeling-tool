@@ -1,60 +1,40 @@
-// 기본 타입 정의
-export interface BaseEntity {
+// Project
+export interface Project {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// 프로젝트 관련 타입
-export interface Project extends BaseEntity {
   name: string;
-  description?: string;
+  description: string;
   namingRules: NamingRules;
-  tables: Table[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface CreateProjectRequest {
-  name: string;
-  description?: string;
-  namingRules?: NamingRules;
+export interface NamingRules {
+  tablePrefix?: string;
+  tableSuffix?: string;
+  tablePattern: string;
+  columnPattern: string;
+  indexPattern: string;
+  enforceCase: 'PASCAL' | 'SNAKE' | 'CAMEL';
 }
 
-export interface UpdateProjectRequest {
-  name?: string;
-  description?: string;
-  namingRules?: NamingRules;
-}
-
-// 테이블 관련 타입
-export interface Table extends BaseEntity {
+// Table
+export interface Table {
+  id: string;
   projectId: string;
   name: string;
-  description?: string;
-  positionX: number;
-  positionY: number;
-  columns: Column[];
-  indexes: Index[];
-}
-
-export interface CreateTableRequest {
-  name: string;
-  description?: string;
+  description: string;
   positionX?: number;
   positionY?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface UpdateTableRequest {
-  name?: string;
-  description?: string;
-  positionX?: number;
-  positionY?: number;
-}
-
-// 컬럼 관련 타입
-export interface Column extends BaseEntity {
+// Column
+export interface Column {
+  id: string;
   tableId: string;
   name: string;
-  description?: string;
+  description: string;
   dataType: MSSQLDataType;
   maxLength?: number;
   precision?: number;
@@ -66,18 +46,122 @@ export interface Column extends BaseEntity {
   identityIncrement?: number;
   defaultValue?: string;
   orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type MSSQLDataType =
+  | 'BIGINT' | 'INT' | 'SMALLINT' | 'TINYINT'
+  | 'DECIMAL' | 'NUMERIC' | 'FLOAT' | 'REAL'
+  | 'VARCHAR' | 'NVARCHAR' | 'CHAR' | 'NCHAR' | 'TEXT' | 'NTEXT'
+  | 'DATE' | 'TIME' | 'DATETIME' | 'DATETIME2' | 'TIMESTAMP'
+  | 'BIT' | 'BINARY' | 'VARBINARY' | 'IMAGE'
+  | 'UNIQUEIDENTIFIER' | 'XML' | 'JSON';
+
+// Index
+export interface Index {
+  id: string;
+  tableId: string;
+  name: string;
+  type: 'CLUSTERED' | 'NONCLUSTERED';
+  unique: boolean;
+  columns: IndexColumn[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IndexColumn {
+  columnId: string;
+  columnName: string;
+  order: 'ASC' | 'DESC';
+}
+
+// Validation
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+}
+
+export interface ValidationError {
+  type: string;
+  severity: 'ERROR' | 'WARNING';
+  entity: 'TABLE' | 'COLUMN' | 'INDEX';
+  entityId: string;
+  entityName: string;
+  field?: string;
+  message: string;
+  expected?: string;
+  actual?: string;
+  suggestion?: string;
+}
+
+export type ValidationWarning = ValidationError;
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  timestamp: string;
+}
+
+export interface ApiError {
+  error: {
+    message: string;
+    code: string;
+    details?: Record<string, string[]>;
+  };
+  timestamp: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
+// Request Types
+export interface CreateProjectRequest {
+  name: string;
+  description?: string;
+  namingRules?: Partial<NamingRules>;
+}
+
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string;
+  namingRules?: Partial<NamingRules>;
+}
+
+export interface CreateTableRequest {
+  projectId: string;
+  name: string;
+  description: string;
+  positionX?: number;
+  positionY?: number;
+  addSystemColumns?: boolean;
+}
+
+export interface UpdateTableRequest {
+  name?: string;
+  description?: string;
+  positionX?: number;
+  positionY?: number;
 }
 
 export interface CreateColumnRequest {
+  tableId: string;
   name: string;
-  description?: string;
+  description: string;
   dataType: MSSQLDataType;
   maxLength?: number;
   precision?: number;
   scale?: number;
-  nullable?: boolean;
-  primaryKey?: boolean;
-  identity?: boolean;
+  nullable: boolean;
+  primaryKey: boolean;
+  identity: boolean;
   identitySeed?: number;
   identityIncrement?: number;
   defaultValue?: string;
@@ -100,147 +184,100 @@ export interface UpdateColumnRequest {
   orderIndex?: number;
 }
 
-// 인덱스 관련 타입
-export interface Index extends BaseEntity {
+export interface CreateIndexRequest {
   tableId: string;
   name: string;
-  type: IndexType;
-  isUnique: boolean;
-  columns: IndexColumn[];
+  type: 'CLUSTERED' | 'NONCLUSTERED';
+  unique: boolean;
+  columns: {
+    columnId: string;
+    order: 'ASC' | 'DESC';
+  }[];
 }
 
-export interface IndexColumn {
-  columnId: string;
-  order: SortOrder;
+export interface ReorderColumnsRequest {
+  columnIds: string[];
 }
 
-export interface CreateIndexRequest {
-  name: string;
-  type: IndexType;
-  isUnique?: boolean;
-  columns: IndexColumn[];
-}
-
-export interface UpdateIndexRequest {
-  name?: string;
-  type?: IndexType;
-  isUnique?: boolean;
-  columns?: IndexColumn[];
-}
-
-// 네이밍 규칙 타입 (백엔드와 일치)
-export interface NamingRules {
-  tablePrefix?: string;
-  tableSuffix?: string;
-  tablePattern?: string;
-  columnPattern?: string;
-  indexPattern?: string;
-  enforceCase?: CaseType;
-  
-  // SQL Server 특화 규칙
-  enforceUpperCase?: boolean;
-  recommendAuditColumns?: boolean;
-  requireDescription?: boolean;
-  enforceTableColumnNaming?: boolean;
-  enforceConstraintNaming?: boolean;
-  abbreviationRules?: string;
-}
-
-// 검증 관련 타입
-export interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationWarning[];
-}
-
-export interface ValidationError {
-  field: string;
-  rule: string;
-  message: string;
-  suggestion?: string;
-}
-
-export interface ValidationWarning {
-  field: string;
-  message: string;
-  suggestion?: string;
-}
-
-// 스키마 내보내기 타입
-export interface ExportRequest {
-  format: ExportFormat;
-  includeComments?: boolean;
-  includeIndexes?: boolean;
-  includeConstraints?: boolean;
+// Export Options
+export interface ExportOptions {
+  includeDropStatements: boolean;
+  includeComments: boolean;
+  includeIndexes: boolean;
+  includeConstraints: boolean;
 }
 
 export interface ExportResult {
+  format: string;
   content: string;
-  filename: string;
-  mimeType: string;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  generatedAt: string;
+  tableCount: number;
+  indexCount: number;
+  // 하위 호환성을 위한 별칭
+  sql?: string;
 }
 
-// API 응답 타입
-export interface ApiResponse<T> {
-  data: T;
-  message?: string;
+// Validation Types
+export interface ValidationRule {
+  id: string;
+  name: string;
+  description: string;
+  severity: 'ERROR' | 'WARNING';
+  enabled: boolean;
 }
 
-export interface ApiError {
-  error: string;
-  code: string;
-  details?: Record<string, unknown>;
+export interface ValidationSummary {
+  totalErrors: number;
+  totalWarnings: number;
+  complianceRate: number;
+  lastValidated: string;
 }
 
-// 열거형 타입
-export type MSSQLDataType = 
-  | 'BIGINT'
-  | 'INT'
-  | 'SMALLINT'
-  | 'TINYINT'
-  | 'BIT'
-  | 'DECIMAL'
-  | 'NUMERIC'
-  | 'MONEY'
-  | 'SMALLMONEY'
-  | 'FLOAT'
-  | 'REAL'
-  | 'DATETIME'
-  | 'DATETIME2'
-  | 'SMALLDATETIME'
-  | 'DATE'
-  | 'TIME'
-  | 'DATETIMEOFFSET'
-  | 'TIMESTAMP'
-  | 'CHAR'
-  | 'VARCHAR'
-  | 'TEXT'
-  | 'NCHAR'
-  | 'NVARCHAR'
-  | 'NTEXT'
-  | 'BINARY'
-  | 'VARBINARY'
-  | 'IMAGE'
-  | 'UNIQUEIDENTIFIER'
-  | 'XML'
-  | 'JSON';
+// MSSQL Data Type Categories
+export const MSSQL_INTEGER_TYPES: MSSQLDataType[] = ['BIGINT', 'INT', 'SMALLINT', 'TINYINT'];
+export const MSSQL_DECIMAL_TYPES: MSSQLDataType[] = ['DECIMAL', 'NUMERIC'];
+export const MSSQL_FLOAT_TYPES: MSSQLDataType[] = ['FLOAT', 'REAL'];
+export const MSSQL_STRING_TYPES: MSSQLDataType[] = ['VARCHAR', 'NVARCHAR', 'CHAR', 'NCHAR', 'TEXT', 'NTEXT'];
+export const MSSQL_DATETIME_TYPES: MSSQLDataType[] = ['DATE', 'TIME', 'DATETIME', 'DATETIME2', 'TIMESTAMP'];
+export const MSSQL_BINARY_TYPES: MSSQLDataType[] = ['BIT', 'BINARY', 'VARBINARY', 'IMAGE'];
+export const MSSQL_OTHER_TYPES: MSSQLDataType[] = ['UNIQUEIDENTIFIER', 'XML', 'JSON'];
 
-export type IndexType = 'CLUSTERED' | 'NONCLUSTERED';
-
-export type SortOrder = 'ASC' | 'DESC';
-
-export type CaseType = 'UPPER' | 'LOWER' | 'PASCAL' | 'SNAKE';
-
-export type ExportFormat = 'SQL' | 'MARKDOWN' | 'HTML' | 'JSON' | 'CSV';
-
-// React Flow 관련 타입
-export interface TableNodeData {
-  table: Table;
-  isSelected: boolean;
+// System Columns
+export interface SystemColumn {
+  name: string;
+  description: string;
+  dataType: MSSQLDataType;
+  nullable: boolean;
+  defaultValue?: string;
 }
 
-export interface RelationshipEdgeData {
-  sourceColumnId: string;
-  targetColumnId: string;
-  type: 'ONE_TO_ONE' | 'ONE_TO_MANY' | 'MANY_TO_MANY';
-}
+export const SYSTEM_COLUMNS: SystemColumn[] = [
+  {
+    name: 'REG_ID',
+    description: '등록자ID',
+    dataType: 'VARCHAR',
+    nullable: false,
+  },
+  {
+    name: 'REG_DT',
+    description: '등록일시',
+    dataType: 'DATETIME',
+    nullable: false,
+    defaultValue: 'GETDATE()',
+  },
+  {
+    name: 'CHG_ID',
+    description: '수정자ID',
+    dataType: 'VARCHAR',
+    nullable: true,
+  },
+  {
+    name: 'CHG_DT',
+    description: '수정일시',
+    dataType: 'DATETIME',
+    nullable: true,
+  },
+];

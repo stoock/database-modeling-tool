@@ -77,7 +77,6 @@ yarn dev
 ### 접속 URL
 
 - **프론트엔드**: http://localhost:3000
-- **간소화 버전**: http://localhost:3000/simple
 - **백엔드 API**: http://localhost:8080/api
 - **Swagger UI**: http://localhost:8080/api/swagger-ui.html
 - **pgAdmin**: http://localhost:5050 (admin@admin.com / admin)
@@ -95,19 +94,20 @@ database-modeling-tool/
 │   └── src/main/resources/
 │       ├── db/migration/        # Flyway 마이그레이션
 │       └── application*.yml     # 설정 파일
-├── frontend/                    # React 프론트엔드
+├── frontend/                    # React 프론트엔드 (신규 버전)
 │   ├── src/
 │   │   ├── pages/               # 페이지 컴포넌트
-│   │   │   └── SimpleDashboard.tsx  # 간소화 원페이지 대시보드
+│   │   │   └── Dashboard.tsx    # 메인 대시보드
 │   │   ├── components/          # UI 컴포넌트
-│   │   │   ├── Simple/          # 간소화 버전 컴포넌트
-│   │   │   ├── TableDesigner/   # 테이블 디자이너
-│   │   │   ├── ColumnEditor/    # 컬럼 편집기
+│   │   │   ├── project/         # 프로젝트 관리
+│   │   │   ├── table/           # 테이블 관리
+│   │   │   ├── column/          # 컬럼 관리
 │   │   │   └── common/          # 공통 컴포넌트
 │   │   ├── stores/              # Zustand 상태 관리
 │   │   ├── services/            # API 클라이언트
 │   │   └── types/               # TypeScript 타입
 │   └── e2e/                     # E2E 테스트
+├── simple-frontend/             # 간소화 버전 (레거시)
 ├── docker/                      # Docker 설정
 │   ├── postgres/                # PostgreSQL 설정
 │   └── pgadmin/                 # pgAdmin 설정
@@ -128,32 +128,37 @@ database-modeling-tool/
 
 ## 🎨 주요 기능 상세
 
-### 1. 간소화 원페이지 대시보드
-- 모든 기능이 한 화면에 통합
-- 프로젝트 → 테이블 → 컬럼 → 검증 → 내보내기 순차적 워크플로우
-- 컴팩트한 레이아웃으로 빠른 접근
+### 1. 프로젝트 관리
+- 프로젝트 생성, 수정, 삭제
+- 프로젝트별 테이블 그룹 관리
+- 프로젝트 메타데이터 (이름, 설명, 생성일)
 
-### 2. ERD 스타일 컬럼 편집기
-- 20-column 그리드 인라인 편집
-- 키보드 네비게이션 (Tab/Enter/Esc)
+### 2. 테이블 디자이너
+- 직관적인 테이블 생성 및 편집
 - 한글명 + 영문명 이중 관리
+- 테이블 설명 및 메타데이터
+- 테이블 간 관계 시각화
+
+### 3. 컬럼 편집기
+- 인라인 편집으로 빠른 컬럼 관리
+- 키보드 네비게이션 (Tab/Enter/Esc)
 - 타입별 조건부 필드 (길이, 정밀도, 스케일)
 - 자동 규칙 적용 (PK→NOT NULL, IDENTITY→기본값제거)
 
-### 3. MSSQL 전문 기능
+### 4. MSSQL 전문 기능
 - 27개 MSSQL 데이터 타입 완전 지원
 - IDENTITY 자동 증가 설정
 - DECIMAL/NUMERIC 정밀도와 스케일
 - 클러스터드/논클러스터드 인덱스
 - 복합 인덱스 및 유니크 제약조건
 
-### 4. 실시간 검증
+### 5. 실시간 검증
 - 네이밍 규칙 실시간 검증
 - 명확한 오류 메시지와 수정 제안
 - 데이터 타입 호환성 검사
 - 제약조건 충돌 감지
 
-### 5. 다중 형식 내보내기
+### 6. 다중 형식 내보내기
 - SQL: MSSQL DDL 스크립트
 - JSON: 구조화된 스키마 데이터
 - Markdown: 문서화된 스키마 설명
@@ -220,32 +225,30 @@ yarn lint
 ## 📊 현재 개발 상태
 
 ### 완료된 항목 ✅
-- 백엔드 Clean Architecture 4계층 구조
-- 도메인 모델 (Project, Table, Column, Index, NamingRules)
-- JPA 엔티티 및 PostgreSQL 연동
-- 애플리케이션 서비스 (Project, Table, Column, Validation, Export)
-- REST API 컨트롤러 (CRUD + 검증 + 내보내기)
-- MSSQL 스키마 생성 엔진
-- OpenAPI/Swagger 문서화
-- SimpleDashboard 원페이지 레이아웃
-- 프로젝트 관리 UI (생성/선택/수정/삭제)
-- 테이블 관리 UI (수평 스크롤 + 한글명 필수)
-- ERD 스타일 컬럼 편집기 (20-column 그리드)
-- MSSQL 전문 기능 UI (IDENTITY, DECIMAL 정밀도/스케일)
-- 한글명 + 영문명 이중 관리 시스템
-- 키보드 네비게이션 (Tab/Enter/Esc)
+- ✅ 백엔드 Clean Architecture 4계층 구조
+- ✅ 도메인 모델 (Project, Table, Column, Index, NamingRules)
+- ✅ JPA 엔티티 및 PostgreSQL 연동
+- ✅ 애플리케이션 서비스 (Project, Table, Column, Validation, Export)
+- ✅ REST API 컨트롤러 (CRUD + 검증 + 내보내기)
+- ✅ MSSQL 스키마 생성 엔진
+- ✅ OpenAPI/Swagger 문서화
+- ✅ 프론트엔드 신규 버전 구조 설계
+- ✅ 프로젝트 관리 기본 UI
+- ✅ 테이블 관리 기본 UI
+- ✅ 컬럼 편집 기본 UI
 
 ### 진행 중 🔄
-- 백엔드 API 연동 (프로젝트, 테이블, 컬럼 CRUD)
-- 실시간 검증 로직 구현
-- 스키마 내보내기 기능 구현
-- 전체 플로우 연동 테스트
+- 🔄 프론트엔드 컴포넌트 구현
+- 🔄 백엔드 API 연동
+- 🔄 실시간 검증 로직 구현
+- 🔄 스키마 내보내기 기능 구현
 
 ### 예정 📅
-- E2E 테스트 작성
-- 성능 최적화
-- 배포 환경 설정
-- 사용자 문서 작성
+- 📅 MSSQL 전문 기능 UI 완성
+- 📅 인덱스 관리 UI
+- 📅 E2E 테스트 작성
+- 📅 성능 최적화
+- 📅 배포 환경 설정
 
 ## 🤝 기여 가이드
 

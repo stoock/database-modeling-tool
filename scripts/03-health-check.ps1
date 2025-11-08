@@ -92,6 +92,11 @@ try {
 if (Test-Path "frontend\package.json") {
     Write-Host "   ✅ package.json 존재" -ForegroundColor Green
     $healthScore += 5
+    
+    # vite.config.ts 확인
+    if (Test-Path "frontend\vite.config.ts") {
+        Write-Host "   ✅ Vite 설정 존재" -ForegroundColor Green
+    }
 } else {
     Write-Host "   ❌ package.json 없음" -ForegroundColor Red
     $issues += "frontend/package.json 파일이 없습니다"
@@ -103,7 +108,7 @@ if (Test-Path "frontend\node_modules") {
     $healthScore += 5
 } else {
     Write-Host "   ⚠️ 의존성 미설치" -ForegroundColor Yellow
-    $issues += "프론트엔드 의존성이 설치되지 않았습니다 (yarn install 필요)"
+    $issues += "프론트엔드 의존성이 설치되지 않았습니다 (cd frontend && yarn install 필요)"
 }
 
 # 4. 데이터베이스 환경 확인 (20점)

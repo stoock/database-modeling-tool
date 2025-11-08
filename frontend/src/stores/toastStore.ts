@@ -1,75 +1,156 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
 
-export interface ToastOptions {
-  type: 'success' | 'error' | 'warning' | 'info';
+export interface ToastMessage {
+  id: string;
   title: string;
-  message?: string;
+  description?: string;
+  variant?: 'default' | 'destructive' | 'success' | 'warning';
   duration?: number;
 }
 
-export interface ActiveToast extends ToastOptions {
-  id: string;
-}
-
-interface ToastState {
-  toasts: ActiveToast[];
-  addToast: (options: ToastOptions) => string;
+interface ToastStore {
+  toasts: ToastMessage[];
+  
+  // 토스트 관리
+  addToast: (toast: Omit<ToastMessage, 'id'>) => string;
   removeToast: (id: string) => void;
-  success: (title: string, message?: string, duration?: number) => string;
-  error: (title: string, message?: string, duration?: number) => string;
-  warning: (title: string, message?: string, duration?: number) => string;
-  info: (title: string, message?: string, duration?: number) => string;
-  clear: () => void;
+  clearAll: () => void;
+  
+  // 편의 메서드
+  success: (title: string, description?: string) => string;
+  error: (title: string, description?: string) => string;
+  warning: (title: string, description?: string) => string;
+  info: (title: string, description?: string) => string;
 }
 
-export const useToastStore = create<ToastState>()(
-  devtools(
-    (set, get) => ({
-      toasts: [],
-
-      addToast: (options: ToastOptions): string => {
-        const id = Math.random().toString(36).substr(2, 9);
-        const toast: ActiveToast = {
-          id,
-          ...options
-        };
-
+export const useToastStore = create<ToastStore>((set) => ({
+  toasts: [],
+  
+  // 토스트 관리
+  addToast: (toast) => {
+    const id = Math.random().toString(36).substring(7);
+    const duration = toast.duration || 3000;
+    
+    set((state) => ({
+      toasts: [...state.toasts, { ...toast, id, duration }],
+    }));
+    
+    // 자동으로 duration 후 제거
+    if (duration > 0) {
+      setTimeout(() => {
         set((state) => ({
-          toasts: [...state.toasts, toast]
+          toasts: state.toasts.filter((t) => t.id !== id),
         }));
-
-        return id;
-      },
-
-      removeToast: (id: string) => {
-        set((state) => ({
-          toasts: state.toasts.filter(toast => toast.id !== id)
-        }));
-      },
-
-      success: (title: string, message?: string, duration?: number) => {
-        return get().addToast({ type: 'success', title, message, duration });
-      },
-
-      error: (title: string, message?: string, duration?: number) => {
-        return get().addToast({ type: 'error', title, message, duration });
-      },
-
-      warning: (title: string, message?: string, duration?: number) => {
-        return get().addToast({ type: 'warning', title, message, duration });
-      },
-
-      info: (title: string, message?: string, duration?: number) => {
-        return get().addToast({ type: 'info', title, message, duration });
-      },
-
-      clear: () => {
-        set({ toasts: [] });
-      }
-    }),
-    {
-      name: 'toast-store'
+      }, duration);
     }
-  )
-);
+    
+    return id;
+  },
+  
+  removeToast: (id) => {
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    }));
+  },
+  
+  clearAll: () => {
+    set({ toasts: [] });
+  },
+  
+  // 편의 메서드
+  success: (title, description) => {
+    const id = Math.random().toString(36).substring(7);
+    set((state) => ({
+      toasts: [
+        ...state.toasts,
+        {
+          id,
+          title,
+          description,
+          variant: 'success' as const,
+          duration: 3000,
+        },
+      ],
+    }));
+    
+    setTimeout(() => {
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+      }));
+    }, 3000);
+    
+    return id;
+  },
+  
+  error: (title, description) => {
+    const id = Math.random().toString(36).substring(7);
+    set((state) => ({
+      toasts: [
+        ...state.toasts,
+        {
+          id,
+          title,
+          description,
+          variant: 'destructive' as const,
+          duration: 5000, // 에러는 조금 더 길게
+        },
+      ],
+    }));
+    
+    setTimeout(() => {
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+      }));
+    }, 5000);
+    
+    return id;
+  },
+  
+  warning: (title, description) => {
+    const id = Math.random().toString(36).substring(7);
+    set((state) => ({
+      toasts: [
+        ...state.toasts,
+        {
+          id,
+          title,
+          description,
+          variant: 'warning' as const,
+          duration: 4000,
+        },
+      ],
+    }));
+    
+    setTimeout(() => {
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+      }));
+    }, 4000);
+    
+    return id;
+  },
+  
+  info: (title, description) => {
+    const id = Math.random().toString(36).substring(7);
+    set((state) => ({
+      toasts: [
+        ...state.toasts,
+        {
+          id,
+          title,
+          description,
+          variant: 'default' as const,
+          duration: 3000,
+        },
+      ],
+    }));
+    
+    setTimeout(() => {
+      set((state) => ({
+        toasts: state.toasts.filter((t) => t.id !== id),
+      }));
+    }, 3000);
+    
+    return id;
+  },
+}));
