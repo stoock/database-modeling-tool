@@ -441,6 +441,23 @@ logging:
     org.hibernate.SQL: DEBUG
 ```
 
+#### 성능 모니터링 로그
+
+백엔드는 AOP 기반 성능 모니터링을 제공합니다 (`PerformanceMonitoringConfig`):
+
+- **Controller 계층**: API 응답 시간 측정
+- **Service 계층**: 비즈니스 로직 실행 시간 측정  
+- **Repository 계층**: 데이터베이스 쿼리 실행 시간 측정
+
+**로그 예시**
+```
+DEBUG - API completed: ProjectController.getAllProjects() - 45ms
+WARN  - Slow API detected: TableController.getTableDetails() - 523ms
+WARN  - Slow database query detected: ProjectRepository.findAllWithTables() - 612ms
+```
+
+**느린 쿼리 임계값**: 500ms 이상 실행 시 경고 로그 출력
+
 ### 프론트엔드 디버깅
 
 #### Chrome DevTools
@@ -558,6 +575,26 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/health" -Method Get
 }
 ```
 
+**백엔드 로그 메시지**
+
+애플리케이션 시작 시 데이터베이스 연결 상태가 로그에 출력됩니다:
+
+성공 시:
+```
+✅ PostgreSQL 데이터베이스 연결 성공
+📊 데이터베이스 URL: jdbc:postgresql://localhost:5432/dbmodeling_dev
+```
+
+실패 시:
+```
+❌ PostgreSQL 데이터베이스 연결 실패!
+💡 해결 방법:
+   1. Docker 컨테이너 실행: docker-compose up -d
+   2. 또는 스크립트 실행: .\scripts\01-env-setup.ps1
+   3. PostgreSQL 상태 확인: docker ps
+오류 상세: Connection refused
+```
+
 **프론트엔드 에러 메시지**
 
 프론트엔드에서는 503 에러를 받으면 사용자에게 명확한 안내를 표시합니다:
@@ -666,6 +703,12 @@ const handleAddColumn = useCallback(() => {
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [TypeScript 핸드북](https://www.typescriptlang.org/docs/)
 - [Tailwind CSS 문서](https://tailwindcss.com/docs)
+
+## 변경 이력
+
+### 2024-11-09
+- 성능 모니터링 로그 메시지 영문화 (코드 일관성 개선)
+- 성능 모니터링 문서 추가 (README.md, DEVELOPMENT.md, API.md)
 
 ---
 
