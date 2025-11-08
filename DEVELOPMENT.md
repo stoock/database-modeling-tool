@@ -260,6 +260,51 @@ const MAX_TABLE_COUNT = 100;
 
 ## 테스트 가이드
 
+## 스크립트 가이드
+
+### 통합 스크립트 (권장)
+
+```powershell
+# 환경 설정 (PostgreSQL + 의존성 + 마이그레이션)
+.\scripts\01-env-setup.ps1
+
+# 애플리케이션 실행 (백엔드 + 프론트엔드)
+.\scripts\02-run-app.ps1
+
+# 시스템 헬스체크 (100점 평가)
+.\scripts\03-health-check.ps1
+
+# 환경 중지
+.\scripts\env-stop.ps1
+
+# 환경 초기화 (데이터 삭제)
+.\scripts\env-reset.ps1
+```
+
+### 개별 명령어
+
+```bash
+# 백엔드 실행
+cd backend
+./gradlew bootRunDev          # PostgreSQL 사용
+./gradlew bootRunH2           # H2 인메모리 DB 사용
+
+# 백엔드 테스트
+./gradlew test                # 단위 테스트
+./gradlew integrationTest     # 통합 테스트
+
+# 프론트엔드 실행
+cd frontend
+yarn dev                      # 개발 서버
+yarn build                    # 프로덕션 빌드
+
+# 프론트엔드 테스트
+yarn test                     # 단위 테스트
+yarn test:e2e                 # E2E 테스트
+yarn type-check               # 타입 체크
+yarn lint                     # 린트 검사
+```
+
 ### 백엔드 테스트
 
 #### 단위 테스트 (JUnit 5 + Mockito)
@@ -354,7 +399,7 @@ import { test, expect } from '@playwright/test';
 
 test('프로젝트 생성부터 스키마 내보내기까지 전체 플로우', async ({ page }) => {
   // 1. 대시보드 접속
-  await page.goto('http://localhost:3000/simple');
+  await page.goto('http://localhost:3001/simple');
   
   // 2. 프로젝트 생성
   await page.click('text=+ 새 프로젝트');
@@ -419,7 +464,7 @@ logging:
       "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome",
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3001",
       "webRoot": "${workspaceFolder}/frontend/src"
     }
   ]
@@ -489,7 +534,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-            .allowedOrigins("http://localhost:3000")
+            .allowedOrigins("http://localhost:3001")
             .allowedMethods("GET", "POST", "PUT", "DELETE")
             .allowCredentials(true);
     }

@@ -35,7 +35,7 @@ try {
     
     if (-not $postgresRunning) {
         Write-Host "⚠️ PostgreSQL 컨테이너가 실행되지 않았습니다" -ForegroundColor Yellow
-        Write-Host "   먼저 .\scripts\start-dev.ps1을 실행하세요" -ForegroundColor Yellow
+        Write-Host "   먼저 .\scripts\01-env-setup.ps1을 실행하세요" -ForegroundColor Yellow
         Handle-Error "데이터베이스가 준비되지 않았습니다"
     } else {
         Write-Host "✅ PostgreSQL 컨테이너 실행 중" -ForegroundColor Green
@@ -99,7 +99,7 @@ Write-Host "   yarn dev" -ForegroundColor Gray
 Write-Host ""
 
 Write-Host "📱 접속 정보:" -ForegroundColor White
-Write-Host "   - 프론트엔드: http://localhost:3000" -ForegroundColor Cyan
+Write-Host "   - 프론트엔드: http://localhost:3001" -ForegroundColor Cyan
 Write-Host "   - 백엔드 API: http://localhost:8080/api" -ForegroundColor Cyan
 Write-Host "   - Swagger UI: http://localhost:8080/api/swagger-ui.html" -ForegroundColor Cyan
 Write-Host ""
