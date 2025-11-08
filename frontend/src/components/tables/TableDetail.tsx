@@ -58,10 +58,11 @@ function TableDetailComponent({ table, onUpdate }: TableDetailProps) {
       loadColumns();
     } else if (activeTab === 'indexes') {
       // 인덱스 탭에서는 인덱스와 컬럼 모두 로드
-      loadColumns();
       loadIndexes();
+      loadColumns();
     }
-  }, [activeTab, loadColumns, loadIndexes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   // 테이블이 변경되면 데이터 초기화 및 재로드
   useEffect(() => {
