@@ -30,183 +30,183 @@ interface ERDCanvasProps {
   tables: Table[];
 }
 
-// 초기 노드 데이터 (전자상거래 시스템 예제)
-const initialNodes: Node<DatabaseSchemaNodeData>[] = [
-  {
-    id: '1',
-    type: 'databaseSchema',
-    position: { x: 50, y: 50 },
-    data: {
-      label: 'User',
-      columns: [
-        { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
-        { name: 'username', type: 'NVARCHAR(50)', isUnique: true, isNullable: false },
-        { name: 'email', type: 'NVARCHAR(100)', isUnique: true, isNullable: false },
-        { name: 'password_hash', type: 'NVARCHAR(255)', isNullable: false },
-        { name: 'created_at', type: 'DATETIME2', isNullable: false },
-      ],
-    },
-  },
-  {
-    id: '2',
-    type: 'databaseSchema',
-    position: { x: 450, y: 50 },
-    data: {
-      label: 'Product',
-      columns: [
-        { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
-        { name: 'name', type: 'NVARCHAR(200)', isNullable: false },
-        { name: 'price', type: 'DECIMAL(10,2)', isNullable: false },
-        { name: 'stock', type: 'INT', isNullable: false },
-        { name: 'category_id', type: 'BIGINT', isFK: true, isNullable: true },
-      ],
-    },
-  },
-  {
-    id: '3',
-    type: 'databaseSchema',
-    position: { x: 850, y: 50 },
-    data: {
-      label: 'Category',
-      columns: [
-        { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
-        { name: 'name', type: 'NVARCHAR(100)', isUnique: true, isNullable: false },
-        { name: 'parent_id', type: 'BIGINT', isFK: true, isNullable: true },
-        { name: 'description', type: 'NVARCHAR(500)', isNullable: true },
-      ],
-    },
-  },
-  {
-    id: '4',
-    type: 'databaseSchema',
-    position: { x: 50, y: 400 },
-    data: {
-      label: 'Order',
-      columns: [
-        { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
-        { name: 'user_id', type: 'BIGINT', isFK: true, isNullable: false },
-        { name: 'total_amount', type: 'DECIMAL(10,2)', isNullable: false },
-        { name: 'status', type: 'NVARCHAR(20)', isNullable: false },
-        { name: 'created_at', type: 'DATETIME2', isNullable: false },
-      ],
-    },
-  },
-  {
-    id: '5',
-    type: 'databaseSchema',
-    position: { x: 450, y: 400 },
-    data: {
-      label: 'OrderItem',
-      columns: [
-        { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
-        { name: 'order_id', type: 'BIGINT', isFK: true, isNullable: false },
-        { name: 'product_id', type: 'BIGINT', isFK: true, isNullable: false },
-        { name: 'quantity', type: 'INT', isNullable: false },
-        { name: 'price', type: 'DECIMAL(10,2)', isNullable: false },
-      ],
-    },
-  },
-  {
-    id: '6',
-    type: 'databaseSchema',
-    position: { x: 850, y: 400 },
-    data: {
-      label: 'Review',
-      columns: [
-        { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
-        { name: 'user_id', type: 'BIGINT', isFK: true, isNullable: false },
-        { name: 'product_id', type: 'BIGINT', isFK: true, isNullable: false },
-        { name: 'rating', type: 'INT', isNullable: false },
-        { name: 'comment', type: 'NVARCHAR(1000)', isNullable: true },
-        { name: 'created_at', type: 'DATETIME2', isNullable: false },
-      ],
-    },
-  },
-];
+// 초기 노드 데이터 (전자상거래 시스템 예제) - 사용하지 않음
+// const initialNodes: Node<DatabaseSchemaNodeData>[] = [
+//   {
+//     id: '1',
+//     type: 'databaseSchema',
+//     position: { x: 50, y: 50 },
+//     data: {
+//       label: 'User',
+//       columns: [
+//         { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
+//         { name: 'username', type: 'NVARCHAR(50)', isUnique: true, isNullable: false },
+//         { name: 'email', type: 'NVARCHAR(100)', isUnique: true, isNullable: false },
+//         { name: 'password_hash', type: 'NVARCHAR(255)', isNullable: false },
+//         { name: 'created_at', type: 'DATETIME2', isNullable: false },
+//       ],
+//     },
+//   },
+//   {
+//     id: '2',
+//     type: 'databaseSchema',
+//     position: { x: 450, y: 50 },
+//     data: {
+//       label: 'Product',
+//       columns: [
+//         { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
+//         { name: 'name', type: 'NVARCHAR(200)', isNullable: false },
+//         { name: 'price', type: 'DECIMAL(10,2)', isNullable: false },
+//         { name: 'stock', type: 'INT', isNullable: false },
+//         { name: 'category_id', type: 'BIGINT', isFK: true, isNullable: true },
+//       ],
+//     },
+//   },
+//   {
+//     id: '3',
+//     type: 'databaseSchema',
+//     position: { x: 850, y: 50 },
+//     data: {
+//       label: 'Category',
+//       columns: [
+//         { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
+//         { name: 'name', type: 'NVARCHAR(100)', isUnique: true, isNullable: false },
+//         { name: 'parent_id', type: 'BIGINT', isFK: true, isNullable: true },
+//         { name: 'description', type: 'NVARCHAR(500)', isNullable: true },
+//       ],
+//     },
+//   },
+//   {
+//     id: '4',
+//     type: 'databaseSchema',
+//     position: { x: 50, y: 400 },
+//     data: {
+//       label: 'Order',
+//       columns: [
+//         { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
+//         { name: 'user_id', type: 'BIGINT', isFK: true, isNullable: false },
+//         { name: 'total_amount', type: 'DECIMAL(10,2)', isNullable: false },
+//         { name: 'status', type: 'NVARCHAR(20)', isNullable: false },
+//         { name: 'created_at', type: 'DATETIME2', isNullable: false },
+//       ],
+//     },
+//   },
+//   {
+//     id: '5',
+//     type: 'databaseSchema',
+//     position: { x: 450, y: 400 },
+//     data: {
+//       label: 'OrderItem',
+//       columns: [
+//         { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
+//         { name: 'order_id', type: 'BIGINT', isFK: true, isNullable: false },
+//         { name: 'product_id', type: 'BIGINT', isFK: true, isNullable: false },
+//         { name: 'quantity', type: 'INT', isNullable: false },
+//         { name: 'price', type: 'DECIMAL(10,2)', isNullable: false },
+//       ],
+//     },
+//   },
+//   {
+//     id: '6',
+//     type: 'databaseSchema',
+//     position: { x: 850, y: 400 },
+//     data: {
+//       label: 'Review',
+//       columns: [
+//         { name: 'id', type: 'BIGINT', isPK: true, isNullable: false },
+//         { name: 'user_id', type: 'BIGINT', isFK: true, isNullable: false },
+//         { name: 'product_id', type: 'BIGINT', isFK: true, isNullable: false },
+//         { name: 'rating', type: 'INT', isNullable: false },
+//         { name: 'comment', type: 'NVARCHAR(1000)', isNullable: true },
+//         { name: 'created_at', type: 'DATETIME2', isNullable: false },
+//       ],
+//     },
+//   },
+// ];
 
-// 초기 엣지 데이터 (관계선)
-const initialEdges: Edge[] = [
-  {
-    id: 'e1-4',
-    source: '1',
-    target: '4',
-    sourceHandle: 'id',
-    targetHandle: 'user_id',
-    type: 'smoothstep',
-    animated: true,
-    label: '1:N',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#667eea', strokeWidth: 2 },
-  },
-  {
-    id: 'e2-5',
-    source: '2',
-    target: '5',
-    sourceHandle: 'id',
-    targetHandle: 'product_id',
-    type: 'smoothstep',
-    animated: true,
-    label: '1:N',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#667eea', strokeWidth: 2 },
-  },
-  {
-    id: 'e3-2',
-    source: '3',
-    target: '2',
-    sourceHandle: 'id',
-    targetHandle: 'category_id',
-    type: 'smoothstep',
-    label: '1:N',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#667eea', strokeWidth: 2 },
-  },
-  {
-    id: 'e3-3',
-    source: '3',
-    target: '3',
-    sourceHandle: 'id',
-    targetHandle: 'parent_id',
-    type: 'smoothstep',
-    label: '자기참조',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#f59e0b', strokeWidth: 2 },
-  },
-  {
-    id: 'e4-5',
-    source: '4',
-    target: '5',
-    sourceHandle: 'id',
-    targetHandle: 'order_id',
-    type: 'smoothstep',
-    animated: true,
-    label: '1:N',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#667eea', strokeWidth: 2 },
-  },
-  {
-    id: 'e1-6',
-    source: '1',
-    target: '6',
-    sourceHandle: 'id',
-    targetHandle: 'user_id',
-    type: 'smoothstep',
-    label: '1:N',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#667eea', strokeWidth: 2 },
-  },
-  {
-    id: 'e2-6',
-    source: '2',
-    target: '6',
-    sourceHandle: 'id',
-    targetHandle: 'product_id',
-    type: 'smoothstep',
-    label: '1:N',
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: '#667eea', strokeWidth: 2 },
-  },
-];
+// 초기 엣지 데이터 (관계선) - 사용하지 않음
+// const initialEdges: Edge[] = [
+//   {
+//     id: 'e1-4',
+//     source: '1',
+//     target: '4',
+//     sourceHandle: 'id',
+//     targetHandle: 'user_id',
+//     type: 'smoothstep',
+//     animated: true,
+//     label: '1:N',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#667eea', strokeWidth: 2 },
+//   },
+//   {
+//     id: 'e2-5',
+//     source: '2',
+//     target: '5',
+//     sourceHandle: 'id',
+//     targetHandle: 'product_id',
+//     type: 'smoothstep',
+//     animated: true,
+//     label: '1:N',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#667eea', strokeWidth: 2 },
+//   },
+//   {
+//     id: 'e3-2',
+//     source: '3',
+//     target: '2',
+//     sourceHandle: 'id',
+//     targetHandle: 'category_id',
+//     type: 'smoothstep',
+//     label: '1:N',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#667eea', strokeWidth: 2 },
+//   },
+//   {
+//     id: 'e3-3',
+//     source: '3',
+//     target: '3',
+//     sourceHandle: 'id',
+//     targetHandle: 'parent_id',
+//     type: 'smoothstep',
+//     label: '자기참조',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#f59e0b', strokeWidth: 2 },
+//   },
+//   {
+//     id: 'e4-5',
+//     source: '4',
+//     target: '5',
+//     sourceHandle: 'id',
+//     targetHandle: 'order_id',
+//     type: 'smoothstep',
+//     animated: true,
+//     label: '1:N',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#667eea', strokeWidth: 2 },
+//   },
+//   {
+//     id: 'e1-6',
+//     source: '1',
+//     target: '6',
+//     sourceHandle: 'id',
+//     targetHandle: 'user_id',
+//     type: 'smoothstep',
+//     label: '1:N',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#667eea', strokeWidth: 2 },
+//   },
+//   {
+//     id: 'e2-6',
+//     source: '2',
+//     target: '6',
+//     sourceHandle: 'id',
+//     targetHandle: 'product_id',
+//     type: 'smoothstep',
+//     label: '1:N',
+//     markerEnd: { type: MarkerType.ArrowClosed },
+//     style: { stroke: '#667eea', strokeWidth: 2 },
+//   },
+// ];
 
 // Dagre 레이아웃 설정
 const dagreGraph = new dagre.graphlib.Graph();
@@ -216,7 +216,7 @@ const nodeWidth = 260;
 const nodeHeight = 200;
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => {
-  const isHorizontal = direction === 'LR';
+  // const isHorizontal = direction === 'LR'; // 사용하지 않음
   dagreGraph.setGraph({ rankdir: direction, nodesep: 100, ranksep: 150 });
 
   nodes.forEach((node) => {

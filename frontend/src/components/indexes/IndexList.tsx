@@ -46,11 +46,11 @@ export function IndexList({
     setDeletingIndex(null);
   };
 
-  // 컬럼 이름 가져오기
-  const getColumnName = (columnId: string): string => {
-    const column = columns.find((col) => col.id === columnId);
-    return column?.name || columnId;
-  };
+  // 컬럼 이름 가져오기 - 사용하지 않음
+  // const getColumnName = (columnId: string): string => {
+  //   const column = columns.find((col) => col.id === columnId);
+  //   return column?.name || columnId;
+  // };
 
   // 인덱스 타입 배지 색상
   const getTypeColor = (type: 'CLUSTERED' | 'NONCLUSTERED') => {

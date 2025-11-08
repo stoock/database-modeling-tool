@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo, memo } from 'react';
 import { Plus, Trash2, Table as TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { CreateTableDialog } from './CreateTableDialog';
 import { DeleteTableDialog } from './DeleteTableDialog';
 import { useTableStore } from '@/stores/tableStore';
@@ -149,10 +148,10 @@ const TableCard = memo(({ table, isSelected, onSelect, onDelete, isLoading }: Ta
     onDelete(table, e);
   }, [onDelete, table]);
 
-  const formattedDate = useMemo(() => 
-    new Date(table.createdAt).toLocaleDateString('ko-KR'),
-    [table.createdAt]
-  );
+  // const formattedDate = useMemo(() => 
+  //   new Date(table.createdAt).toLocaleDateString('ko-KR'),
+  //   [table.createdAt]
+  // );
 
   return (
     <div

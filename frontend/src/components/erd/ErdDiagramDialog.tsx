@@ -39,6 +39,7 @@ export function ErdDiagramDialog({
     if (open && tables.length > 0) {
       loadTableColumns();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, tables]);
 
   const loadTableColumns = async () => {
