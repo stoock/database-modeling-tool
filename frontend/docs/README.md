@@ -70,17 +70,7 @@ TypeScript 타입 정의
 - 코드 스플리팅
 - 디바운싱
 
-## 📦 아카이브 (archive/)
-
-과거 구현 요약 문서 (참고용)
-
-- TASK_18_CHECKLIST.md
-- TASK_18_IMPLEMENTATION_SUMMARY.md
-- TASK_19_IMPLEMENTATION_SUMMARY.md
-- TASK_20_IMPLEMENTATION_SUMMARY.md
-- TASK_21_IMPLEMENTATION_SUMMARY.md
-
-## 🗂️ 문서 구조
+## �️ 문서 구(조
 
 ```
 docs/
@@ -92,12 +82,10 @@ docs/
 ├── LIB.md                       # 참조: 유틸리티
 ├── STORES.md                    # 참조: 스토어 상세
 ├── TYPES.md                     # 참조: 타입 정의
-├── guides/                      # 가이드
-│   ├── ACCESSIBILITY.md
-│   ├── ERROR_HANDLING_ARCHITECTURE.md
-│   └── PERFORMANCE_OPTIMIZATION.md
-└── archive/                     # 아카이브
-    └── TASK_*.md
+└── guides/                      # 가이드
+    ├── ACCESSIBILITY.md
+    ├── ERROR_HANDLING_ARCHITECTURE.md
+    └── PERFORMANCE_OPTIMIZATION.md
 ```
 
 ## 🚀 빠른 참조
