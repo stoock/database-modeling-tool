@@ -69,19 +69,12 @@ if (-not (Test-Path "package.json")) {
 # 의존성 확인
 if (-not (Test-Path "node_modules")) {
     Write-Host "📦 프론트엔드 의존성 설치 중..." -ForegroundColor Gray
-    & yarn install --silent
+    & yarn install
     if ($LASTEXITCODE -ne 0) {
         Handle-Error "프론트엔드 의존성 설치 실패"
     }
-}
-
-# 타입 체크
-Write-Host "🔍 프론트엔드 타입 체크..." -ForegroundColor Gray
-& yarn type-check
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ 프론트엔드 타입 체크 통과" -ForegroundColor Green
 } else {
-    Write-Host "⚠️ 프론트엔드 타입 체크 경고 (계속 진행)" -ForegroundColor Yellow
+    Write-Host "✅ 프론트엔드 의존성 설치됨" -ForegroundColor Green
 }
 
 # 프로젝트 루트로 복귀

@@ -1,42 +1,8 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { afterEach } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  root: Element | null = null
-  rootMargin: string = ''
-  thresholds: readonly number[] = []
-  
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-  takeRecords(): IntersectionObserverEntry[] { return [] }
-} as unknown as {
-  new (callback: IntersectionObserverCallback, options?: IntersectionObserverInit): IntersectionObserver;
-  prototype: IntersectionObserver;
-}
-
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-}
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+// 각 테스트 후 자동 정리
+afterEach(() => {
+  cleanup()
 })
-

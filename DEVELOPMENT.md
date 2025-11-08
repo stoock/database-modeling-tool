@@ -88,10 +88,11 @@ spring:
     show-sql: true
 ```
 
-#### 프론트엔드 (.env)
+#### 프론트엔드 (.env.local)
 ```env
 VITE_API_BASE_URL=http://localhost:8080/api
 VITE_APP_TITLE=MSSQL 데이터베이스 모델링 도구
+VITE_ENABLE_MOCK=false
 ```
 
 ## 프로젝트 구조
@@ -123,11 +124,13 @@ backend/src/main/java/com/dbmodeling/
 ```
 frontend/src/
 ├── pages/                       # 페이지 컴포넌트
-│   └── SimpleDashboard.tsx      # 메인 대시보드
+│   └── Dashboard.tsx            # 메인 대시보드
 ├── components/                  # UI 컴포넌트
-│   ├── Simple/                  # 간소화 버전
+│   ├── project/                 # 프로젝트 관리
+│   ├── table/                   # 테이블 관리
+│   ├── column/                  # 컬럼 관리
 │   ├── common/                  # 공통 컴포넌트
-│   └── [feature]/               # 기능별 컴포넌트
+│   └── layout/                  # 레이아웃 컴포넌트
 ├── stores/                      # Zustand 상태 관리
 ├── services/                    # API 클라이언트
 ├── hooks/                       # 커스텀 훅
