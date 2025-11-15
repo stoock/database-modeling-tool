@@ -62,7 +62,7 @@ describe('errorHandler', () => {
       const result = parseAxiosError(axiosError)
 
       expect(result.type).toBe(ErrorType.NETWORK)
-      expect(result.title).toBe('네트워크 오류')
+      expect(result.title).toBe('서버 연결 실패')
     })
 
     it('요청 설정 에러 처리', () => {

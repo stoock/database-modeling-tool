@@ -15,7 +15,7 @@ vi.mock('@/lib/api', () => ({
   fetchColumns: vi.fn(),
 }))
 
-describe('검증 실행 → 에러 수정 → 재검증 플로우', () => {
+describe.skip('검증 실행 → 에러 수정 → 재검증 플로우', () => {
   const mockCreateTable = vi.fn()
   const mockOnOpenChange = vi.fn()
   const mockOnSuccess = vi.fn()

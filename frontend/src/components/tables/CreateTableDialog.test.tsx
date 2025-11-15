@@ -207,9 +207,10 @@ describe('CreateTableDialog', () => {
       />
     )
 
-    expect(screen.getByText(/REG_ID/)).toBeInTheDocument()
-    expect(screen.getByText(/REG_DT/)).toBeInTheDocument()
-    expect(screen.getByText(/CHG_ID/)).toBeInTheDocument()
-    expect(screen.getByText(/CHG_DT/)).toBeInTheDocument()
+    // 시스템 컬럼 설명이 표시되는지 확인 (여러 곳에 나타날 수 있으므로 getAllByText 사용)
+    expect(screen.getAllByText(/REG_ID/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/REG_DT/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/CHG_ID/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/CHG_DT/).length).toBeGreaterThan(0)
   })
 })

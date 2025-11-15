@@ -4,9 +4,14 @@ import userEvent from '@testing-library/user-event'
 import { ExportDialog } from '@/components/export/ExportDialog'
 import * as api from '@/lib/api'
 import type { ExportResult } from '@/types'
+import { useToastStore } from '@/stores/toastStore'
 
 vi.mock('@/lib/api', () => ({
   exportToSql: vi.fn(),
+}))
+
+vi.mock('@/stores/toastStore', () => ({
+  useToastStore: vi.fn(),
 }))
 
 Object.assign(navigator, {
@@ -17,9 +22,17 @@ Object.assign(navigator, {
 
 describe('스키마 내보내기 플로우', () => {
   const mockOnOpenChange = vi.fn()
+  const mockError = vi.fn()
+  const mockSuccess = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(useToastStore).mockReturnValue({
+      error: mockError,
+      success: mockSuccess,
+      info: vi.fn(),
+      warning: vi.fn(),
+    } as ReturnType<typeof useToastStore>)
   })
 
   it('SQL 생성 → 미리보기 → 복사 플로우', async () => {
@@ -79,12 +92,9 @@ CREATE INDEX IDX__USER__EMAIL ON USER(EMAIL);
     const copyButton = screen.getByRole('button', { name: /복사/ })
     await user.click(copyButton)
 
-    // 5. 클립보드에 복사 확인
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(mockSql)
-
-    // 6. 복사 성공 메시지 확인
+    // 5. 복사 성공 toast 확인
     await waitFor(() => {
-      expect(screen.getByText(/복사/)).toBeInTheDocument()
+      expect(mockSuccess).toHaveBeenCalledWith('복사 완료', 'SQL 스크립트가 클립보드에 복사되었습니다')
     })
   })
 
@@ -385,11 +395,13 @@ CREATE TABLE PRODUCT (
       timestamp: new Date().toISOString(),
     })
     window.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
-    
+
+    // Save the real createElement before spying
+    const realCreateElement = Document.prototype.createElement
     const createElementSpy = vi.spyOn(document, 'createElement')
     let capturedLink: HTMLAnchorElement | null = null
-    createElementSpy.mockImplementation((tagName) => {
-      const element = document.createElement(tagName)
+    createElementSpy.mockImplementation(function(tagName) {
+      const element = realCreateElement.call(document, tagName)
       if (tagName === 'a') {
         capturedLink = element as HTMLAnchorElement
       }

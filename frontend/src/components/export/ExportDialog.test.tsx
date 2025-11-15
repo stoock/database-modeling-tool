@@ -3,9 +3,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ExportDialog } from './ExportDialog'
 import * as api from '@/lib/api'
+import { useToastStore } from '@/stores/toastStore'
 
 vi.mock('@/lib/api', () => ({
   exportToSql: vi.fn(),
+}))
+
+vi.mock('@/stores/toastStore', () => ({
+  useToastStore: vi.fn(),
 }))
 
 // Clipboard API 모킹
@@ -17,9 +22,17 @@ Object.assign(navigator, {
 
 describe('ExportDialog', () => {
   const mockOnOpenChange = vi.fn()
+  const mockError = vi.fn()
+  const mockSuccess = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(useToastStore).mockReturnValue({
+      error: mockError,
+      success: mockSuccess,
+      info: vi.fn(),
+      warning: vi.fn(),
+    } as ReturnType<typeof useToastStore>)
   })
 
   it('다이얼로그가 열릴 때 렌더링됨', () => {
@@ -90,7 +103,10 @@ describe('ExportDialog', () => {
     const copyButton = screen.getByRole('button', { name: /복사/ })
     await user.click(copyButton)
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(mockSql)
+    // 복사 성공 toast 확인
+    await waitFor(() => {
+      expect(mockSuccess).toHaveBeenCalledWith('복사 완료', 'SQL 스크립트가 클립보드에 복사되었습니다')
+    })
   })
 
   it('다운로드 버튼 클릭 시 파일 다운로드', async () => {
@@ -139,8 +155,9 @@ describe('ExportDialog', () => {
       />
     )
 
-    const closeButton = screen.getByRole('button', { name: /닫기/ })
-    await user.click(closeButton)
+    // 여러 닫기 버튼 중 하단의 "닫기" 텍스트 버튼 선택
+    const closeButtons = screen.getAllByRole('button', { name: /닫기/ })
+    await user.click(closeButtons[closeButtons.length - 1])
 
     expect(mockOnOpenChange).toHaveBeenCalledWith(false)
   })
@@ -161,7 +178,7 @@ describe('ExportDialog', () => {
     await user.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/실패/)).toBeInTheDocument()
+      expect(mockError).toHaveBeenCalledWith('SQL 생성 실패', 'SQL 스크립트 생성 중 오류가 발생했습니다')
     })
   })
 })

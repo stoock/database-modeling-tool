@@ -9,16 +9,14 @@ vi.mock('@/lib/api', () => ({
 }))
 
 describe('ValidationPanel', () => {
-  const mockOnClose = vi.fn()
-
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('검증 패널을 렌더링함', () => {
-    render(<ValidationPanel projectId="proj1" onClose={mockOnClose} />)
+    render(<ValidationPanel projectId="proj1" />)
 
-    expect(screen.getByText(/검증/)).toBeInTheDocument()
+    expect(screen.getByText('명명 규칙 검증')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /검증 실행/ })).toBeInTheDocument()
   })
 
@@ -31,7 +29,7 @@ describe('ValidationPanel', () => {
     }
     vi.mocked(api.validateProject).mockResolvedValue(mockValidationResult)
 
-    render(<ValidationPanel projectId="proj1" onClose={mockOnClose} />)
+    render(<ValidationPanel projectId="proj1" />)
 
     const validateButton = screen.getByRole('button', { name: /검증 실행/ })
     await user.click(validateButton)
@@ -48,12 +46,12 @@ describe('ValidationPanel', () => {
     }
     vi.mocked(api.validateProject).mockResolvedValue(mockValidationResult)
 
-    render(<ValidationPanel projectId="proj1" onClose={mockOnClose} />)
+    render(<ValidationPanel projectId="proj1" />)
 
     const validateButton = screen.getByRole('button', { name: /검증 실행/ })
     await user.click(validateButton)
 
-    await screen.findByText(/검증 완료/)
+    await screen.findByText(/모든 검증을 통과했습니다/)
   })
 
   it('검증 에러 시 에러 목록 표시', async () => {
@@ -68,7 +66,7 @@ describe('ValidationPanel', () => {
     }
     vi.mocked(api.validateProject).mockResolvedValue(mockValidationResult)
 
-    render(<ValidationPanel projectId="proj1" onClose={mockOnClose} />)
+    render(<ValidationPanel projectId="proj1" />)
 
     const validateButton = screen.getByRole('button', { name: /검증 실행/ })
     await user.click(validateButton)
@@ -88,21 +86,11 @@ describe('ValidationPanel', () => {
     }
     vi.mocked(api.validateProject).mockResolvedValue(mockValidationResult)
 
-    render(<ValidationPanel projectId="proj1" onClose={mockOnClose} />)
+    render(<ValidationPanel projectId="proj1" />)
 
     const validateButton = screen.getByRole('button', { name: /검증 실행/ })
     await user.click(validateButton)
 
     await screen.findByText(/인덱스가 없습니다/)
-  })
-
-  it('닫기 버튼 클릭 시 onClose 호출', async () => {
-    const user = userEvent.setup()
-    render(<ValidationPanel projectId="proj1" onClose={mockOnClose} />)
-
-    const closeButton = screen.getByRole('button', { name: /닫기/ })
-    await user.click(closeButton)
-
-    expect(mockOnClose).toHaveBeenCalled()
   })
 })

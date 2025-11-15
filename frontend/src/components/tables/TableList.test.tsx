@@ -89,7 +89,7 @@ describe('TableList', () => {
       />
     )
 
-    expect(screen.getByText('총 2개의 테이블')).toBeInTheDocument()
+    expect(screen.getByText('테이블 (2)')).toBeInTheDocument()
   })
 
   it('테이블이 없을 때 빈 상태 표시', () => {
@@ -104,8 +104,7 @@ describe('TableList', () => {
       />
     )
 
-    expect(screen.getByText('아직 테이블이 없습니다')).toBeInTheDocument()
-    expect(screen.getByText('첫 테이블 만들기')).toBeInTheDocument()
+    expect(screen.getByText('테이블이 없습니다')).toBeInTheDocument()
   })
 
   it('테이블 선택 시 onSelectTable 호출', async () => {
@@ -158,7 +157,9 @@ describe('TableList', () => {
       />
     )
 
-    const addButton = screen.getByRole('button', { name: /추가/ })
+    // 헤더의 Plus 아이콘 버튼 찾기 (첫 번째 버튼)
+    const buttons = screen.getAllByRole('button')
+    const addButton = buttons[0] // 첫 번째 버튼이 추가 버튼
     await user.click(addButton)
 
     expect(screen.getByText('Create Table Dialog')).toBeInTheDocument()

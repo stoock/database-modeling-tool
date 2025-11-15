@@ -10,11 +10,13 @@ vi.mock('@dnd-kit/core', () => ({
   useSensors: vi.fn(() => []),
   PointerSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
+  closestCenter: vi.fn(),
 }))
 
 vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   verticalListSortingStrategy: {},
+  sortableKeyboardCoordinates: vi.fn(),
   arrayMove: <T,>(arr: T[], from: number, to: number): T[] => {
     const newArr = [...arr]
     const [item] = newArr.splice(from, 1)
@@ -64,17 +66,23 @@ describe('ColumnList', () => {
     },
   ]
 
-  const mockOnReorder = vi.fn()
-  const mockOnEdit = vi.fn()
-  const mockOnDelete = vi.fn()
+  const mockOnColumnCreated = vi.fn()
+  const mockOnColumnUpdated = vi.fn()
+  const mockOnColumnDeleted = vi.fn()
+  const mockOnEditColumn = vi.fn()
+  const mockOnDeleteColumn = vi.fn()
 
   it('컬럼 목록을 렌더링함', () => {
     render(
       <ColumnList
+        tableId="table1"
+        tableName="USER_TABLE"
         columns={mockColumns}
-        onReorder={mockOnReorder}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
+        onColumnCreated={mockOnColumnCreated}
+        onColumnUpdated={mockOnColumnUpdated}
+        onColumnDeleted={mockOnColumnDeleted}
+        onEditColumn={mockOnEditColumn}
+        onDeleteColumn={mockOnDeleteColumn}
       />
     )
 
@@ -85,10 +93,14 @@ describe('ColumnList', () => {
   it('컬럼이 없을 때 빈 상태 표시', () => {
     render(
       <ColumnList
+        tableId="table1"
+        tableName="USER_TABLE"
         columns={[]}
-        onReorder={mockOnReorder}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
+        onColumnCreated={mockOnColumnCreated}
+        onColumnUpdated={mockOnColumnUpdated}
+        onColumnDeleted={mockOnColumnDeleted}
+        onEditColumn={mockOnEditColumn}
+        onDeleteColumn={mockOnDeleteColumn}
       />
     )
 
@@ -99,33 +111,41 @@ describe('ColumnList', () => {
     const user = userEvent.setup()
     render(
       <ColumnList
+        tableId="table1"
+        tableName="USER_TABLE"
         columns={mockColumns}
-        onReorder={mockOnReorder}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
+        onColumnCreated={mockOnColumnCreated}
+        onColumnUpdated={mockOnColumnUpdated}
+        onColumnDeleted={mockOnColumnDeleted}
+        onEditColumn={mockOnEditColumn}
+        onDeleteColumn={mockOnDeleteColumn}
       />
     )
 
     const editButtons = screen.getAllByText('Edit')
     await user.click(editButtons[0])
 
-    expect(mockOnEdit).toHaveBeenCalledWith(mockColumns[0])
+    expect(mockOnEditColumn).toHaveBeenCalledWith(mockColumns[0])
   })
 
   it('삭제 버튼 클릭 시 onDelete 호출', async () => {
     const user = userEvent.setup()
     render(
       <ColumnList
+        tableId="table1"
+        tableName="USER_TABLE"
         columns={mockColumns}
-        onReorder={mockOnReorder}
-        onEdit={mockOnEdit}
-        onDelete={mockOnDelete}
+        onColumnCreated={mockOnColumnCreated}
+        onColumnUpdated={mockOnColumnUpdated}
+        onColumnDeleted={mockOnColumnDeleted}
+        onEditColumn={mockOnEditColumn}
+        onDeleteColumn={mockOnDeleteColumn}
       />
     )
 
     const deleteButtons = screen.getAllByText('Delete')
     await user.click(deleteButtons[0])
 
-    expect(mockOnDelete).toHaveBeenCalledWith(mockColumns[0])
+    expect(mockOnDeleteColumn).toHaveBeenCalledWith(mockColumns[0])
   })
 })
