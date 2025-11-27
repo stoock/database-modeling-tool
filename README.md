@@ -88,7 +88,7 @@ yarn dev
 - **프론트엔드**: http://localhost:3001
 - **백엔드 API**: http://localhost:8080/api
 - **헬스 체크**: http://localhost:8080/api/health
-- **Swagger UI**: http://localhost:8080/api/swagger-ui.html
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **pgAdmin**: http://localhost:5050 (admin@admin.com / admin)
 
 ### 문제 해결
