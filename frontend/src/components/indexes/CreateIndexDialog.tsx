@@ -225,8 +225,9 @@ export function CreateIndexDialog({
             <Input
               id="index-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value.toUpperCase())}
               placeholder="예: IDX__USER__USER_ID"
+              style={{ textTransform: 'uppercase' }}
               className={
                 nameValidation
                   ? nameValidation.isValid
@@ -235,7 +236,10 @@ export function CreateIndexDialog({
                   : ''
               }
             />
-            <ValidationBadge result={nameValidation} />
+            <ValidationBadge 
+              result={nameValidation} 
+              onSuggestionClick={(suggestion) => setName(suggestion)}
+            />
           </div>
 
           {/* 인덱스 타입 */}

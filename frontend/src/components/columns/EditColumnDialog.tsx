@@ -210,7 +210,7 @@ export function EditColumnDialog({
 
     try {
       const data: UpdateColumnRequest = {
-        name: name.trim(),
+        name: name.trim().toUpperCase(),
         description: description.trim(),
         dataType,
         maxLength: requiresLength(dataType) ? maxLength : undefined,
@@ -255,11 +255,15 @@ export function EditColumnDialog({
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value.toUpperCase())}
               placeholder="예: USER_ID, REG_DT"
               required
+              style={{ textTransform: 'uppercase' }}
             />
-            <ValidationBadge result={nameValidation} />
+            <ValidationBadge 
+              result={nameValidation} 
+              onSuggestionClick={(suggestion) => setName(suggestion)}
+            />
             <p className="text-xs text-gray-500">
               대문자 형식을 사용하세요 (예: USER_ID, ORDER_ITEM_NO)
             </p>
@@ -277,7 +281,10 @@ export function EditColumnDialog({
               placeholder="예: 사용자ID, 처리결과코드 || 0:성공, -100:실패"
               required
             />
-            <ValidationBadge result={descriptionValidation} />
+            <ValidationBadge 
+              result={descriptionValidation} 
+              onSuggestionClick={(suggestion) => setDescription(suggestion)}
+            />
             <p className="text-xs text-gray-500">
               한글명 또는 "한글명 || 상세설명" 형식을 권장합니다
             </p>

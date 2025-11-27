@@ -120,15 +120,14 @@ export function CreateTableDialog({
     try {
       const requestData: CreateTableRequest = {
         projectId,
-        name: data.name,
+        name: data.name.toUpperCase(),
         description: data.description,
-        addSystemColumns: data.addSystemColumns,
       };
 
       const newTable = await createTable(requestData);
 
       // 시스템 속성 컬럼 자동 추가
-      if (data.addSystemColumns && newTable.id) {
+      if (data.addSystemColumns && newTable?.id) {
         // 시스템 컬럼을 순차적으로 생성
         for (let i = 0; i < SYSTEM_COLUMNS.length; i++) {
           const sysCol = SYSTEM_COLUMNS[i];
@@ -178,11 +177,19 @@ export function CreateTableDialog({
               placeholder="예: USER, ORDER_ITEM"
               {...register('name')}
               className={errors.name || (nameValidation && !nameValidation.isValid) ? 'border-red-500' : ''}
+              style={{ textTransform: 'uppercase' }}
+              onChange={(e) => {
+                const upperValue = e.target.value.toUpperCase();
+                e.target.value = upperValue;
+              }}
             />
             {errors.name && (
               <p className="text-sm text-red-600">{errors.name.message}</p>
             )}
-            <ValidationBadge result={nameValidation} />
+            <ValidationBadge 
+              result={nameValidation} 
+              onSuggestionClick={(suggestion) => setValue('name', suggestion)}
+            />
           </div>
 
           <div className="space-y-2">
@@ -198,7 +205,10 @@ export function CreateTableDialog({
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
             )}
-            <ValidationBadge result={descriptionValidation} />
+            <ValidationBadge 
+              result={descriptionValidation} 
+              onSuggestionClick={(suggestion) => setValue('description', suggestion)}
+            />
             <p className="text-xs text-gray-500">
               테이블명을 그대로 복사하지 말고 의미 있는 한글 설명을 입력하세요
             </p>
