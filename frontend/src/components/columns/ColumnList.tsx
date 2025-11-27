@@ -15,6 +15,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableRow } from './SortableRow';
+import { InlineColumnRow } from './InlineColumnRow';
 import { CreateColumnDialog } from './CreateColumnDialog';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
@@ -44,6 +45,7 @@ function ColumnListComponent({
   const [isReordering, setIsReordering] = useState(false);
   const [localColumns, setLocalColumns] = useState<Column[]>(columns);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isInlineAdding, setIsInlineAdding] = useState(false);
 
   // 컬럼이 변경되면 로컬 상태 업데이트
   useEffect(() => {
@@ -98,11 +100,11 @@ function ColumnListComponent({
     [localColumns]
   );
 
-  // 다음 orderIndex 계산을 useMemo로 캐싱
+  // 다음 orderIndex 계산을 useMemo로 캐싱 (백엔드는 1부터 시작)
   const nextOrderIndex = useMemo(() => 
     sortedColumns.length > 0
       ? Math.max(...sortedColumns.map(col => col.orderIndex)) + 1
-      : 0,
+      : 1,
     [sortedColumns]
   );
 
@@ -116,25 +118,55 @@ function ColumnListComponent({
     setIsCreateDialogOpen(true);
   }, []);
 
+  const handleStartInlineAdd = useCallback(() => {
+    setIsInlineAdding(true);
+  }, []);
+
+  const handleInlineAddSuccess = useCallback(() => {
+    setIsInlineAdding(false);
+    onColumnCreated();
+  }, [onColumnCreated]);
+
+  const handleInlineAddCancel = useCallback(() => {
+    setIsInlineAdding(false);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">컬럼 목록</h3>
-        <Button onClick={handleOpenCreateDialog} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          컬럼 추가
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleStartInlineAdd} 
+            size="sm"
+            variant="outline"
+            disabled={isInlineAdding}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            빠른 추가
+          </Button>
+          <Button onClick={handleOpenCreateDialog} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            상세 추가
+          </Button>
+        </div>
       </div>
 
       {/* 컬럼이 없는 경우 */}
-      {sortedColumns.length === 0 ? (
+      {sortedColumns.length === 0 && !isInlineAdding ? (
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <p className="text-gray-500 mb-4">컬럼이 없습니다</p>
-          <Button onClick={handleOpenCreateDialog} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            첫 번째 컬럼 추가
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleStartInlineAdd} variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              빠른 추가
+            </Button>
+            <Button onClick={handleOpenCreateDialog}>
+              <Plus className="h-4 w-4 mr-2" />
+              상세 추가
+            </Button>
+          </div>
         </div>
       ) : (
         <>
@@ -148,41 +180,41 @@ function ColumnListComponent({
 
           {/* 테이블 헤더 */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                    순서
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    컬럼명
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    한글명
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    데이터 타입
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                    NULL
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                    PK
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                    IDENTITY
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                    액션
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                      순서
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      컬럼명
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      한글명
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      데이터 타입
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                      NULL
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                      PK
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                      IDENTITY
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                      액션
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
                   <SortableContext
                     items={sortedColumns.map((col) => col.id)}
                     strategy={verticalListSortingStrategy}
@@ -197,10 +229,33 @@ function ColumnListComponent({
                       />
                     ))}
                   </SortableContext>
-                </DndContext>
-              </tbody>
-            </table>
+                  
+                  {/* 인라인 추가 행 */}
+                  {isInlineAdding && (
+                    <InlineColumnRow
+                      tableId={tableId}
+                      nextOrderIndex={nextOrderIndex}
+                      onSuccess={handleInlineAddSuccess}
+                      onCancel={handleInlineAddCancel}
+                    />
+                  )}
+                </tbody>
+              </table>
+            </DndContext>
           </div>
+
+          {/* 빠른 추가 버튼 (테이블 하단) */}
+          {!isInlineAdding && (
+            <Button
+              onClick={handleStartInlineAdd}
+              variant="ghost"
+              size="sm"
+              className="w-full mt-2 text-gray-500 hover:text-gray-700 border-2 border-dashed"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              빠른 추가
+            </Button>
+          )}
 
           {/* 안내 메시지 */}
           <p className="text-xs text-gray-500 mt-2">
