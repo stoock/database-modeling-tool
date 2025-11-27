@@ -73,7 +73,7 @@ export const useTableStore = create<TableStore>((set) => ({
   createTable: async (data: CreateTableRequest) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiClient.post<Table>('/tables', data);
+      const response = await apiClient.post<Table>(`/projects/${data.projectId}/tables`, data);
       const newTable = response.data;
       
       // 테이블 목록에 추가

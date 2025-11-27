@@ -146,9 +146,11 @@ export const getTable = async (tableId: string): Promise<Table> => {
  * 테이블 생성
  */
 export const createTable = async (data: CreateTableRequest): Promise<Table> => {
-  const response = await apiClient.post<Table>(`/projects/${data.projectId}/tables`, data);
+  // addSystemColumns 필드 제거 (백엔드에서 지원하지 않음)
+  const { addSystemColumns, ...requestData } = data as any;
+  const response = await apiClient.post<Table>(`/projects/${requestData.projectId}/tables`, requestData);
   const toastStore = useToastStore.getState();
-  toastStore.success('테이블 생성 완료', `"${data.name}" 테이블이 생성되었습니다`);
+  toastStore.success('테이블 생성 완료', `"${requestData.name}" 테이블이 생성되었습니다`);
   return response.data;
 };
 
@@ -198,7 +200,24 @@ export const getColumn = async (columnId: string): Promise<Column> => {
  * 컬럼 생성
  */
 export const createColumn = async (data: CreateColumnRequest): Promise<Column> => {
-  const response = await apiClient.post<Column>(`/tables/${data.tableId}/columns`, data);
+  // 백엔드 필드명에 맞게 변환 (nullable -> isNullable, primaryKey -> isPrimaryKey, identity -> isIdentity)
+  const requestData = {
+    name: data.name,
+    description: data.description,
+    dataType: data.dataType,
+    maxLength: data.maxLength,
+    precision: data.precision,
+    scale: data.scale,
+    isNullable: data.nullable,
+    isPrimaryKey: data.primaryKey,
+    isIdentity: data.identity,
+    identitySeed: data.identitySeed,
+    identityIncrement: data.identityIncrement,
+    defaultValue: data.defaultValue,
+    orderIndex: data.orderIndex,
+  };
+  
+  const response = await apiClient.post<Column>(`/tables/${data.tableId}/columns`, requestData);
   const toastStore = useToastStore.getState();
   toastStore.success('컬럼 생성 완료', `"${data.name}" 컬럼이 생성되었습니다`);
   return response.data;
@@ -211,7 +230,26 @@ export const updateColumn = async (
   columnId: string,
   data: UpdateColumnRequest
 ): Promise<Column> => {
-  const response = await apiClient.put<Column>(`/columns/${columnId}`, data);
+  // 백엔드 필드명에 맞게 변환 (nullable -> isNullable, primaryKey -> isPrimaryKey, identity -> isIdentity)
+  const requestData: any = {
+    name: data.name,
+    description: data.description,
+    dataType: data.dataType,
+    maxLength: data.maxLength,
+    precision: data.precision,
+    scale: data.scale,
+    orderIndex: data.orderIndex,
+    defaultValue: data.defaultValue,
+  };
+  
+  // undefined가 아닌 경우에만 추가
+  if (data.nullable !== undefined) requestData.isNullable = data.nullable;
+  if (data.primaryKey !== undefined) requestData.isPrimaryKey = data.primaryKey;
+  if (data.identity !== undefined) requestData.isIdentity = data.identity;
+  if (data.identitySeed !== undefined) requestData.identitySeed = data.identitySeed;
+  if (data.identityIncrement !== undefined) requestData.identityIncrement = data.identityIncrement;
+  
+  const response = await apiClient.put<Column>(`/columns/${columnId}`, requestData);
   const toastStore = useToastStore.getState();
   toastStore.success('컬럼 수정 완료', '컬럼 정보가 수정되었습니다');
   return response.data;
