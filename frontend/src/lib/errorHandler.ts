@@ -216,12 +216,14 @@ export function logError(errorInfo: ErrorInfo): void {
 /**
  * 검증 에러 메시지 포맷팅
  */
-export function formatValidationErrors(details?: Record<string, string[]>): string {
+export function formatValidationErrors(details?: Record<string, string | string[]>): string {
   if (!details) return '';
   
   const messages: string[] = [];
   for (const [field, errors] of Object.entries(details)) {
-    messages.push(`${field}: ${errors.join(', ')}`);
+    // errors가 배열이면 join, 문자열이면 그대로 사용
+    const errorMessage = Array.isArray(errors) ? errors.join(', ') : errors;
+    messages.push(`${field}: ${errorMessage}`);
   }
   
   return messages.join('\n');

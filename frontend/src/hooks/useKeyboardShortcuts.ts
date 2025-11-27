@@ -31,6 +31,11 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[]) {
         target.tagName === 'TEXTAREA' ||
         target.isContentEditable;
 
+      // event.key가 없으면 무시
+      if (!event.key) {
+        return;
+      }
+
       // Ctrl+S, Ctrl+N 등 일부 단축키는 입력 필드에서도 동작
       const allowedInInput = ['s', 'n'].includes(event.key.toLowerCase()) && event.ctrlKey;
 
