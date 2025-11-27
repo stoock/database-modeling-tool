@@ -3,8 +3,6 @@ import { Check, X } from 'lucide-react';
 import type { MSSQLDataType, CreateColumnRequest } from '@/types';
 import { createColumn } from '@/lib/api';
 import {
-  validateColumnName,
-  validateColumnDescription,
   requiresLength,
   requiresPrecisionScale,
   supportsIdentity,
@@ -40,6 +38,7 @@ export function InlineColumnRow({
   const [nullable, setNullable] = useState(true);
   const [primaryKey, setPrimaryKey] = useState(false);
   const [identity, setIdentity] = useState(false);
+  const [defaultValue, setDefaultValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -68,13 +67,8 @@ export function InlineColumnRow({
       return;
     }
 
-    // 간단한 검증
-    const nameValidation = validateColumnName(name);
-    const descValidation = validateColumnDescription(description, name);
-    
-    if (!nameValidation.isValid || !descValidation.isValid) {
-      return;
-    }
+    // 명명 규칙 검증은 경고만 표시하고 저장은 허용
+    // (검증 실패해도 저장 진행)
 
     setIsSubmitting(true);
 
@@ -92,7 +86,7 @@ export function InlineColumnRow({
         identity,
         identitySeed: identity ? 1 : undefined,
         identityIncrement: identity ? 1 : undefined,
-        defaultValue: undefined,
+        defaultValue: defaultValue.trim() || undefined,
         orderIndex: nextOrderIndex,
       };
 
@@ -178,6 +172,19 @@ export function InlineColumnRow({
         </div>
       </td>
 
+      {/* 기본값 */}
+      <td className="px-4 py-2">
+        <input
+          type="text"
+          value={defaultValue}
+          onChange={(e) => setDefaultValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="GETDATE(), 0, 'N'"
+          className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+          disabled={isSubmitting}
+        />
+      </td>
+
       {/* NULL */}
       <td className="px-4 py-2 text-center">
         <input
@@ -185,7 +192,7 @@ export function InlineColumnRow({
           checked={nullable}
           onChange={(e) => setNullable(e.target.checked)}
           disabled={primaryKey || isSubmitting}
-          className="h-4 w-4 rounded border-gray-300"
+          className="rounded border-gray-300"
         />
       </td>
 
@@ -196,7 +203,7 @@ export function InlineColumnRow({
           checked={primaryKey}
           onChange={(e) => setPrimaryKey(e.target.checked)}
           disabled={isSubmitting}
-          className="h-4 w-4 rounded border-gray-300"
+          className="rounded border-gray-300"
         />
       </td>
 
@@ -207,17 +214,17 @@ export function InlineColumnRow({
           checked={identity}
           onChange={(e) => setIdentity(e.target.checked)}
           disabled={!supportsIdentity(dataType) || isSubmitting}
-          className="h-4 w-4 rounded border-gray-300"
+          className="rounded border-gray-300"
         />
       </td>
 
       {/* 액션 */}
-      <td className="px-4 py-2 text-right">
+      <td className="px-4 py-2">
         <div className="flex items-center justify-end gap-1">
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || !name.trim() || !description.trim()}
-            className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 text-green-600 hover:bg-green-50 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             title="저장 (Enter)"
           >
             <Check className="h-4 w-4" />
@@ -225,7 +232,7 @@ export function InlineColumnRow({
           <button
             onClick={onCancel}
             disabled={isSubmitting}
-            className="p-1 text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
+            className="p-1.5 text-red-600 hover:bg-red-50 rounded disabled:opacity-50 flex items-center justify-center"
             title="취소 (Esc)"
           >
             <X className="h-4 w-4" />

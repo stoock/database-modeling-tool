@@ -99,3 +99,12 @@
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm;
   }
 }
+
+/* 체크박스와 라디오 버튼 크기 재정의 */
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: auto !important;
+  min-height: auto !important;
+  width: 1rem;
+  height: 1rem;
+}

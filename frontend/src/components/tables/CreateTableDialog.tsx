@@ -108,13 +108,8 @@ export function CreateTableDialog({
   }, [open, reset]);
 
   const onSubmit = async (data: CreateTableFormData) => {
-    // 검증 실패 시 제출 방지
-    if (nameValidation && !nameValidation.isValid) {
-      return;
-    }
-    if (descriptionValidation && !descriptionValidation.isValid) {
-      return;
-    }
+    // 명명 규칙 검증 실패 시 경고만 표시하고 저장은 허용
+    // (nameValidation, descriptionValidation은 체크하지 않음)
 
     setIsSubmitting(true);
     try {
@@ -270,11 +265,7 @@ export function CreateTableDialog({
             </Button>
             <Button
               type="submit"
-              disabled={
-                isSubmitting ||
-                (nameValidation !== null && !nameValidation.isValid) ||
-                (descriptionValidation !== null && !descriptionValidation.isValid)
-              }
+              disabled={isSubmitting}
             >
               {isSubmitting ? '생성 중...' : '생성'}
             </Button>

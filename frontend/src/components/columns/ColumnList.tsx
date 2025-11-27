@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
 import type { Column } from '@/types';
 import { reorderColumns } from '@/lib/api';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface ColumnListProps {
   tableId: string;
@@ -82,8 +83,11 @@ function ColumnListComponent({
     // 서버에 순서 변경 요청
     setIsReordering(true);
     try {
-      const columnIds = newColumns.map((col) => col.id);
-      await reorderColumns(tableId, { columnIds });
+      const updates = newColumns.map((col, index) => ({
+        columnId: col.id,
+        orderIndex: index + 1, // 1부터 시작
+      }));
+      await reorderColumns(tableId, { updates });
       onColumnUpdated();
     } catch (error) {
       // 에러 발생 시 원래 순서로 복원
@@ -131,6 +135,22 @@ function ColumnListComponent({
     setIsInlineAdding(false);
   }, []);
 
+  // 키보드 단축키 설정
+  useKeyboardShortcuts([
+    {
+      key: 'q',
+      ctrl: true,
+      handler: handleStartInlineAdd,
+      description: '빠른 컬럼 추가',
+    },
+    {
+      key: 'd',
+      ctrl: true,
+      handler: handleOpenCreateDialog,
+      description: '상세 컬럼 추가',
+    },
+  ]);
+
   return (
     <div className="space-y-4">
       {/* 헤더 */}
@@ -142,13 +162,24 @@ function ColumnListComponent({
             size="sm"
             variant="outline"
             disabled={isInlineAdding}
+            title="빠른 추가 (Ctrl+Q)"
           >
             <Plus className="h-4 w-4 mr-2" />
             빠른 추가
+            <kbd className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded border">
+              Ctrl+Q
+            </kbd>
           </Button>
-          <Button onClick={handleOpenCreateDialog} size="sm">
+          <Button 
+            onClick={handleOpenCreateDialog} 
+            size="sm"
+            title="상세 추가 (Ctrl+D)"
+          >
             <Plus className="h-4 w-4 mr-2" />
             상세 추가
+            <kbd className="ml-2 px-1.5 py-0.5 text-xs bg-white/90 text-gray-700 rounded border border-gray-300">
+              Ctrl+D
+            </kbd>
           </Button>
         </div>
       </div>
@@ -158,13 +189,20 @@ function ColumnListComponent({
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <p className="text-gray-500 mb-4">컬럼이 없습니다</p>
           <div className="flex gap-2 justify-center">
-            <Button onClick={handleStartInlineAdd} variant="outline">
+            <Button 
+              onClick={handleStartInlineAdd} 
+              variant="outline"
+              title="빠른 추가 (Ctrl+Q)"
+            >
               <Plus className="h-4 w-4 mr-2" />
-              빠른 추가
+              빠른 추가 (Ctrl+Q)
             </Button>
-            <Button onClick={handleOpenCreateDialog}>
+            <Button 
+              onClick={handleOpenCreateDialog}
+              title="상세 추가 (Ctrl+D)"
+            >
               <Plus className="h-4 w-4 mr-2" />
-              상세 추가
+              상세 추가 (Ctrl+D)
             </Button>
           </div>
         </div>
@@ -199,6 +237,9 @@ function ColumnListComponent({
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       데이터 타입
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                      기본값
                     </th>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                       NULL
@@ -251,9 +292,10 @@ function ColumnListComponent({
               variant="ghost"
               size="sm"
               className="w-full mt-2 text-gray-500 hover:text-gray-700 border-2 border-dashed"
+              title="빠른 추가 (Ctrl+Q)"
             >
               <Plus className="h-4 w-4 mr-2" />
-              빠른 추가
+              빠른 추가 (Ctrl+Q)
             </Button>
           )}
 

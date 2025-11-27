@@ -191,22 +191,18 @@ export function CreateColumnDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 최종 검증
+    // 최종 검증 (필수 필드만 체크, 명명 규칙은 경고만)
     if (!name.trim() || !description.trim()) {
       return;
     }
 
-    if (nameValidation && !nameValidation.isValid) {
-      return;
-    }
-
-    if (descriptionValidation && !descriptionValidation.isValid) {
-      return;
-    }
-
+    // 데이터 타입 속성 검증은 필수 (길이, precision 등)
     if (dataTypeValidation && !dataTypeValidation.isValid) {
       return;
     }
+
+    // 명명 규칙 검증 실패 시 경고만 표시하고 저장은 허용
+    // (nameValidation, descriptionValidation은 체크하지 않음)
 
     setIsSubmitting(true);
 
@@ -395,7 +391,7 @@ export function CreateColumnDialog({
                 checked={nullable || false}
                 onChange={(e) => setNullable(e.target.checked)}
                 disabled={primaryKey}
-                className="h-4 w-4 rounded border-gray-300"
+                className="rounded border-gray-300"
               />
               <Label htmlFor="nullable" className="cursor-pointer">
                 NULL 허용
@@ -409,7 +405,7 @@ export function CreateColumnDialog({
                 id="primaryKey"
                 checked={primaryKey || false}
                 onChange={(e) => setPrimaryKey(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300"
+                className="rounded border-gray-300"
               />
               <Label htmlFor="primaryKey" className="cursor-pointer">
                 기본키 (Primary Key)
@@ -425,7 +421,7 @@ export function CreateColumnDialog({
                     id="identity"
                     checked={identity || false}
                     onChange={(e) => setIdentity(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="rounded border-gray-300"
                   />
                   <Label htmlFor="identity" className="cursor-pointer">
                     IDENTITY (자동 증가)
@@ -489,8 +485,6 @@ export function CreateColumnDialog({
                 isSubmitting ||
                 !name.trim() ||
                 !description.trim() ||
-                (nameValidation !== null && !nameValidation.isValid) ||
-                (descriptionValidation !== null && !descriptionValidation.isValid) ||
                 (dataTypeValidation !== null && !dataTypeValidation.isValid)
               }
             >

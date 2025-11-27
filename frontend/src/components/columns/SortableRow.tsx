@@ -98,6 +98,13 @@ export function SortableRow({ column, index, onEdit, onDelete }: SortableRowProp
         <span className="font-mono text-sm text-gray-900">{getDataTypeDisplay()}</span>
       </td>
 
+      {/* 기본값 */}
+      <td className="px-4 py-3">
+        <span className="font-mono text-xs text-gray-600">
+          {column.defaultValue || '-'}
+        </span>
+      </td>
+
       {/* NULL 허용 */}
       <td className="px-4 py-3 text-center">
         {column.nullable ? (

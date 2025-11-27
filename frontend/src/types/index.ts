@@ -196,7 +196,10 @@ export interface CreateIndexRequest {
 }
 
 export interface ReorderColumnsRequest {
-  columnIds: string[];
+  updates: {
+    columnId: string;
+    orderIndex: number;
+  }[];
 }
 
 // Export Options
